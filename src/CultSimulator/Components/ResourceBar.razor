@@ -19,6 +19,10 @@
                     Home
                 </span>
             }
+            <span class="total-followers-tag font-display text-xs tracking-[0.15em] uppercase text-amber-200 px-2.5 py-1 border border-amber-500/30 rounded-full flex items-center gap-1">
+                <span class="text-sm">👥</span>
+                <span>@NumberFormat.Fmt(CovenProgress.TotalFollowers(Game.State)) Total</span>
+            </span>
         </div>
         <div class="rank-badge font-display text-xs font-semibold tracking-[0.25em] uppercase px-3.5 py-1.5 border rounded-full"
              style="border-color: @currentRank.Color; color: @currentRank.Color;">
