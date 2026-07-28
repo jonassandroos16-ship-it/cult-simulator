@@ -1,0 +1,68 @@
+@using CultSimulator.Game
+@inject WorldLocationService LocationService
+@implements IDisposable
+
+<div class="world-map-wrapper">
+    <div id="world-map-container" class="world-map-container"></div>
+    <div id="coven-popup" class="coven-popup" style="display:none;">
+        <button class="coven-popup-close" @onclick="ClosePopup">×</button>
+        <div class="coven-popup-flag">@selectedCoven?.CountryFlag</div>
+        <h3 class="coven-popup-name">@selectedCoven?.Name</h3>
+        <p class="coven-popup-location">@selectedCoven?.Location</p>
+        <p class="coven-popup-era">@selectedCoven?.Era</p>
+        <p class="coven-popup-summary">@selectedCoven?.Summary</p>
+        @if (showLore)
+        {
+            <p class="coven-popup-lore">@selectedCoven?.Lore</p>
+        }
+        else
+        {
+            <button class="coven-popup-lore-toggle" @onclick="ToggleLore">Reveal Lore</button>
+        }
+    </div>
+</div>
+
+@code {
+    private WorldLocationDef? selectedCoven;
+    private bool showLore = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LocationService.LoadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && LocationService.IsLoaded)
+        {
+            await InitMap();
+        }
+    }
+
+    private async Task InitMap()
+    {
+        var locations = LocationService.Locations;
+        var jsLocations = new List<object>();
+        foreach (var loc in locations)
+        {
+            jsLocations.Add(new { id = loc.Id, name = loc.Name, lat = loc.Latitude, lng = loc.Longitude, flag = loc.CountryFlag, era = loc.Era, summary = loc.Summary, lore = loc.Lore, location = loc.Location, country = loc.Country });
+        }
+        await JSRuntimeHelper.InvokeVoidAsync("initWorldMap", "world-map-container", jsLocations);
+    }
+
+    private void ClosePopup()
+    {
+        selectedCoven = null;
+        showLore = false;
+    }
+
+    private void ToggleLore()
+    {
+        showLore = !showLore;
+    }
+
+    public void Dispose()
+    {
+        _ = JSRuntimeHelper.InvokeVoidAsync("destroyWorldMap");
+    }
+}

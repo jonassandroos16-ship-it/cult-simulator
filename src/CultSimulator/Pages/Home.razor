@@ -17,24 +17,44 @@ else
 {
     <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6">
         <ResourceBar />
-        <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
-            <div class="game-left flex flex-col gap-6">
-                <PreachAltar OnPreach="OnPreach" OnRecruit="OnRecruit" />
-            </div>
-            <div class="game-right flex flex-col gap-6">
-                <BuildingsPanel />
-                <UpgradesPanel />
-            </div>
+
+        <div class="bookmark-tabs">
+            <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick="() => SwitchTab("preach")">
+                <span class="bookmark-tab-icon">🕯️</span>
+                <span class="bookmark-tab-label">Preach</span>
+            </button>
+            <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick="() => SwitchTab("map")">
+                <span class="bookmark-tab-icon">🗺️</span>
+                <span class="bookmark-tab-label">Map</span>
+            </button>
         </div>
-        <div class="game-footer mt-8 text-center">
-            <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
-        </div>
+
+        @if (activeTab == "preach")
+        {
+            <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
+                <div class="game-left flex flex-col gap-6">
+                    <PreachAltar OnPreach="OnPreach" OnRecruit="OnRecruit" />
+                </div>
+                <div class="game-right flex flex-col gap-6">
+                    <BuildingsPanel />
+                    <UpgradesPanel />
+                </div>
+            </div>
+            <div class="game-footer mt-8 text-center">
+                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
+            </div>
+        }
+        else if (activeTab == "map")
+        {
+            <WorldMap />
+        }
     </div>
     <EventModal />
 }
 
 @code {
     private bool initialized = false;
+    private string activeTab = "preach";
 
     protected override async Task OnInitializedAsync()
     {
@@ -45,6 +65,8 @@ else
     }
 
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void SwitchTab(string tab) => activeTab = tab;
 
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
