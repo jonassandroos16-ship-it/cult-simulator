@@ -5,16 +5,26 @@ namespace CultSimulator.Game;
 public class GameState
 {
     public string CultName { get; set; } = "";
-    public int Followers { get; set; }
-    public double Faith { get; set; }
-    public double Gold { get; set; }
-    public int PreachCount { get; set; }
-    public Dictionary<BuildingType, int> Buildings { get; set; } = new();
-    public List<UpgradeId> Upgrades { get; set; } = new();
     public long StartedAt { get; set; }
+    public bool StoryShown { get; set; }
+    public string ActiveCovenId { get; set; } = "";
+    public List<CovenState> Covens { get; set; } = new();
 
     [JsonIgnore]
     public string? ActiveEventId { get; set; }
 
-    public bool HasUpgrade(UpgradeId id) => Upgrades.Contains(id);
+    public CovenState HomeCoven => Covens.First(c => c.Id == "skanor");
+
+    public CovenState ActiveCoven
+    {
+        get
+        {
+            if (Covens.Count == 0) return new CovenState { Id = "skanor" };
+            var id = string.IsNullOrEmpty(ActiveCovenId) ? "skanor" : ActiveCovenId;
+            return Covens.FirstOrDefault(c => c.Id == id) ?? HomeCoven;
+        }
+    }
+
+    public CovenState? FindCoven(string id) =>
+        Covens.FirstOrDefault(c => c.Id == id);
 }

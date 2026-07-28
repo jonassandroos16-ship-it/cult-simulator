@@ -20,7 +20,7 @@ public record UpgradeDef(
 
 public record RankDef(string Name, int MinFollowers, string Color);
 
-public record EventChoice(string Label, string Description, Action<GameState> Apply);
+public record EventChoice(string Label, string Description, Action<CovenState> Apply);
 
 public record EventDef(
     string Id,

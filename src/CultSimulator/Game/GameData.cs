@@ -2,6 +2,10 @@ using System.Collections.Immutable;
 
 namespace CultSimulator.Game;
 
+/// <summary>
+/// Static definitions for buildings, upgrades, ranks, and random events.
+/// All gameplay content lives here so the engine and UI stay data-driven.
+/// </summary>
 public static class GameData
 {
     public static readonly ImmutableArray<BuildingDef> Buildings = ImmutableArray.Create(

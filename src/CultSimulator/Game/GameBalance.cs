@@ -15,4 +15,8 @@ public static class GameBalance
     public const int EventIntervalSeconds = 30;
     public const double EventTriggerChance = 0.5;
     public const int EventMinFollowers = 5;
+
+    public const double CovenTakeoverFaithPercent = 0.5;
+    public const double CovenTakeoverGoldPercent = 0.5;
+    public const double CovenTakeoverFollowerPercent = 0.5;
 }

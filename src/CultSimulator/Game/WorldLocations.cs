@@ -16,4 +16,6 @@ public record WorldLocationDef(
     double Latitude,
     double Longitude,
     string Summary,
-    string Lore);
+    string Lore,
+    int FollowersRequired,
+    double BaseMultiplier);
