@@ -19,11 +19,11 @@ else
         <ResourceBar />
 
         <div class="bookmark-tabs">
-            <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick="() => SwitchTab('preach')">
+            <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick='() => SwitchTab("preach")'>
                 <span class="bookmark-tab-icon">🕯️</span>
                 <span class="bookmark-tab-label">Preach</span>
             </button>
-            <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick="() => SwitchTab('map')">
+            <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick='() => SwitchTab("map")'>
                 <span class="bookmark-tab-icon">🗺️</span>
                 <span class="bookmark-tab-label">Map</span>
             </button>
