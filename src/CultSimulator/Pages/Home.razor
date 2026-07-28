@@ -27,6 +27,22 @@ else
                 <span class="bookmark-tab-icon">🕯️</span>
                 <span class="bookmark-tab-label">Preach</span>
             </button>
+            <button class="bookmark-tab @(activeTab == "altar" ? "active" : "")" @onclick='() => SwitchTab("altar")'>
+                <span class="bookmark-tab-icon">🩸</span>
+                <span class="bookmark-tab-label">Altar</span>
+            </button>
+            <button class="bookmark-tab @(activeTab == "codex" ? "active" : "")" @onclick='() => SwitchTab("codex")'>
+                <span class="bookmark-tab-icon">📜</span>
+                <span class="bookmark-tab-label">Codex</span>
+            </button>
+            <button class="bookmark-tab @(activeTab == "grimoire" ? "active" : "")" @onclick='() => SwitchTab("grimoire")'>
+                <span class="bookmark-tab-icon">🔮</span>
+                <span class="bookmark-tab-label">Grimoire</span>
+            </button>
+            <button class="bookmark-tab @(activeTab == "leylines" ? "active" : "")" @onclick='() => SwitchTab("leylines")'>
+                <span class="bookmark-tab-icon">⚡</span>
+                <span class="bookmark-tab-label">Ley Lines</span>
+            </button>
             <button class="bookmark-tab @(activeTab == "bank" ? "active" : "")" @onclick='() => SwitchTab("bank")'>
                 <span class="bookmark-tab-icon">🏦</span>
                 <span class="bookmark-tab-label">Bank</span>
@@ -48,6 +64,41 @@ else
                     <UpgradesPanel />
                 </div>
             </div>
+            <div class="game-footer mt-8 text-center">
+                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
+            </div>
+        }
+        else if (activeTab == "altar")
+        {
+            <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
+                <div class="game-left flex flex-col gap-6">
+                    <OccultAltarPanel />
+                </div>
+                <div class="game-right flex flex-col gap-6">
+                    <GrandSacrificePanel />
+                </div>
+            </div>
+            <div class="game-footer mt-8 text-center">
+                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
+            </div>
+        }
+        else if (activeTab == "codex")
+        {
+            <CodexPanel />
+            <div class="game-footer mt-8 text-center">
+                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
+            </div>
+        }
+        else if (activeTab == "grimoire")
+        {
+            <GrimoirePanel />
+            <div class="game-footer mt-8 text-center">
+                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
+            </div>
+        }
+        else if (activeTab == "leylines")
+        {
+            <LeyLinesPanel />
             <div class="game-footer mt-8 text-center">
                 <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
             </div>

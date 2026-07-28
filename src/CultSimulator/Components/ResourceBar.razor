@@ -21,7 +21,7 @@
             }
             <span class="total-followers-tag font-display text-xs tracking-[0.15em] uppercase text-amber-200 px-2.5 py-1 border border-amber-500/30 rounded-full flex items-center gap-1">
                 <span class="text-sm">👥</span>
-                <span>@NumberFormat.Fmt(CovenProgress.TotalFollowers(Game.State)) Total</span>
+                <span>@CovenProgress.TotalFollowers(Game.State) Total</span>
             </span>
         </div>
         <div class="rank-badge font-display text-xs font-semibold tracking-[0.25em] uppercase px-3.5 py-1.5 border rounded-full"
@@ -59,6 +59,24 @@
             <span class="resource-value font-display text-xl font-semibold text-amber-100">@NumberFormat.Fmt(activeCoven.Gold)</span>
             <span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Gold</span>
         </div>
+        <div class="resource-stat flex items-baseline gap-1.5">
+            <span class="resource-icon text-xl">🩸</span>
+            <span class="resource-value font-display text-xl font-semibold text-rose-200">@NumberFormat.Fmt(Game.State.Occult.Devotion)</span>
+            <span class="resource-label text-[0.7rem] text-rose-400 tracking-[0.15em] uppercase">Devotion</span>
+        </div>
+        <div class="resource-stat flex items-baseline gap-1.5">
+            <span class="resource-icon text-xl">📜</span>
+            <span class="resource-value font-display text-xl font-semibold text-violet-200">@NumberFormat.Fmt(Game.State.Occult.ForbiddenKnowledge)</span>
+            <span class="resource-label text-[0.7rem] text-violet-400 tracking-[0.15em] uppercase">FK</span>
+        </div>
+        @if (Game.State.Occult.EldritchFavor > 0)
+        {
+            <div class="resource-stat flex items-baseline gap-1.5">
+                <span class="resource-icon text-xl">🌟</span>
+                <span class="resource-value font-display text-xl font-semibold text-amber-200">@NumberFormat.Fmt(Game.State.Occult.EldritchFavor)</span>
+                <span class="resource-label text-[0.7rem] text-amber-400 tracking-[0.15em] uppercase">Favor</span>
+            </div>
+        }
     </div>
     <div class="income-display flex gap-6 mt-2 text-xs">
         <span class="income-faith text-emerald-400">+@NumberFormat.Fmt(GameEngine.TickIncome(Game.State).faith)/s ✨</span>
