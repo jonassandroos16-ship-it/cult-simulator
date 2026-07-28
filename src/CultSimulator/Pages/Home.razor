@@ -27,6 +27,10 @@ else
                 <span class="bookmark-tab-icon">🕯️</span>
                 <span class="bookmark-tab-label">Preach</span>
             </button>
+            <button class="bookmark-tab @(activeTab == "bank" ? "active" : "")" @onclick='() => SwitchTab("bank")'>
+                <span class="bookmark-tab-icon">🏦</span>
+                <span class="bookmark-tab-label">Bank</span>
+            </button>
             <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick='() => SwitchTab("map")'>
                 <span class="bookmark-tab-icon">🗺️</span>
                 <span class="bookmark-tab-label">Map</span>
@@ -44,6 +48,13 @@ else
                     <UpgradesPanel />
                 </div>
             </div>
+            <div class="game-footer mt-8 text-center">
+                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
+            </div>
+        }
+        else if (activeTab == "bank")
+        {
+            <BankPanel />
             <div class="game-footer mt-8 text-center">
                 <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
             </div>
