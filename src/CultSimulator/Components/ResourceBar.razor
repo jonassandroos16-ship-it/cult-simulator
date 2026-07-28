@@ -1,10 +1,25 @@
 @using CultSimulator.Game
 @inject GameService Game
+@inject WorldLocationService Locations
 @implements IDisposable
 
 <div class="resource-bar glass-panel rounded-[20px] p-5 md:p-6 mb-6">
     <div class="cult-header flex items-center justify-between flex-wrap gap-2 mb-3">
-        <h1 class="cult-name font-display text-2xl md:text-3xl font-semibold text-amber-100 tracking-[0.1em]">@Game.State.CultName</h1>
+        <div class="flex items-baseline gap-3 flex-wrap">
+            <h1 class="cult-name font-display text-2xl md:text-3xl font-semibold text-amber-100 tracking-[0.1em]">@Game.State.CultName</h1>
+            @if (!CovenProgress.IsHomeCoven(Game.State))
+            {
+                <span class="active-coven-tag font-display text-xs tracking-[0.2em] uppercase text-violet-300 px-2.5 py-1 border border-violet-500/25 rounded-full">
+                    @activeCovenName
+                </span>
+            }
+            else
+            {
+                <span class="active-coven-tag font-display text-xs tracking-[0.2em] uppercase text-amber-300/80 px-2.5 py-1 border border-amber-500/20 rounded-full">
+                    Home
+                </span>
+            }
+        </div>
         <div class="rank-badge font-display text-xs font-semibold tracking-[0.25em] uppercase px-3.5 py-1.5 border rounded-full"
              style="border-color: @currentRank.Color; color: @currentRank.Color;">
             @currentRank.Name
@@ -17,7 +32,7 @@
     <div class="rank-label text-[0.7rem] text-violet-300 tracking-[0.1em] mb-4">
         @if (nextRank != null)
         {
-            <span>@Game.State.Followers / @nextRank.MinFollowers followers to @nextRank.Name</span>
+            <span>@activeCoven.Followers / @nextRank.MinFollowers followers to @nextRank.Name</span>
         }
         else
         {
@@ -27,17 +42,17 @@
     <div class="resource-stats flex gap-6 flex-wrap">
         <div class="resource-stat flex items-baseline gap-1.5">
             <span class="resource-icon text-xl">👥</span>
-            <span class="resource-value font-display text-xl font-semibold text-amber-100">@Game.State.Followers</span>
+            <span class="resource-value font-display text-xl font-semibold text-amber-100">@activeCoven.Followers</span>
             <span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Followers</span>
         </div>
         <div class="resource-stat flex items-baseline gap-1.5">
             <span class="resource-icon text-xl">✨</span>
-            <span class="resource-value font-display text-xl font-semibold text-amber-100">@NumberFormat.Fmt(Game.State.Faith)</span>
+            <span class="resource-value font-display text-xl font-semibold text-amber-100">@NumberFormat.Fmt(activeCoven.Faith)</span>
             <span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Faith</span>
         </div>
         <div class="resource-stat flex items-baseline gap-1.5">
             <span class="resource-icon text-xl">💰</span>
-            <span class="resource-value font-display text-xl font-semibold text-amber-100">@NumberFormat.Fmt(Game.State.Gold)</span>
+            <span class="resource-value font-display text-xl font-semibold text-amber-100">@NumberFormat.Fmt(activeCoven.Gold)</span>
             <span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Gold</span>
         </div>
     </div>
@@ -48,8 +63,18 @@
 </div>
 
 @code {
-    private RankDef currentRank => GameEngine.RankFor(Game.State.Followers);
-    private RankDef? nextRank => GameEngine.NextRank(Game.State.Followers);
+    private CovenState activeCoven => Game.State.ActiveCoven;
+    private RankDef currentRank => GameEngine.RankFor(activeCoven.Followers);
+    private RankDef? nextRank => GameEngine.NextRank(activeCoven.Followers);
+
+    private string activeCovenName
+    {
+        get
+        {
+            var loc = Locations.Find(Game.State.ActiveCovenId);
+            return loc?.Name ?? Game.State.ActiveCovenId;
+        }
+    }
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
 

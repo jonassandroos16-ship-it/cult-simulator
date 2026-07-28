@@ -7,9 +7,9 @@
     <div class="building-list flex flex-col gap-2.5">
         @foreach (var def in GameData.Buildings)
         {
-            var owned = Game.State.Buildings.GetValueOrDefault(def.Type);
+            var owned = activeCoven.Buildings.GetValueOrDefault(def.Type);
             var cost = GameEngine.BuildingCost(def, owned);
-            var affordable = def.CostResource == ResourceKind.Faith ? Game.State.Faith >= cost : Game.State.Gold >= cost;
+            var affordable = def.CostResource == ResourceKind.Faith ? activeCoven.Faith >= cost : activeCoven.Gold >= cost;
             var costIcon = def.CostResource == ResourceKind.Faith ? "✨" : "💰";
             <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full
                           disabled:opacity-45 disabled:cursor-not-allowed
@@ -20,7 +20,7 @@
                 <div class="building-info flex-1 flex flex-col gap-0.5">
                     <span class="building-name font-display text-base text-amber-100 font-medium">@def.Name</span>
                     <span class="building-effect text-xs text-emerald-400">@def.EffectDescription</span>
-                    <span class="building-owned text-[0.7rem] text-violet-300">Owned: @owned</span>
+                    <span class="building-owned text-[0.7rem] text-violet-300">owned: @owned</span>
                 </div>
                 <div class="building-cost flex items-baseline gap-1 flex-shrink-0">
                     <span class="cost-value font-display font-semibold text-amber-400 text-base">@NumberFormat.Fmt(cost)</span>
@@ -32,6 +32,8 @@
 </div>
 
 @code {
+    private CovenState activeCoven => Game.State.ActiveCoven;
+
     protected override void OnInitialized() => Game.OnChange += StateChanged;
 
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);

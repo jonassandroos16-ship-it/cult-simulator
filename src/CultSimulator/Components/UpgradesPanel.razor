@@ -7,9 +7,9 @@
     <div class="upgrade-list flex flex-col gap-2.5">
         @foreach (var def in GameData.Upgrades)
         {
-            var owned = Game.State.HasUpgrade(def.Id);
-            var unlocked = GameEngine.UpgradeUnlocked(Game.State, def);
-            var affordable = GameEngine.CanAfford(Game.State, def.FaithCost, def.GoldCost);
+            var owned = activeCoven.HasUpgrade(def.Id);
+            var unlocked = GameEngine.UpgradeUnlocked(activeCoven, def);
+            var affordable = GameEngine.CanAfford(activeCoven, def.FaithCost, def.GoldCost);
             <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] transition-all duration-200 @(owned ? "border-emerald-400/20 bg-emerald-400/5" : "") @(!unlocked ? "opacity-40" : "")"
                  style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
                 <div class="upgrade-icon text-3xl flex-shrink-0">@def.Icon</div>
@@ -36,6 +36,8 @@
 </div>
 
 @code {
+    private CovenState activeCoven => Game.State.ActiveCoven;
+
     protected override void OnInitialized() => Game.OnChange += StateChanged;
 
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);

@@ -13,6 +13,10 @@ else if (Game.IsFirstRun)
 {
     <NamingScreen />
 }
+else if (Game.NeedsStory)
+{
+    <StoryScreen OnDismissed="StoryDismissed" />
+}
 else
 {
     <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6">
@@ -67,6 +71,8 @@ else
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
 
     private void SwitchTab(string tab) => activeTab = tab;
+
+    private void StoryDismissed() { }
 
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);

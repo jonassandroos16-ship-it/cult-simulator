@@ -1,36 +1,113 @@
 @using CultSimulator.Game
 @inject IJSRuntime JS
+@inject GameService Game
 @inject WorldLocationService LocationService
 @implements IDisposable
 
 <div class="world-map-wrapper">
     <div id="world-map-container" class="world-map-container"></div>
-    <div id="coven-popup" class="coven-popup" style="display:none;">
-        <button class="coven-popup-close" @onclick="ClosePopup">×</button>
-        <div class="coven-popup-flag">@selectedCoven?.CountryFlag</div>
-        <h3 class="coven-popup-name">@selectedCoven?.Name</h3>
-        <p class="coven-popup-location">@selectedCoven?.Location</p>
-        <p class="coven-popup-era">@selectedCoven?.Era</p>
-        <p class="coven-popup-summary">@selectedCoven?.Summary</p>
-        @if (showLore)
-        {
-            <p class="coven-popup-lore">@selectedCoven?.Lore</p>
-        }
-        else
-        {
-            <button class="coven-popup-lore-toggle" @onclick="ToggleLore">Reveal Lore</button>
-        }
-    </div>
+
+    @if (selectedCoven != null)
+    {
+        <div class="coven-popup" style="display:block;">
+            <button class="coven-popup-close" @onclick="ClosePopup">×</button>
+            <div class="coven-popup-flag">@selectedCoven.CountryFlag</div>
+            <h3 class="coven-popup-name">@selectedCoven.Name</h3>
+            <p class="coven-popup-location">@selectedCoven.Location, @selectedCoven.Country</p>
+            <p class="coven-popup-era">@selectedCoven.Era</p>
+            <p class="coven-popup-summary">@selectedCoven.Summary</p>
+
+            @if (showLore)
+            {
+                <p class="coven-popup-lore">@selectedCoven.Lore</p>
+                <button class="coven-popup-lore-toggle" @onclick="ToggleLore">Hide Lore</button>
+            }
+            else
+            {
+                <button class="coven-popup-lore-toggle" @onclick="ToggleLore">Reveal Lore</button>
+            }
+
+            @if (selectedCoven.Id != "skanor")
+            {
+                var covenState = Game.State.FindCoven(selectedCoven.Id);
+                var isTakenOver = covenState != null && covenState.TakenOver;
+                var canTake = Game.CanTakeover(selectedCoven.Id);
+                var nextTarget = CovenProgress.NextTarget(Game.State, LocationService.Locations);
+                var isNextTarget = nextTarget?.Id == selectedCoven.Id;
+
+                if (!isTakenOver)
+                {
+                    <div class="coven-popup-takeover mt-3">
+                        <div class="takeover-progress-row flex items-center justify-between text-[0.7rem] text-violet-300 mb-1">
+                            <span>Followers needed</span>
+                            <span class="text-amber-200">@Game.State.HomeCoven.Followers / @selectedCoven.FollowersRequired</span>
+                        </div>
+                        <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-3">
+                            <div class="h-full rounded-full transition-all duration-500"
+                                 style="width: @(CovenProgress.TakeoverProgress(Game.State, selectedCoven) * 100)%; background: @((canTake ? "var(--success)" : "var(--danger)"));"></div>
+                        </div>
+                        @if (isNextTarget && !canTake)
+                        {
+                            <span class="coven-target-badge block text-center text-[0.65rem] font-semibold tracking-[0.2em] uppercase text-rose-300 mb-2">Next Target</span>
+                        }
+                        <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
+                                disabled="@(!canTake)"
+                                @onclick="() => Takeover(selectedCoven.Id)">
+                            Take Over
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <div class="coven-popup-takenover mt-3 text-center">
+                        <span class="learned-badge text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-emerald-400 px-3 py-1.5 border border-emerald-400/30 rounded-full">Under Your Control</span>
+                        @if (Game.State.ActiveCovenId == selectedCoven.Id)
+                        {
+                            <span class="block text-[0.7rem] text-amber-200 mt-2 tracking-wide">Active coven</span>
+                        }
+                        else
+                        {
+                            <button class="coven-action-button w-full mt-2 py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200"
+                                    style="background: linear-gradient(135deg, var(--violet-deep), var(--violet-void)); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);"
+                                    @onclick="() => Switch(selectedCoven.Id)">
+                                Switch
+                            </button>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="coven-popup-takeover mt-3 text-center">
+                    @if (CovenProgress.IsHomeCoven(Game.State))
+                    {
+                        <span class="block text-[0.7rem] text-amber-200 tracking-wide">Active coven (Home)</span>
+                    }
+                    else
+                    {
+                        <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200"
+                                style="background: linear-gradient(135deg, var(--violet-deep), var(--violet-void)); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);"
+                                @onclick="() => Switch(selectedCoven.Id)">
+                            Switch
+                        </button>
+                    }
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @code {
     private WorldLocationDef? selectedCoven;
     private bool showLore = false;
     private bool mapInitialized = false;
+    private DotNetObjectReference<WorldMap>? _dotRef;
 
     protected override async Task OnInitializedAsync()
     {
         await LocationService.LoadAsync();
+        _dotRef = DotNetObjectReference.Create(this);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -48,6 +125,11 @@
         var jsLocations = new List<object>();
         foreach (var loc in locations)
         {
+            var covenState = Game.State.FindCoven(loc.Id);
+            var takenOver = loc.Id == "skanor" || (covenState != null && covenState.TakenOver);
+            var nextTarget = CovenProgress.NextTarget(Game.State, locations);
+            var isNextTarget = nextTarget?.Id == loc.Id && loc.Id != "skanor" && !takenOver;
+
             jsLocations.Add(new {
                 id = loc.Id,
                 name = loc.Name,
@@ -58,10 +140,25 @@
                 summary = loc.Summary,
                 lore = loc.Lore,
                 location = loc.Location,
-                country = loc.Country
+                country = loc.Country,
+                takenOver = takenOver,
+                isNextTarget = isNextTarget,
+                isActive = Game.State.ActiveCovenId == loc.Id && takenOver
             });
         }
-        await JS.InvokeVoidAsync("initWorldMap", "world-map-container", jsLocations);
+        await JS.InvokeVoidAsync("initWorldMap", "world-map-container", jsLocations, _dotRef);
+    }
+
+    [JSInvokable]
+    public void SelectCoven(string id)
+    {
+        var loc = LocationService.Find(id);
+        if (loc != null)
+        {
+            selectedCoven = loc;
+            showLore = false;
+            StateHasChanged();
+        }
     }
 
     private void ClosePopup()
@@ -70,13 +167,34 @@
         showLore = false;
     }
 
-    private void ToggleLore()
+    private void ToggleLore() => showLore = !showLore;
+
+    private void Takeover(string id)
     {
-        showLore = !showLore;
+        Game.TakeoverCoven(id);
+        selectedCoven = null;
+        _ = RefreshMap();
+    }
+
+    private void Switch(string id)
+    {
+        Game.SwitchActiveCoven(id);
+        selectedCoven = null;
+        _ = RefreshMap();
+    }
+
+    private async Task RefreshMap()
+    {
+        await JS.InvokeVoidAsync("destroyWorldMap");
+        mapInitialized = false;
+        await InitMap();
+        mapInitialized = true;
+        StateHasChanged();
     }
 
     public void Dispose()
     {
         _ = JS.InvokeVoidAsync("destroyWorldMap");
+        _dotRef?.Dispose();
     }
 }
