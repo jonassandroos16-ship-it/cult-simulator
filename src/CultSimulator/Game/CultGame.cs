@@ -167,10 +167,12 @@ public static class CultGame
         return (double)(s.Followers - current.MinFollowers) / (next.MinFollowers - current.MinFollowers);
     }
 
-    public static void Preach(GameState s)
+    public static double Preach(GameState s)
     {
         s.PreachCount++;
-        s.Faith += PreachMultiplier(s);
+        var gained = PreachMultiplier(s);
+        s.Faith += gained;
+        return gained;
     }
 
     public static void Recruit(GameState s)

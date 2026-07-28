@@ -19,7 +19,7 @@ else
         <ResourceBar />
         <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
             <div class="game-left flex flex-col gap-6">
-                <PreachAltar />
+                <PreachAltar OnPreach="OnPreach" OnRecruit="OnRecruit" />
             </div>
             <div class="game-right flex flex-col gap-6">
                 <BuildingsPanel />
@@ -44,7 +44,10 @@ else
         initialized = true;
     }
 
-    private void StateChanged() => InvokeAsync(StateHasChanged);
+    private async Task StateChanged() => await InvokeAsync(StateHasChanged);
+
+    private async Task OnPreach() => await InvokeAsync(StateHasChanged);
+    private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
 
     private async Task ResetGame() { await Game.ResetAsync(); }
 

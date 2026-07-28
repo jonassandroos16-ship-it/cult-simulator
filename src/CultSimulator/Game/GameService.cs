@@ -61,7 +61,7 @@ public class GameService
         NotifyChanged();
     }
 
-    public void Preach() { CultGame.Preach(_state); NotifyChanged(); }
+    public double Preach() { var gained = CultGame.Preach(_state); NotifyChanged(); return gained; }
     public void Recruit() { CultGame.Recruit(_state); NotifyChanged(); }
     public void BuyBuilding(BuildingType type) { CultGame.BuyBuilding(_state, type); NotifyChanged(); }
     public void BuyUpgrade(UpgradeId id) { CultGame.BuyUpgrade(_state, id); NotifyChanged(); }
