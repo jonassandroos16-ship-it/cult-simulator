@@ -4,10 +4,10 @@ A dark, atmospheric idle/management game built with **Blazor WebAssembly (C#)** 
 
 ## Tech Stack
 
-- **C# / .NET 9** — Blazor WebAssembly (runs in-browser, no server needed)
+- **C# / .NET 8** — Blazor WebAssembly (runs in-browser, no server needed)
 - **xUnit** — 53 unit tests covering all game logic
 - **GitHub Actions** — CI pipeline: test + build on every push/PR
-- **Netlify** — automatic deployment from `main`
+- **GitHub Pages** — automatic deployment from `main`
 
 ## Game Features
 
@@ -38,5 +38,13 @@ The published output in `release/wwwroot` is a static site deployable to any sta
 ## Deployment
 
 Push to `main` triggers:
-1. GitHub Actions runs tests + builds the project
-2. Netlify auto-deploys from `main` using `netlify.toml`
+1. **CI workflow** (`ci.yml`) — runs tests and builds the project
+2. **Deploy workflow** (`deploy-pages.yml`) — builds, fixes the base href for the `/cult-simulator/` subpath, and deploys to GitHub Pages
+
+The live site is available at:
+https://jonassandroos16-ship-it.github.io/cult-simulator/
+
+### GitHub Pages setup
+
+The repository must be configured to deploy from **GitHub Actions** (not from a branch):
+**Settings → Pages → Build and deployment → Source → GitHub Actions**
