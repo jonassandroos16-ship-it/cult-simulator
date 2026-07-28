@@ -36,7 +36,7 @@
     <div class="rank-label text-[0.7rem] text-violet-300 tracking-[0.1em] mb-4">
         @if (nextRank != null)
         {
-            <span>@activeCoven.Followers / @nextRank.MinFollowers followers to @nextRank.Name</span>
+            <span>@(activeCoven.Followers - currentRank.MinFollowers) / @(nextRank.MinFollowers - currentRank.MinFollowers) followers to @nextRank.Name</span>
         }
         else
         {
