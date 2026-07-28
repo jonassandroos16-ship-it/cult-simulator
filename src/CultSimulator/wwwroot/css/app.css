@@ -130,3 +130,38 @@ html, body { height: 100%; font-family: var(--font-body); color: var(--gold-soft
 @keyframes loading-spin { from { stroke-dashoffset: 0; transform: rotate(0deg); } to { stroke-dashoffset: 0; transform: rotate(360deg); } transform-origin: center; }
 .loading-progress-text { position: fixed; top: calc(50% + 120px); left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: 0.875rem; letter-spacing: 0.25em; color: var(--violet-text); }
 .loading-progress-text::after { content: "Summoning the faithful..."; }
+
+
+/* Floating faith text */
+.preach-altar-wrapper { position: relative; display: inline-block; }
+.float-faith {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--gold);
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5);
+    pointer-events: none;
+    z-index: 20;
+    white-space: nowrap;
+    animation-name: float-faith-rise;
+    animation-timing-function: ease-out;
+    animation-fill-mode: forwards;
+}
+@keyframes float-faith-rise {
+    0% {
+        transform: translateX(-50%) translateY(0) scale(0.8);
+        opacity: 0;
+    }
+    15% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(-10px) scale(1.1);
+    }
+    100% {
+        transform: translateX(-50%) translateY(-80px) scale(1);
+        opacity: 0;
+    }
+}
