@@ -6,6 +6,7 @@ public class GameState
 {
     public string CultName { get; set; } = "";
     public long StartedAt { get; set; }
+    public long LastSavedAt { get; set; }
     public bool StoryShown { get; set; }
     public string ActiveCovenId { get; set; } = "";
     public List<CovenState> Covens { get; set; } = new();
