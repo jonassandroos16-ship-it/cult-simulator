@@ -1,95 +1,126 @@
-/* === Rank Up Modal === */
+/* === Rank Up Modal — Spooky / Moody === */
 
 .rankup-overlay { position: fixed; inset: 0; z-index: 200; display: flex; align-items: center; justify-content: center; padding: 2rem; }
 
 .rankup-backdrop {
     position: absolute; inset: 0;
-    background: rgba(5, 3, 8, 0.88);
-    backdrop-filter: blur(12px);
-    animation: rankup-fade-in 0.3s ease;
+    background: radial-gradient(ellipse at center, rgba(20, 5, 5, 0.92) 0%, rgba(2, 1, 3, 0.97) 100%);
+    backdrop-filter: blur(14px);
+    animation: rankup-fade-in 0.4s ease;
 }
 
 @keyframes rankup-fade-in { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- Fog layers --- */
+
+.rankup-fog-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+
+.rankup-fog-layer {
+    position: absolute;
+    bottom: -50%;
+    left: -20%;
+    width: 140%;
+    height: 100%;
+    background: radial-gradient(ellipse at 50% 60%, rgba(40, 10, 15, 0.15) 0%, transparent 50%);
+    animation: rankup-fog-drift var(--fog-duration, 25s) ease-in-out infinite;
+    animation-delay: var(--fog-delay, 0s);
+    opacity: 0.5;
+}
+
+@keyframes rankup-fog-drift {
+    0%, 100% { transform: translateX(0) translateY(0) scale(1); opacity: 0.3; }
+    50%      { transform: translateX(30px) translateY(-20px) scale(1.1); opacity: 0.6; }
+}
 
 /* --- Modal card --- */
 
 .rankup-modal {
     position: relative;
-    background: linear-gradient(135deg, var(--violet-void), var(--void-deep));
-    border: 1px solid rgba(167, 139, 250, 0.3);
-    border-radius: 24px;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(30, 8, 12, 0.9) 0%, transparent 70%),
+        linear-gradient(180deg, #0a0508 0%, #050308 100%);
+    border: 1px solid rgba(107, 15, 26, 0.35);
+    border-radius: 16px;
     padding: 3rem 2.5rem;
     max-width: 480px;
     width: 100%;
     overflow: hidden;
-    animation: rankup-modal-rise 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 0 60px rgba(124, 58, 237, 0.3), 0 0 120px rgba(251, 191, 36, 0.1);
+    animation: rankup-modal-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow:
+        0 0 40px rgba(80, 10, 20, 0.25),
+        0 0 80px rgba(20, 5, 10, 0.4),
+        inset 0 0 30px rgba(15, 3, 6, 0.5);
 }
 
 @keyframes rankup-modal-rise {
-    0%   { transform: translateY(40px) scale(0.9) rotateX(15deg); opacity: 0; }
-    100% { transform: translateY(0) scale(1) rotateX(0); opacity: 1; }
+    0%   { transform: translateY(30px) scale(0.95); opacity: 0; filter: blur(4px); }
+    100% { transform: translateY(0) scale(1); opacity: 1; filter: blur(0); }
 }
 
-/* --- Aura glow behind card --- */
+/* --- Vignette --- */
+
+.rankup-vignette {
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.6) 100%);
+    pointer-events: none;
+}
+
+/* --- Blood aura behind card --- */
 
 .rankup-aura {
-    background: radial-gradient(circle at center, rgba(124, 58, 237, 0.2) 0%, transparent 60%);
-    animation: rankup-aura-pulse 2s ease-in-out infinite;
+    background: radial-gradient(circle at center, rgba(120, 20, 30, 0.15) 0%, transparent 55%);
+    animation: rankup-aura-pulse 3s ease-in-out infinite;
 }
 
 @keyframes rankup-aura-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.6; }
-    50%      { transform: scale(1.15); opacity: 1; }
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50%      { transform: scale(1.1); opacity: 0.8; }
 }
 
-/* --- Rotating light rays --- */
+/* --- Rotating dark rays --- */
 
 .rankup-rays {
     background: conic-gradient(
         from 0deg,
         transparent 0deg,
-        rgba(251, 191, 36, 0.08) 15deg,
-        transparent 30deg,
-        transparent 60deg,
-        rgba(167, 139, 250, 0.08) 75deg,
-        transparent 90deg,
+        rgba(80, 10, 20, 0.06) 20deg,
+        transparent 40deg,
+        transparent 80deg,
+        rgba(40, 5, 10, 0.04) 100deg,
         transparent 120deg,
-        rgba(251, 191, 36, 0.06) 135deg,
-        transparent 150deg,
-        transparent 180deg,
-        rgba(167, 139, 250, 0.06) 195deg,
-        transparent 210deg,
+        transparent 160deg,
+        rgba(80, 10, 20, 0.05) 180deg,
+        transparent 200deg,
         transparent 240deg,
-        rgba(251, 191, 36, 0.08) 255deg,
-        transparent 270deg,
-        transparent 300deg,
-        rgba(167, 139, 250, 0.06) 315deg,
-        transparent 330deg
+        rgba(40, 5, 10, 0.04) 260deg,
+        transparent 280deg,
+        transparent 320deg,
+        rgba(80, 10, 20, 0.05) 340deg,
+        transparent 360deg
     );
-    animation: rankup-rays-spin 8s linear infinite;
-    opacity: 0.7;
+    animation: rankup-rays-spin 12s linear infinite;
+    opacity: 0.6;
 }
 
 @keyframes rankup-rays-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
-/* --- Sparkles row --- */
+/* --- Sigil row --- */
 
-.rankup-sparkle-row { display: flex; justify-content: center; gap: 0.75rem; }
+.rankup-sigil-row { display: flex; justify-content: center; gap: 1rem; }
 
-.rankup-sparkle {
+.rankup-sigil {
     font-size: 1rem;
-    color: var(--gold);
-    animation: rankup-sparkle-twinkle 1.5s ease-in-out infinite;
+    color: #6b0f1a;
+    text-shadow: 0 0 8px rgba(107, 15, 26, 0.5);
+    animation: rankup-sigil-pulse 2.5s ease-in-out infinite;
 }
 
-.rankup-sparkle-1 { animation-delay: 0s; }
-.rankup-sparkle-2 { animation-delay: 0.25s; font-size: 0.75rem; }
-.rankup-sparkle-3 { animation-delay: 0.5s; }
+.rankup-sigil-1 { animation-delay: 0s; }
+.rankup-sigil-2 { animation-delay: 0.4s; font-size: 1.25rem; }
+.rankup-sigil-3 { animation-delay: 0.8s; }
 
-@keyframes rankup-sparkle-twinkle {
-    0%, 100% { opacity: 0.3; transform: scale(0.8); }
-    50%      { opacity: 1; transform: scale(1.2); }
+@keyframes rankup-sigil-pulse {
+    0%, 100% { opacity: 0.2; transform: scale(0.9); }
+    50%      { opacity: 0.7; transform: scale(1.1); }
 }
 
 /* --- Icon --- */
@@ -102,47 +133,69 @@
 
 .rankup-icon-glow {
     position: absolute;
-    width: 100px; height: 100px;
+    width: 110px; height: 110px;
     border-radius: 50%;
-    background: radial-gradient(circle, rgba(251, 191, 36, 0.3) 0%, transparent 70%);
-    animation: rankup-icon-glow-pulse 1.5s ease-in-out infinite;
+    background: radial-gradient(circle, rgba(120, 20, 30, 0.2) 0%, transparent 65%);
+    animation: rankup-icon-glow-pulse 2s ease-in-out infinite;
 }
 
 @keyframes rankup-icon-glow-pulse {
-    0%, 100% { transform: scale(1); opacity: 0.5; }
-    50%      { transform: scale(1.4); opacity: 1; }
+    0%, 100% { transform: scale(1); opacity: 0.3; }
+    50%      { transform: scale(1.3); opacity: 0.7; }
+}
+
+.rankup-icon-ring {
+    position: absolute;
+    width: 72px; height: 72px;
+    border: 1px solid rgba(107, 15, 26, 0.3);
+    border-radius: 50%;
+    animation: rankup-icon-ring-spin 6s linear infinite;
+}
+
+@keyframes rankup-icon-ring-spin {
+    from { transform: rotate(0deg) scale(1); opacity: 0.4; }
+    50%  { transform: rotate(180deg) scale(1.05); opacity: 0.6; }
+    to   { transform: rotate(360deg) scale(1); opacity: 0.4; }
 }
 
 .rankup-icon {
     position: relative;
-    font-size: 3.5rem;
-    animation: rankup-icon-bounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    font-size: 3rem;
+    animation: rankup-icon-flicker 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 6px rgba(251, 191, 36, 0.3));
 }
 
-@keyframes rankup-icon-bounce {
-    0%   { transform: scale(0) rotate(-180deg); opacity: 0; }
-    60%  { transform: scale(1.3) rotate(10deg); opacity: 1; }
-    100% { transform: scale(1) rotate(0); opacity: 1; }
+@keyframes rankup-icon-flicker {
+    0%, 100% { opacity: 0.85; transform: scale(1); }
+    10%      { opacity: 0.6; }
+    15%      { opacity: 0.9; }
+    20%      { opacity: 0.7; }
+    25%      { opacity: 1; transform: scale(1.02); }
+    50%      { opacity: 0.8; transform: scale(0.98); }
+    75%      { opacity: 0.9; }
 }
 
 /* --- Text --- */
 
 .rankup-eyebrow {
-    color: var(--gold);
-    animation: rankup-text-slide-up 0.5s ease 0.2s both;
+    color: #6b0f1a;
+    text-shadow: 0 0 10px rgba(107, 15, 26, 0.4);
+    animation: rankup-text-slide-up 0.6s ease 0.2s both;
 }
 
 .rankup-rank-name {
     color: var(--rank-color, var(--gold-pale));
-    animation: rankup-text-slide-up 0.5s ease 0.35s both;
+    animation: rankup-text-slide-up 0.6s ease 0.35s both;
 }
 
 .rankup-subtitle {
-    animation: rankup-text-slide-up 0.5s ease 0.5s both;
+    color: #9ca3af;
+    animation: rankup-text-slide-up 0.6s ease 0.5s both;
 }
 
 .rankup-followers {
-    animation: rankup-text-slide-up 0.5s ease 0.65s both;
+    color: #6b7280;
+    animation: rankup-text-slide-up 0.6s ease 0.65s both;
 }
 
 @keyframes rankup-text-slide-up {
@@ -156,14 +209,14 @@
     background: linear-gradient(
         90deg,
         var(--rank-color, var(--gold-pale)) 0%,
-        #fff 50%,
+        #d1d5db 50%,
         var(--rank-color, var(--gold-pale)) 100%
     );
     background-size: 200% auto;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    animation: rankup-shimmer 2s linear infinite;
+    animation: rankup-shimmer 3s linear infinite;
 }
 
 @keyframes rankup-shimmer {
@@ -174,26 +227,35 @@
 /* --- Button --- */
 
 .rankup-button {
-    animation: rankup-text-slide-up 0.5s ease 0.8s both;
+    animation: rankup-text-slide-up 0.6s ease 0.8s both;
 }
 
-/* --- Confetti --- */
+/* --- Ash / Ember particles --- */
 
-.rankup-confetti-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.rankup-ash-container { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
 
-.rankup-confetti {
+.rankup-ash {
     position: absolute;
-    top: -20px;
-    animation: rankup-confetti-fall linear forwards;
+    bottom: -20px;
+    border-radius: 50%;
+    opacity: 0;
+    animation: rankup-ash-rise linear forwards;
+    filter: blur(0.5px);
 }
 
-@keyframes rankup-confetti-fall {
+@keyframes rankup-ash-rise {
     0% {
-        transform: translateY(0) translateX(0) rotate(0deg);
-        opacity: 1;
+        transform: translateY(0) translateX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: var(--ash-opacity, 0.5);
+    }
+    90% {
+        opacity: var(--ash-opacity, 0.5);
     }
     100% {
-        transform: translateY(110vh) translateX(var(--confetti-drift, 0px)) rotate(720deg);
+        transform: translateY(-110vh) translateX(var(--ash-drift, 0px));
         opacity: 0;
     }
 }
