@@ -18,7 +18,7 @@ public record UpgradeDef(
     string EffectDescription,
     int UnlockFollowers);
 
-public record RankDef(string Name, int MinFollowers, string Color);
+public record RankDef(string Name, int MinFollowers, string Color, string FlavorText);
 
 public record EventChoice(string Label, string Description, Action<CovenState> Apply);
 

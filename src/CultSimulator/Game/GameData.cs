@@ -40,12 +40,12 @@ public static class GameData
         BuildingType.Treasury);
 
     public static readonly ImmutableArray<RankDef> Ranks = ImmutableArray.Create(
-        new RankDef("Novice", 0, "#94a3b8"),
-        new RankDef("Adept", 25, "#7dd3fc"),
-        new RankDef("Mystic", 100, "#c4b5fd"),
-        new RankDef("Prophet", 250, "#fbbf24"),
-        new RankDef("Demigod", 600, "#fb7185"),
-        new RankDef("Ascended", 1500, "#f472b6"));
+        new RankDef("Novice", 0, "#94a3b8", "You light your first candle in the dark. The shadows listen, curious and patient."),
+        new RankDef("Adept", 25, "#7dd3fc", "Whispers of your name travel on the wind. The faithful gather, hungry for truth."),
+        new RankDef("Mystic", 100, "#c4b5fd", "Your voice bends the veil between worlds. What was hidden now answers your call."),
+        new RankDef("Prophet", 250, "#fbbf24", "Nations tremble at your proclamations. You no longer speak for the faithful — the faithful speak for you."),
+        new RankDef("Demigod", 600, "#fb7185", "Mortality frays at the edges of your being. The line between worship and reality blurs in your presence."),
+        new RankDef("Ascended", 1500, "#f472b6", "You have crossed the threshold. Flesh, doubt, and death are memories. The world reshapes itself around your will."));
 
     public static readonly ImmutableArray<EventDef> Events = ImmutableArray.Create(
         new EventDef("lost_wanderer", "A Lost Wanderer",
