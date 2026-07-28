@@ -40,6 +40,8 @@ public static class SaveLoad
         }
         if (string.IsNullOrEmpty(state.ActiveCovenId))
             state.ActiveCovenId = "skanor";
+        if (state.LastSavedAt == 0)
+            state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         foreach (var c in state.Covens)
         {
             c.Buildings ??= new Dictionary<BuildingType, int>();
