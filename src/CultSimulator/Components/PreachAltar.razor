@@ -33,7 +33,7 @@
             @onclick="OnRecruitClick">
         <span class="recruit-icon text-lg">👥</span>
         <span class="recruit-text">Recruit Follower</span>
-        <span class="recruit-cost text-amber-400 font-semibold">@GameBalance.RecruitCost ✨</span>
+        <span class="recruit-cost text-amber-400 font-semibold">@NumberFormat.Fmt(GameEngine.RecruitCostFor(Game.State)) ✨</span>
     </button>
 </div>
 
