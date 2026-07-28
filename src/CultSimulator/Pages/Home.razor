@@ -44,7 +44,7 @@ else
         initialized = true;
     }
 
-    private async Task StateChanged() => await InvokeAsync(StateHasChanged);
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
 
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
