@@ -1,25 +1,29 @@
 @using CultSimulator.Game
 @inject GameService Game
 
-<div class="panel buildings-panel">
+<div class="panel buildings-panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Constructions</h2>
-    <div class="building-list">
+    <div class="building-list flex flex-col gap-2.5">
         @foreach (var def in CultGame.Buildings)
         {
             var owned = Game.State.Buildings.GetValueOrDefault(def.Type);
             var cost = CultGame.BuildingCost(def, owned);
             var affordable = def.CostResource == ResourceKind.Faith ? Game.State.Faith >= cost : Game.State.Gold >= cost;
             var costIcon = def.CostResource == ResourceKind.Faith ? "✨" : "💰";
-            <button class="building-item @(!affordable ? "disabled" : "")" disabled="@(!affordable)" @onclick="() => Game.BuyBuilding(def.Type)">
-                <div class="building-icon">@def.Icon</div>
-                <div class="building-info">
-                    <span class="building-name">@def.Name</span>
-                    <span class="building-effect">@def.EffectDescription</span>
-                    <span class="building-owned">Owned: @owned</span>
+            <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full
+                          disabled:opacity-45 disabled:cursor-not-allowed
+                          hover:not(:disabled):bg-amber-500/10 hover:not(:disabled):border-amber-500/30"
+                    style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                    disabled="@(!affordable)" @onclick="() => Game.BuyBuilding(def.Type)">
+                <div class="building-icon text-3xl flex-shrink-0">@def.Icon</div>
+                <div class="building-info flex-1 flex flex-col gap-0.5">
+                    <span class="building-name font-display text-base text-amber-100 font-medium">@def.Name</span>
+                    <span class="building-effect text-xs text-emerald-400">@def.EffectDescription</span>
+                    <span class="building-owned text-[0.7rem] text-violet-300">Owned: @owned</span>
                 </div>
-                <div class="building-cost">
-                    <span class="cost-value">@CultGame.Fmt(cost)</span>
-                    <span class="cost-icon">@costIcon</span>
+                <div class="building-cost flex items-baseline gap-1 flex-shrink-0">
+                    <span class="cost-value font-display font-semibold text-amber-400 text-base">@CultGame.Fmt(cost)</span>
+                    <span class="cost-icon text-sm">@costIcon</span>
                 </div>
             </button>
         }

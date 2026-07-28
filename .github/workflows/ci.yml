@@ -17,6 +17,17 @@ jobs:
         with:
           dotnet-version: '8.0.x'
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Tailwind CSS
+        run: npm install
+
+      - name: Build Tailwind CSS
+        run: npm run build:css
+
       - name: Restore dependencies
         run: dotnet restore
 

@@ -5,8 +5,8 @@
 
 @if (!initialized)
 {
-    <div class="loading-screen">
-        <div class="loading-pulse">🕯️</div>
+    <div class="loading-screen flex items-center justify-center min-h-screen">
+        <div class="loading-pulse text-6xl animate-pulse">🕯️</div>
     </div>
 }
 else if (Game.IsFirstRun)
@@ -15,19 +15,19 @@ else if (Game.IsFirstRun)
 }
 else
 {
-    <div class="game-container">
+    <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6">
         <ResourceBar />
-        <div class="game-main">
-            <div class="game-left">
+        <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
+            <div class="game-left flex flex-col gap-6">
                 <PreachAltar />
             </div>
-            <div class="game-right">
+            <div class="game-right flex flex-col gap-6">
                 <BuildingsPanel />
                 <UpgradesPanel />
             </div>
         </div>
-        <div class="game-footer">
-            <button class="reset-button" @onclick="ResetGame">Abandon Cult</button>
+        <div class="game-footer mt-8 text-center">
+            <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
         </div>
     </div>
     <EventModal />

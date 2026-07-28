@@ -1,17 +1,19 @@
 @using CultSimulator.Game
 @inject GameService Game
 
-<div class="resource-bar">
-    <div class="cult-header">
-        <h1 class="cult-name">@Game.State.CultName</h1>
-        <div class="rank-badge" style="border-color: @currentRank.Color; color: @currentRank.Color;">
+<div class="resource-bar glass-panel rounded-[20px] p-5 md:p-6 mb-6">
+    <div class="cult-header flex items-center justify-between flex-wrap gap-2 mb-3">
+        <h1 class="cult-name font-display text-2xl md:text-3xl font-semibold text-amber-100 tracking-[0.1em]">@Game.State.CultName</h1>
+        <div class="rank-badge font-display text-xs font-semibold tracking-[0.25em] uppercase px-3.5 py-1.5 border rounded-full"
+             style="border-color: @currentRank.Color; color: @currentRank.Color;">
             @currentRank.Name
         </div>
     </div>
-    <div class="rank-progress">
-        <div class="rank-progress-bar" style="width: @(CultGame.RankProgress(Game.State) * 100)%; background: @currentRank.Color;"></div>
+    <div class="rank-progress h-1 bg-white/[0.06] rounded-full overflow-hidden mb-1.5">
+        <div class="rank-progress-bar h-full rounded-full transition-all duration-500"
+             style="width: @(CultGame.RankProgress(Game.State) * 100)%; background: @currentRank.Color;"></div>
     </div>
-    <div class="rank-label">
+    <div class="rank-label text-[0.7rem] text-violet-300 tracking-[0.1em] mb-4">
         @if (nextRank != null)
         {
             <span>@Game.State.Followers / @nextRank.MinFollowers followers to @nextRank.Name</span>
@@ -21,26 +23,26 @@
             <span>Maximum rank achieved</span>
         }
     </div>
-    <div class="resource-stats">
-        <div class="resource-stat">
-            <span class="resource-icon">👥</span>
-            <span class="resource-value">@Game.State.Followers</span>
-            <span class="resource-label">Followers</span>
+    <div class="resource-stats flex gap-6 flex-wrap">
+        <div class="resource-stat flex items-baseline gap-1.5">
+            <span class="resource-icon text-xl">👥</span>
+            <span class="resource-value font-display text-xl font-semibold text-amber-100">@Game.State.Followers</span>
+            <span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Followers</span>
         </div>
-        <div class="resource-stat">
-            <span class="resource-icon">✨</span>
-            <span class="resource-value">@CultGame.Fmt(Game.State.Faith)</span>
-            <span class="resource-label">Faith</span>
+        <div class="resource-stat flex items-baseline gap-1.5">
+            <span class="resource-icon text-xl">✨</span>
+            <span class="resource-value font-display text-xl font-semibold text-amber-100">@CultGame.Fmt(Game.State.Faith)</span>
+            <span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Faith</span>
         </div>
-        <div class="resource-stat">
-            <span class="resource-icon">💰</span>
-            <span class="resource-value">@CultGame.Fmt(Game.State.Gold)</span>
-            <span class="resource-label">Gold</span>
+        <div class="resource-stat flex items-baseline gap-1.5">
+            <span class="resource-icon text-xl">💰</span>
+            <span class="resource-value font-display text-xl font-semibold text-amber-100">@CultGame.Fmt(Game.State.Gold)</span>
+            <span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Gold</span>
         </div>
     </div>
-    <div class="income-display">
-        <span class="income-faith">+@CultGame.Fmt(CultGame.TickIncome(Game.State).faith)/s ✨</span>
-        <span class="income-gold">+@CultGame.Fmt(CultGame.TickIncome(Game.State).gold)/s 💰</span>
+    <div class="income-display flex gap-6 mt-2 text-xs">
+        <span class="income-faith text-emerald-400">+@CultGame.Fmt(CultGame.TickIncome(Game.State).faith)/s ✨</span>
+        <span class="income-gold text-amber-500">+@CultGame.Fmt(CultGame.TickIncome(Game.State).gold)/s 💰</span>
     </div>
 </div>
 

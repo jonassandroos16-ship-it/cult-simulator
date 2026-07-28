@@ -1,5 +1,5 @@
 [build]
-command = "dotnet publish src/CultSimulator/CultSimulator.csproj -c Release -o release"
+command = "npm install && npm run build:css && dotnet publish src/CultSimulator/CultSimulator.csproj -c Release -o release"
 publish = "release/wwwroot"
 
 [build.environment]

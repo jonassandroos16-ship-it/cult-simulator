@@ -1,13 +1,17 @@
 @using CultSimulator.Game
 @inject GameService Game
 
-<div class="naming-screen">
-    <div class="naming-card">
-        <div class="naming-glow"></div>
-        <h1 class="naming-title">Found Your Cult</h1>
-        <p class="naming-subtitle">In the darkness between worlds, a new order awaits a name.</p>
-        <input class="naming-input" @bind="cultName" @bind:event="oninput" placeholder="The Order of the Pale Moon" maxlength="50" />
-        <button class="naming-confirm" @onclick="ConfirmName">Begin the Sermon</button>
+<div class="naming-screen flex items-center justify-center min-h-screen p-8">
+    <div class="naming-card relative bg-slate-950/60 backdrop-blur-[16px] border border-violet-500/15 rounded-3xl p-12 max-w-md w-full text-center overflow-hidden">
+        <div class="naming-glow absolute -top-1/2 -left-1/2 w-[200%] h-[200%] pointer-events-none animate-slow-rotate-20"
+             style="background: radial-gradient(circle at center, rgba(124,58,237,0.08) 0%, transparent 60%);"></div>
+        <h1 class="naming-title relative font-display text-3xl font-semibold text-amber-100 tracking-[0.15em] mb-3">Found Your Cult</h1>
+        <p class="naming-subtitle relative text-violet-300 text-sm leading-relaxed mb-8">In the darkness between worlds, a new order awaits a name.</p>
+        <input class="naming-input relative w-full px-4 py-3.5 bg-[rgba(15,10,36,0.8)] border border-violet-500/15 rounded-xl text-amber-200 font-display text-lg text-center outline-none transition-all duration-300 mb-6
+               focus:border-amber-500 focus:shadow-[0_0_24px_rgba(245,158,11,0.15)] placeholder:text-slate-400/50"
+               @bind="cultName" @bind:event="oninput" placeholder="The Order of the Pale Moon" maxlength="50" />
+        <button class="naming-confirm relative w-full py-4 bg-gradient-to-br from-amber-500 to-amber-600 border-none rounded-xl text-slate-950 font-display font-semibold text-base tracking-[0.2em] cursor-pointer transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_8px_32px_rgba(245,158,11,0.25)]"
+                @onclick="ConfirmName">Begin the Sermon</button>
     </div>
 </div>
 
