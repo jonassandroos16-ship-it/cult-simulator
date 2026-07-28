@@ -1,0 +1,74 @@
+/* Bookmark-style tabs that look like tabs in an old book */
+
+.bookmark-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: -1px;
+    padding: 0 0.5rem;
+    position: relative;
+    z-index: 10;
+}
+
+.bookmark-tab {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.75rem;
+    background: rgba(15, 10, 36, 0.6);
+    border: 1px solid var(--panel-border);
+    border-bottom: none;
+    border-radius: 12px 12px 0 0;
+    color: var(--violet-text);
+    font-family: var(--font-display);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    backdrop-filter: blur(8px);
+}
+
+.bookmark-tab:hover {
+    background: rgba(30, 27, 75, 0.7);
+    color: var(--gold-soft);
+}
+
+.bookmark-tab.active {
+    background: linear-gradient(135deg, rgba(76, 29, 149, 0.4), rgba(30, 27, 75, 0.8));
+    border-color: rgba(245, 158, 11, 0.3);
+    color: var(--gold-pale);
+    z-index: 5;
+}
+
+.bookmark-tab.active::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold-warm), transparent);
+}
+
+.bookmark-tab-icon {
+    font-size: 1.1rem;
+}
+
+.bookmark-tab-label {
+    font-size: 0.8rem;
+}
+
+@media (max-width: 640px) {
+    .bookmark-tab {
+        padding: 0.625rem 1.25rem;
+        font-size: 0.75rem;
+    }
+    .bookmark-tab-label {
+        display: none;
+    }
+    .bookmark-tab-icon {
+        font-size: 1.3rem;
+    }
+}

@@ -1,4 +1,5 @@
 @using CultSimulator.Game
+@inject IJSRuntime JS
 @inject WorldLocationService LocationService
 @implements IDisposable
 
@@ -25,6 +26,7 @@
 @code {
     private WorldLocationDef? selectedCoven;
     private bool showLore = false;
+    private bool mapInitialized = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -33,9 +35,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && LocationService.IsLoaded)
+        if (firstRender && LocationService.IsLoaded && !mapInitialized)
         {
             await InitMap();
+            mapInitialized = true;
         }
     }
 
@@ -45,9 +48,20 @@
         var jsLocations = new List<object>();
         foreach (var loc in locations)
         {
-            jsLocations.Add(new { id = loc.Id, name = loc.Name, lat = loc.Latitude, lng = loc.Longitude, flag = loc.CountryFlag, era = loc.Era, summary = loc.Summary, lore = loc.Lore, location = loc.Location, country = loc.Country });
+            jsLocations.Add(new {
+                id = loc.Id,
+                name = loc.Name,
+                lat = loc.Latitude,
+                lng = loc.Longitude,
+                flag = loc.CountryFlag,
+                era = loc.Era,
+                summary = loc.Summary,
+                lore = loc.Lore,
+                location = loc.Location,
+                country = loc.Country
+            });
         }
-        await JSRuntimeHelper.InvokeVoidAsync("initWorldMap", "world-map-container", jsLocations);
+        await JS.InvokeVoidAsync("initWorldMap", "world-map-container", jsLocations);
     }
 
     private void ClosePopup()
@@ -63,6 +77,6 @@
 
     public void Dispose()
     {
-        _ = JSRuntimeHelper.InvokeVoidAsync("destroyWorldMap");
+        _ = JS.InvokeVoidAsync("destroyWorldMap");
     }
 }

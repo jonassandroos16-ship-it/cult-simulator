@@ -1,0 +1,207 @@
+/* World map styles */
+
+.world-map-wrapper {
+    position: relative;
+    border: 1px solid var(--panel-border);
+    border-radius: 0 16px 16px 16px;
+    overflow: hidden;
+    background: var(--panel-bg);
+    backdrop-filter: blur(16px);
+}
+
+.world-map-container {
+    width: 100%;
+    height: 65vh;
+    min-height: 400px;
+    max-height: 700px;
+    background: #0a0a1a;
+}
+
+/* Dark themed Leaflet overrides */
+.leaflet-container {
+    background: #0a0a1a !important;
+    font-family: var(--font-body) !important;
+}
+
+.leaflet-tile-pane {
+    filter: invert(1) hue-rotate(180deg) brightness(0.85) contrast(0.9) saturate(0.7);
+}
+
+.leaflet-control-zoom a {
+    background: rgba(15, 10, 36, 0.9) !important;
+    color: var(--gold-soft) !important;
+    border: 1px solid var(--panel-border) !important;
+    backdrop-filter: blur(8px);
+}
+
+.leaflet-control-zoom a:hover {
+    background: rgba(76, 29, 149, 0.6) !important;
+    color: var(--gold-pale) !important;
+}
+
+.leaflet-control-attribution {
+    background: rgba(5, 3, 8, 0.7) !important;
+    color: var(--violet-text) !important;
+    font-size: 0.6rem !important;
+}
+
+.leaflet-control-attribution a {
+    color: var(--gold-soft) !important;
+}
+
+/* Custom coven marker */
+.coven-marker {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    background: radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 27, 75, 0.9) 100%);
+    border: 2px solid rgba(245, 158, 11, 0.5);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+.coven-marker:hover {
+    transform: scale(1.2);
+    border-color: var(--gold-warm);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.6);
+}
+
+.coven-marker.expanded {
+    transform: scale(1.25);
+    border-color: var(--gold);
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.7);
+}
+
+.coven-marker-label {
+    position: absolute;
+    bottom: -28px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--gold-pale);
+    background: rgba(5, 3, 8, 0.85);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.coven-marker.expanded .coven-marker-label {
+    opacity: 1;
+}
+
+/* Coven popup */
+.coven-popup {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    max-width: 320px;
+    background: linear-gradient(135deg, rgba(46, 16, 101, 0.95), rgba(15, 10, 36, 0.95));
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: fade-in 0.3s ease;
+}
+
+.coven-popup-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.75rem;
+    background: none;
+    border: none;
+    color: var(--violet-text);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.coven-popup-close:hover {
+    color: var(--danger);
+}
+
+.coven-popup-flag {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.coven-popup-name {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gold-pale);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.coven-popup-location {
+    font-size: 0.75rem;
+    color: var(--gold-soft);
+    margin-bottom: 0.25rem;
+}
+
+.coven-popup-era {
+    font-size: 0.7rem;
+    color: var(--violet-text);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+}
+
+.coven-popup-summary {
+    font-size: 0.8rem;
+    line-height: 1.6;
+    color: var(--violet-text);
+    margin-bottom: 0.75rem;
+}
+
+.coven-popup-lore {
+    font-size: 0.75rem;
+    line-height: 1.7;
+    color: var(--gold-soft);
+    opacity: 0.85;
+    border-top: 1px solid var(--panel-border);
+    padding-top: 0.75rem;
+}
+
+.coven-popup-lore-toggle {
+    background: none;
+    border: 1px solid var(--active-border);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    color: var(--gold);
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.coven-popup-lore-toggle:hover {
+    background: rgba(245, 158, 11, 0.1);
+    border-color: var(--gold-warm);
+}
+
+@media (max-width: 640px) {
+    .coven-popup {
+        top: auto;
+        bottom: 1rem;
+        right: 0.5rem;
+        left: 0.5rem;
+        max-width: none;
+    }
+}
