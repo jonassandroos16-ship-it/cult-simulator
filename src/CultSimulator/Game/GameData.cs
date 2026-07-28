@@ -9,16 +9,35 @@ namespace CultSimulator.Game;
 public static class GameData
 {
     public static readonly ImmutableArray<BuildingDef> Buildings = ImmutableArray.Create(
-        new BuildingDef(BuildingType.Shrine, "Shrine", "🕯️", 40, ResourceKind.Faith, 1.15, "+1 Faith/s"),
-        new BuildingDef(BuildingType.Cathedral, "Cathedral", "⛪", 80, ResourceKind.Gold, 1.18, "+0.6 Gold/s"),
-        new BuildingDef(BuildingType.Monolith, "Monolith", "🗿", 300, ResourceKind.Faith, 1.20, "+10% Faith generation"),
-        new BuildingDef(BuildingType.Treasury, "Treasury", "💰", 500, ResourceKind.Gold, 1.20, "+10% Gold generation"));
+        new BuildingDef(BuildingType.Shrine, "Shrine", "🕯️", 40, ResourceKind.Faith, 1.15, "+0.3 Faith/s"),
+        new BuildingDef(BuildingType.Cathedral, "Cathedral", "⛪", 80, ResourceKind.Gold, 1.18, "+0.2 Gold/s"),
+        new BuildingDef(BuildingType.Monolith, "Monolith", "🗿", 300, ResourceKind.Faith, 1.20, "+8% Faith generation"),
+        new BuildingDef(BuildingType.Treasury, "Treasury", "💰", 500, ResourceKind.Gold, 1.20, "+8% Gold generation"),
+        new BuildingDef(BuildingType.Bank, "Bank", "🏦", 200, ResourceKind.Gold, 1.25, "Increases idle income cap"));
 
     public static readonly ImmutableArray<UpgradeDef> Upgrades = ImmutableArray.Create(
         new UpgradeDef(UpgradeId.Hymnal, "Sacred Hymnal", "📜", 120, 0, "Preaching yields 2× Faith", 0),
         new UpgradeDef(UpgradeId.Relics, "Golden Relics", "🏺", 0, 250, "Followers give 2× Gold", 15),
         new UpgradeDef(UpgradeId.Visions, "Prophetic Visions", "🔮", 600, 0, "Followers give 2× Faith", 40),
-        new UpgradeDef(UpgradeId.Ascendance, "Rite of Ascendance", "🌟", 1500, 1000, "All production ×1.5", 120));
+        new UpgradeDef(UpgradeId.Ascendance, "Rite of Ascendance", "🌟", 1500, 1000, "All production ×1.5", 120),
+        new UpgradeDef(UpgradeId.BankVault, "Reinforced Vault", "🔒", 0, 400, "Bank idle cap ×2", 10),
+        new UpgradeDef(UpgradeId.OffshoreAccounts, "Offshore Accounts", "🏝️", 0, 1200, "Bank idle cap ×2", 30),
+        new UpgradeDef(UpgradeId.DarkLedger, "Dark Ledger", "📓", 800, 600, "Bank idle cap ×1.5", 50),
+        new UpgradeDef(UpgradeId.SoulEndowment, "Soul Endowment", "💀", 2000, 1500, "Bank idle cap ×1.5", 100));
+
+    // Bank-specific upgrades (shown only in the Bank tab)
+    public static readonly ImmutableArray<UpgradeId> BankUpgrades = ImmutableArray.Create(
+        UpgradeId.BankVault,
+        UpgradeId.OffshoreAccounts,
+        UpgradeId.DarkLedger,
+        UpgradeId.SoulEndowment);
+
+    // Buildings shown in the Preach tab (excludes Bank)
+    public static readonly ImmutableArray<BuildingType> PreachBuildings = ImmutableArray.Create(
+        BuildingType.Shrine,
+        BuildingType.Cathedral,
+        BuildingType.Monolith,
+        BuildingType.Treasury);
 
     public static readonly ImmutableArray<RankDef> Ranks = ImmutableArray.Create(
         new RankDef("Novice", 0, "#94a3b8"),
