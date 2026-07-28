@@ -5,7 +5,7 @@
 <div class="panel buildings-panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Constructions</h2>
     <div class="building-list flex flex-col gap-2.5">
-        @foreach (var def in GameData.Buildings)
+        @foreach (var def in GameData.Buildings.Where(b => GameData.PreachBuildings.Contains(b.Type)))
         {
             var owned = activeCoven.Buildings.GetValueOrDefault(def.Type);
             var cost = GameEngine.BuildingCost(def, owned);
