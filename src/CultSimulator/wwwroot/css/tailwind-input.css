@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .glass-panel {
+    @apply bg-slate-950/60 backdrop-blur-[16px] border border-violet-500/15 rounded-2xl;
+  }
+
+  .glass-panel-active {
+    @apply bg-slate-950/60 backdrop-blur-[16px] border border-amber-500/30 rounded-2xl;
+  }
+
+  .pill-button {
+    @apply inline-flex items-center gap-2 px-6 py-3 rounded-full font-body font-semibold text-sm transition-all duration-200 cursor-pointer;
+  }
+
+  .gold-button {
+    @apply pill-button bg-gradient-to-br from-amber-500 to-amber-600 text-slate-950;
+  }
+
+  .gold-button:hover {
+    @apply -translate-y-0.5;
+    box-shadow: 0 8px 32px rgba(245, 158, 11, 0.25);
+  }
+
+  .ghost-button {
+    @apply pill-button bg-transparent border border-rose-400/20 text-rose-400 text-xs uppercase tracking-widest;
+  }
+
+  .ghost-button:hover {
+    @apply bg-rose-400/10 border-rose-400/40;
+  }
+
+  .panel-title {
+    @apply font-display text-sm font-semibold uppercase tracking-[0.25em] text-amber-200 mb-4;
+  }
+
+  .micro-label {
+    @apply text-[0.7rem] tracking-[0.15em] uppercase;
+  }
+
+  .faith-float {
+    @apply absolute pointer-events-none font-display font-bold text-amber-400 text-2xl;
+    animation: float-up 1s ease-out forwards;
+  }
+}
