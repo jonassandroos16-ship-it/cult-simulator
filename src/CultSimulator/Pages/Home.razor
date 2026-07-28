@@ -1,0 +1,52 @@
+@page "/"
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+@if (!initialized)
+{
+    <div class="loading-screen">
+        <div class="loading-pulse">🕯️</div>
+    </div>
+}
+else if (Game.IsFirstRun)
+{
+    <NamingScreen />
+}
+else
+{
+    <div class="game-container">
+        <ResourceBar />
+        <div class="game-main">
+            <div class="game-left">
+                <PreachAltar />
+            </div>
+            <div class="game-right">
+                <BuildingsPanel />
+                <UpgradesPanel />
+            </div>
+        </div>
+        <div class="game-footer">
+            <button class="reset-button" @onclick="ResetGame">Abandon Cult</button>
+        </div>
+    </div>
+    <EventModal />
+}
+
+@code {
+    private bool initialized = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Game.InitAsync();
+        Game.OnChange += StateChanged;
+        Game.StartTimers();
+        initialized = true;
+    }
+
+    private void StateChanged() => InvokeAsync(StateHasChanged);
+
+    private async Task ResetGame() { await Game.ResetAsync(); }
+
+    public void Dispose() { Game.OnChange -= StateChanged; }
+}
