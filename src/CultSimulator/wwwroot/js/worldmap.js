@@ -4,14 +4,17 @@
 let worldMap = null;
 let covenMarkers = [];
 let expandedMarkerId = null;
+let dotNetRef = null;
 
-window.initWorldMap = function(containerId, locations) {
+window.initWorldMap = function(containerId, locations, dotNetHelper) {
     if (worldMap) {
         worldMap.remove();
         worldMap = null;
         covenMarkers = [];
         expandedMarkerId = null;
     }
+
+    dotNetRef = dotNetHelper || null;
 
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -24,7 +27,6 @@ window.initWorldMap = function(containerId, locations) {
         maxZoom: 18,
         zoomControl: true,
         scrollWheelZoom: true,
-        // Enable touch zoom (pinch) for mobile
         touchZoom: true,
         tap: true,
         worldCopyJump: true,
@@ -42,10 +44,7 @@ window.initWorldMap = function(containerId, locations) {
     locations.forEach(function(loc) {
         const icon = L.divIcon({
             className: 'coven-marker-wrapper',
-            html: '<div class="coven-marker" data-id="' + loc.id + '">' +
-                  '<span>' + loc.flag + '</span>' +
-                  '<span class="coven-marker-label">' + loc.name + '</span>' +
-                  '</div>',
+            html: buildMarkerHtml(loc),
             iconSize: [36, 36],
             iconAnchor: [18, 18]
         });
@@ -54,7 +53,9 @@ window.initWorldMap = function(containerId, locations) {
 
         marker.on('click', function() {
             expandMarker(loc.id);
-            showCovenPopup(loc);
+            if (dotNetRef) {
+                dotNetRef.invokeMethodAsync('SelectCoven', loc.id);
+            }
         });
 
         covenMarkers.push({ id: loc.id, marker: marker, loc: loc });
@@ -66,8 +67,20 @@ window.initWorldMap = function(containerId, locations) {
     }, 200);
 };
 
+function buildMarkerHtml(loc) {
+    var cls = 'coven-marker';
+    if (loc.takenOver) cls += ' taken-over';
+    if (loc.isNextTarget) cls += ' next-target';
+    if (loc.isActive) cls += ' active-coven';
+    var badge = loc.isNextTarget ? '<span class="coven-marker-target">🎯</span>' : '';
+    return '<div class="' + cls + '" data-id="' + loc.id + '">' +
+           '<span class="coven-marker-flag">' + loc.flag + '</span>' +
+           badge +
+           '<span class="coven-marker-label">' + loc.name + '</span>' +
+           '</div>';
+}
+
 function expandMarker(id) {
-    // Collapse previously expanded marker
     covenMarkers.forEach(function(m) {
         const el = m.marker.getElement();
         if (el) {
@@ -76,7 +89,6 @@ function expandMarker(id) {
         }
     });
 
-    // Expand the clicked marker
     const found = covenMarkers.find(function(m) { return m.id === id; });
     if (found) {
         const el = found.marker.getElement();
@@ -86,77 +98,6 @@ function expandMarker(id) {
         }
     }
     expandedMarkerId = id;
-}
-
-function showCovenPopup(loc) {
-    const popup = document.getElementById('coven-popup');
-    if (!popup) return;
-
-    popup.style.display = 'block';
-    popup.innerHTML = '';
-
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'coven-popup-close';
-    closeBtn.textContent = '×';
-    closeBtn.onclick = function() {
-        popup.style.display = 'none';
-        collapseAllMarkers();
-    };
-    popup.appendChild(closeBtn);
-
-    const flag = document.createElement('div');
-    flag.className = 'coven-popup-flag';
-    flag.textContent = loc.flag;
-    popup.appendChild(flag);
-
-    const name = document.createElement('h3');
-    name.className = 'coven-popup-name';
-    name.textContent = loc.name;
-    popup.appendChild(name);
-
-    const location = document.createElement('p');
-    location.className = 'coven-popup-location';
-    location.textContent = loc.location + ', ' + loc.country;
-    popup.appendChild(location);
-
-    const era = document.createElement('p');
-    era.className = 'coven-popup-era';
-    era.textContent = loc.era;
-    popup.appendChild(era);
-
-    const summary = document.createElement('p');
-    summary.className = 'coven-popup-summary';
-    summary.textContent = loc.summary;
-    popup.appendChild(summary);
-
-    const loreToggle = document.createElement('button');
-    loreToggle.className = 'coven-popup-lore-toggle';
-    loreToggle.textContent = 'Reveal Lore';
-    loreToggle.onclick = function() {
-        if (loreToggle.textContent === 'Reveal Lore') {
-            const lore = document.createElement('p');
-            lore.className = 'coven-popup-lore';
-            lore.textContent = loc.lore;
-            popup.insertBefore(lore, loreToggle);
-            loreToggle.textContent = 'Hide Lore';
-        } else {
-            const loreEl = popup.querySelector('.coven-popup-lore');
-            if (loreEl) loreEl.remove();
-            loreToggle.textContent = 'Reveal Lore';
-        }
-    };
-    popup.appendChild(loreToggle);
-}
-
-function collapseAllMarkers() {
-    covenMarkers.forEach(function(m) {
-        const el = m.marker.getElement();
-        if (el) {
-            const inner = el.querySelector('.coven-marker');
-            if (inner) inner.classList.remove('expanded');
-        }
-    });
-    expandedMarkerId = null;
 }
 
 window.destroyWorldMap = function() {

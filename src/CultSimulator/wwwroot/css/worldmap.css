@@ -57,12 +57,33 @@
     align-items: center;
     justify-content: center;
     font-size: 1.5rem;
-    background: radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 27, 75, 0.9) 100%);
-    border: 2px solid rgba(245, 158, 11, 0.5);
+    background: radial-gradient(circle, rgba(185, 28, 28, 0.85) 0%, rgba(76, 5, 25, 0.95) 100%);
+    border: 2px solid rgba(248, 113, 113, 0.6);
     border-radius: 50%;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 12px rgba(248, 113, 113, 0.35);
+    position: relative;
+}
+
+.coven-marker.taken-over {
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.85) 0%, rgba(46, 16, 101, 0.95) 100%);
+    border-color: rgba(167, 139, 250, 0.6);
+    box-shadow: 0 0 12px rgba(167, 139, 250, 0.45);
+}
+
+.coven-marker.active-coven {
+    border-color: var(--gold-warm);
+    box-shadow: 0 0 18px rgba(245, 158, 11, 0.55);
+}
+
+.coven-marker.next-target {
+    animation: target-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes target-pulse {
+    0%, 100% { box-shadow: 0 0 12px rgba(248, 113, 113, 0.4), 0 0 0 0 rgba(248, 113, 113, 0.4); }
+    50% { box-shadow: 0 0 20px rgba(248, 113, 113, 0.7), 0 0 0 8px rgba(248, 113, 113, 0); }
 }
 
 .coven-marker:hover {
@@ -75,6 +96,18 @@
     transform: scale(1.25);
     border-color: var(--gold);
     box-shadow: 0 0 24px rgba(251, 191, 36, 0.7);
+}
+
+.coven-marker-flag {
+    line-height: 1;
+}
+
+.coven-marker-target {
+    position: absolute;
+    top: -10px;
+    right: -8px;
+    font-size: 0.95rem;
+    filter: drop-shadow(0 0 4px rgba(248, 113, 113, 0.8));
 }
 
 .coven-marker-label {
@@ -196,6 +229,18 @@
     border-color: var(--gold-warm);
 }
 
+.coven-target-badge {
+    color: #fda4af;
+}
+
+.coven-action-button {
+    font-family: var(--font-display);
+}
+
+.takeover-progress-row {
+    font-family: var(--font-body);
+}
+
 @media (max-width: 640px) {
     .coven-popup {
         top: auto;
@@ -205,3 +250,49 @@
         max-width: none;
     }
 }
+
+/* Takeover name-swap animation */
+.takeover-name-swap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.takeover-name-swap .takeover-old {
+    color: var(--violet-text);
+    animation: name-fade-out 1.8s ease forwards;
+}
+
+.takeover-name-swap .takeover-arrow {
+    color: var(--gold-warm);
+    opacity: 0;
+    animation: name-arrow-in 0.4s ease 0.9s forwards;
+}
+
+.takeover-name-swap .takeover-new {
+    color: var(--gold-pale);
+    opacity: 0;
+    animation: name-fade-in 0.6s ease 1.2s forwards;
+    text-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
+}
+
+@keyframes name-fade-out {
+    0% { opacity: 1; }
+    70% { opacity: 1; }
+    100% { opacity: 0; transform: translateY(-6px); filter: blur(2px); }
+}
+
+@keyframes name-arrow-in {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes name-fade-in {
+    from { opacity: 0; transform: translateY(8px); filter: blur(2px); }
+    to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
+/* Story screen helpers */
+.story-screen { animation: fade-in 0.4s ease; }
