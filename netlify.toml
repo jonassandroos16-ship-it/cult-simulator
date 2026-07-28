@@ -3,7 +3,7 @@ command = "dotnet publish src/CultSimulator/CultSimulator.csproj -c Release -o r
 publish = "release/wwwroot"
 
 [build.environment]
-DOTNET_VERSION = "9.0"
+DOTNET_VERSION = "8.0"
 
 [[redirects]]
 from = "/*"
