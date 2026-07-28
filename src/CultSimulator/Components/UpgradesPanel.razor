@@ -5,7 +5,7 @@
 <div class="panel upgrades-panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Sacred Rites</h2>
     <div class="upgrade-list flex flex-col gap-2.5">
-        @foreach (var def in GameData.Upgrades)
+        @foreach (var def in GameData.Upgrades.Where(u => !GameData.BankUpgrades.Contains(u.Id)))
         {
             var owned = activeCoven.HasUpgrade(def.Id);
             var unlocked = GameEngine.UpgradeUnlocked(activeCoven, def);
