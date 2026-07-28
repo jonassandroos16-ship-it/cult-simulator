@@ -1,0 +1,50 @@
+@using CultSimulator.Game
+@inject GameService Game
+
+<div class="resource-bar">
+    <div class="cult-header">
+        <h1 class="cult-name">@Game.State.CultName</h1>
+        <div class="rank-badge" style="border-color: @currentRank.Color; color: @currentRank.Color;">
+            @currentRank.Name
+        </div>
+    </div>
+    <div class="rank-progress">
+        <div class="rank-progress-bar" style="width: @(CultGame.RankProgress(Game.State) * 100)%; background: @currentRank.Color;"></div>
+    </div>
+    <div class="rank-label">
+        @if (nextRank != null)
+        {
+            <span>@Game.State.Followers / @nextRank.MinFollowers followers to @nextRank.Name</span>
+        }
+        else
+        {
+            <span>Maximum rank achieved</span>
+        }
+    </div>
+    <div class="resource-stats">
+        <div class="resource-stat">
+            <span class="resource-icon">👥</span>
+            <span class="resource-value">@Game.State.Followers</span>
+            <span class="resource-label">Followers</span>
+        </div>
+        <div class="resource-stat">
+            <span class="resource-icon">✨</span>
+            <span class="resource-value">@CultGame.Fmt(Game.State.Faith)</span>
+            <span class="resource-label">Faith</span>
+        </div>
+        <div class="resource-stat">
+            <span class="resource-icon">💰</span>
+            <span class="resource-value">@CultGame.Fmt(Game.State.Gold)</span>
+            <span class="resource-label">Gold</span>
+        </div>
+    </div>
+    <div class="income-display">
+        <span class="income-faith">+@CultGame.Fmt(CultGame.TickIncome(Game.State).faith)/s ✨</span>
+        <span class="income-gold">+@CultGame.Fmt(CultGame.TickIncome(Game.State).gold)/s 💰</span>
+    </div>
+</div>
+
+@code {
+    private RankDef currentRank => CultGame.RankFor(Game.State.Followers);
+    private RankDef? nextRank => CultGame.NextRank(Game.State.Followers);
+}

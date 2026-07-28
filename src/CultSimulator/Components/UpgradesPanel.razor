@@ -1,0 +1,32 @@
+@using CultSimulator.Game
+@inject GameService Game
+
+<div class="panel upgrades-panel">
+    <h2 class="panel-title">Sacred Rites</h2>
+    <div class="upgrade-list">
+        @foreach (var def in CultGame.Upgrades)
+        {
+            var owned = Game.State.HasUpgrade(def.Id);
+            var unlocked = CultGame.UpgradeUnlocked(Game.State, def);
+            var affordable = CultGame.CanAfford(Game.State, def.FaithCost, def.GoldCost);
+            <div class="upgrade-item @(owned ? "learned" : "") @(!unlocked ? "locked" : "")">
+                <div class="upgrade-icon">@def.Icon</div>
+                <div class="upgrade-info">
+                    <span class="upgrade-name">@def.Name</span>
+                    <span class="upgrade-effect">@def.EffectDescription</span>
+                    @if (!unlocked) { <span class="upgrade-lock">Unlocks at @def.UnlockFollowers followers</span> }
+                </div>
+                <div class="upgrade-action">
+                    @if (owned) { <span class="learned-badge">Learned</span> }
+                    else if (!unlocked) { <span class="locked-badge">🔒</span> }
+                    else {
+                        <button class="upgrade-buy @(!affordable ? "disabled" : "")" disabled="@(!affordable)" @onclick="() => Game.BuyUpgrade(def.Id)">
+                            <span>@CultGame.Fmt(def.FaithCost) ✨</span>
+                            @if (def.GoldCost > 0) { <span> @CultGame.Fmt(def.GoldCost) 💰</span> }
+                        </button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

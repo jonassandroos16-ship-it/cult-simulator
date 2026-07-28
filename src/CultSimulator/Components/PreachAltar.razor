@@ -1,0 +1,28 @@
+@using CultSimulator.Game
+@inject GameService Game
+
+<div class="preach-section">
+    <button class="preach-altar" @onclick="OnPreachClick">
+        <div class="altar-glow"></div>
+        <div class="altar-ring"></div>
+        <div class="altar-body">
+            <span class="altar-icon">🕯️</span>
+            <span class="altar-label">PREACH</span>
+        </div>
+    </button>
+    <div class="preach-info">
+        <p class="preach-yield">+@CultGame.Fmt(CultGame.PreachMultiplier(Game.State)) Faith per sermon</p>
+    </div>
+    <button class="recruit-button @(!CultGame.CanRecruit(Game.State) ? "disabled" : "")"
+            disabled="@(!CultGame.CanRecruit(Game.State))"
+            @onclick="Game.Recruit">
+        <span class="recruit-icon">👥</span>
+        <span class="recruit-text">Recruit Follower</span>
+        <span class="recruit-cost">@CultGame.RecruitCost ✨</span>
+    </button>
+</div>
+
+@code {
+    [Parameter] public EventCallback OnPreach { get; set; }
+    private async Task OnPreachClick() { Game.Preach(); await OnPreach.InvokeAsync(); }
+}

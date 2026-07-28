@@ -1,0 +1,17 @@
+@using CultSimulator.Game
+@inject GameService Game
+
+<div class="naming-screen">
+    <div class="naming-card">
+        <div class="naming-glow"></div>
+        <h1 class="naming-title">Found Your Cult</h1>
+        <p class="naming-subtitle">In the darkness between worlds, a new order awaits a name.</p>
+        <input class="naming-input" @bind="cultName" @bind:event="oninput" placeholder="The Order of the Pale Moon" maxlength="50" />
+        <button class="naming-confirm" @onclick="ConfirmName">Begin the Sermon</button>
+    </div>
+</div>
+
+@code {
+    private string cultName = "";
+    private void ConfirmName() { if (string.IsNullOrWhiteSpace(cultName)) return; Game.ConfirmName(cultName); }
+}

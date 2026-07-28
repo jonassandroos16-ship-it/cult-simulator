@@ -1,0 +1,27 @@
+@using CultSimulator.Game
+@inject GameService Game
+
+<div class="panel buildings-panel">
+    <h2 class="panel-title">Constructions</h2>
+    <div class="building-list">
+        @foreach (var def in CultGame.Buildings)
+        {
+            var owned = Game.State.Buildings.GetValueOrDefault(def.Type);
+            var cost = CultGame.BuildingCost(def, owned);
+            var affordable = def.CostResource == ResourceKind.Faith ? Game.State.Faith >= cost : Game.State.Gold >= cost;
+            var costIcon = def.CostResource == ResourceKind.Faith ? "✨" : "💰";
+            <button class="building-item @(!affordable ? "disabled" : "")" disabled="@(!affordable)" @onclick="() => Game.BuyBuilding(def.Type)">
+                <div class="building-icon">@def.Icon</div>
+                <div class="building-info">
+                    <span class="building-name">@def.Name</span>
+                    <span class="building-effect">@def.EffectDescription</span>
+                    <span class="building-owned">Owned: @owned</span>
+                </div>
+                <div class="building-cost">
+                    <span class="cost-value">@CultGame.Fmt(cost)</span>
+                    <span class="cost-icon">@costIcon</span>
+                </div>
+            </button>
+        }
+    </div>
+</div>

@@ -1,0 +1,23 @@
+@using CultSimulator.Game
+@inject GameService Game
+
+@if (Game.ActiveEvent != null)
+{
+    <div class="event-overlay">
+        <div class="event-modal">
+            <div class="event-glow"></div>
+            <h2 class="event-title">@Game.ActiveEvent.Title</h2>
+            <p class="event-narrative">@Game.ActiveEvent.Narrative</p>
+            <div class="event-choices">
+                <button class="event-choice" @onclick="() => Game.ChooseEvent(Game.ActiveEvent.ChoiceA)">
+                    <span class="choice-label">@Game.ActiveEvent.ChoiceA.Label</span>
+                    <span class="choice-desc">@Game.ActiveEvent.ChoiceA.Description</span>
+                </button>
+                <button class="event-choice" @onclick="() => Game.ChooseEvent(Game.ActiveEvent.ChoiceB)">
+                    <span class="choice-label">@Game.ActiveEvent.ChoiceB.Label</span>
+                    <span class="choice-desc">@Game.ActiveEvent.ChoiceB.Description</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
