@@ -18,6 +18,9 @@ public class WorldLocationService
     public ImmutableArray<WorldLocationDef> Locations => _locations;
     public bool IsLoaded => _loaded;
 
+    public WorldLocationDef? Find(string id) =>
+        _locations.FirstOrDefault(l => l.Id == id);
+
     public async Task LoadAsync()
     {
         if (_loaded) return;
