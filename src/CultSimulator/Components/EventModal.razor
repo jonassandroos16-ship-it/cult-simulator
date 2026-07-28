@@ -1,5 +1,6 @@
 @using CultSimulator.Game
 @inject GameService Game
+@implements IDisposable
 
 @if (Game.ActiveEvent != null)
 {
@@ -27,4 +28,12 @@
             </div>
         </div>
     </div>
+}
+
+@code {
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Game.OnChange -= StateChanged;
 }

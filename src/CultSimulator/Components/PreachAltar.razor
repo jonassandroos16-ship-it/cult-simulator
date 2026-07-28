@@ -1,6 +1,7 @@
 @using CultSimulator.Game
 @inject GameService Game
 @inject IJSRuntime JS
+@implements IDisposable
 
 <div class="preach-section flex flex-col items-center gap-4 p-8">
     <div class="preach-altar-wrapper relative">
@@ -44,6 +45,10 @@
     private List<FloatText> _floatTexts = new();
     private int _nextId = 0;
 
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
     private async Task OnPreachClick()
     {
         var gained = Game.Preach();
@@ -72,4 +77,6 @@
         _floatTexts.RemoveAll(t => t.Id == id);
         await InvokeAsync(StateHasChanged);
     }
+
+    public void Dispose() => Game.OnChange -= StateChanged;
 }

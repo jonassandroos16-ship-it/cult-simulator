@@ -1,5 +1,6 @@
 @using CultSimulator.Game
 @inject GameService Game
+@implements IDisposable
 
 <div class="resource-bar glass-panel rounded-[20px] p-5 md:p-6 mb-6">
     <div class="cult-header flex items-center justify-between flex-wrap gap-2 mb-3">
@@ -49,4 +50,10 @@
 @code {
     private RankDef currentRank => CultGame.RankFor(Game.State.Followers);
     private RankDef? nextRank => CultGame.NextRank(Game.State.Followers);
+
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Game.OnChange -= StateChanged;
 }

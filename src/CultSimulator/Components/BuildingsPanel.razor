@@ -1,5 +1,6 @@
 @using CultSimulator.Game
 @inject GameService Game
+@implements IDisposable
 
 <div class="panel buildings-panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Constructions</h2>
@@ -29,3 +30,11 @@
         }
     </div>
 </div>
+
+@code {
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Game.OnChange -= StateChanged;
+}
