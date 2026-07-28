@@ -21,6 +21,12 @@ public class GameService
     public string? TakeoverCovenName { get; private set; }
     public bool TakeoverPending => TakeoverCovenName != null;
 
+    // Offline income report (shown in Bank tab)
+    public double OfflineFaith { get; private set; }
+    public double OfflineGold { get; private set; }
+    public double OfflineSeconds { get; private set; }
+    public bool HasOfflineReport => OfflineFaith > 0 || OfflineGold > 0;
+
     public event Action? OnChange;
 
     public GameService(IJSRuntime js, WorldLocationService locations)
@@ -40,6 +46,7 @@ public class GameService
         }
         catch { _state = GameEngine.InitialState(); }
         EnsureHomeCoven();
+        ApplyOfflineIncome();
         NotifyChanged();
     }
 
@@ -50,6 +57,27 @@ public class GameService
             _state.Covens.Add(new CovenState { Id = "skanor", TakenOver = true });
             _state.ActiveCovenId = "skanor";
         }
+    }
+
+    private void ApplyOfflineIncome()
+    {
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var elapsed = now - _state.LastSavedAt;
+        if (elapsed <= 0) { _state.LastSavedAt = now; return; }
+
+        var (faith, gold) = GameEngine.ApplyOfflineIncome(_state, elapsed);
+        OfflineFaith = faith;
+        OfflineGold = gold;
+        OfflineSeconds = elapsed / 1000.0;
+        _state.LastSavedAt = now;
+    }
+
+    public void DismissOfflineReport()
+    {
+        OfflineFaith = 0;
+        OfflineGold = 0;
+        OfflineSeconds = 0;
+        NotifyChanged();
     }
 
     public void StartTimers()
@@ -80,6 +108,7 @@ public class GameService
     public double Preach() { var gained = GameEngine.Preach(_state.ActiveCoven); NotifyChanged(); return gained; }
     public void Recruit() { GameEngine.Recruit(_state.ActiveCoven); NotifyChanged(); }
     public void BuyBuilding(BuildingType type) { GameEngine.BuyBuilding(_state.ActiveCoven, type); NotifyChanged(); }
+    public void BuyBank() { GameEngine.BuyBank(_state.ActiveCoven); NotifyChanged(); }
     public void BuyUpgrade(UpgradeId id) { GameEngine.BuyUpgrade(_state.ActiveCoven, id); NotifyChanged(); }
 
     public void ChooseEvent(EventChoice choice)
@@ -135,6 +164,9 @@ public class GameService
         ActiveEvent = null;
         _eventPending = false;
         TakeoverCovenName = null;
+        OfflineFaith = 0;
+        OfflineGold = 0;
+        OfflineSeconds = 0;
         await SaveAsync();
         NotifyChanged();
     }
@@ -151,6 +183,7 @@ public class GameService
     {
         try
         {
+            _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             var json = SaveLoad.SaveGame(_state);
             await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json);
         }
