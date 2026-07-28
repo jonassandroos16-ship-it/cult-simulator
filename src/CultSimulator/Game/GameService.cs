@@ -9,7 +9,9 @@ public class GameService
     private GameState _state;
     private Timer? _tickTimer;
     private Timer? _eventTimer;
+    private Timer? _occultTimer;
     private bool _eventPending;
+    private DateTime _lastOccultTick;
 
     public GameState State => _state;
     public WorldLocationService Locations => _locations;
@@ -89,8 +91,20 @@ public class GameService
     {
         _tickTimer?.Dispose();
         _eventTimer?.Dispose();
+        _occultTimer?.Dispose();
         _tickTimer = new Timer(_ => Tick(), null, 1000, 1000);
         _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
+        _lastOccultTick = DateTime.UtcNow;
+        _occultTimer = new Timer(_ => OccultTick(), null, 100, 100);
+    }
+
+    private void OccultTick()
+    {
+        var now = DateTime.UtcNow;
+        var delta = (now - _lastOccultTick).TotalSeconds;
+        _lastOccultTick = now;
+        OccultEngine.Tick(_state, delta);
+        NotifyChanged();
     }
 
     private void Tick()
@@ -115,6 +129,23 @@ public class GameService
     public void BuyBuilding(BuildingType type) { GameEngine.BuyBuilding(_state.ActiveCoven, type); NotifyChanged(); }
     public void BuyBank() { GameEngine.BuyBank(_state.ActiveCoven); NotifyChanged(); }
     public void BuyUpgrade(UpgradeId id) { GameEngine.BuyUpgrade(_state.ActiveCoven, id); NotifyChanged(); }
+
+    public double OccultTap() { var gained = OccultEngine.Tap(_state); NotifyChanged(); return gained; }
+    public void BuyClickPower() { OccultEngine.BuyClickPower(_state.Occult); NotifyChanged(); }
+    public void HireAcolyte() { OccultEngine.HireAcolyte(_state.Occult); NotifyChanged(); }
+    public void PromoteMinion() { CultistHierarchy.Promote(_state.Occult); NotifyChanged(); }
+    public void SacrificeMinion(string minionId) { CultistHierarchy.Sacrifice(_state.Occult, minionId); NotifyChanged(); }
+    public void AppointCouncil(CouncilRole role, string minionId) { CultistHierarchy.AppointCouncil(_state.Occult, role, minionId); NotifyChanged(); }
+    public void RemoveCouncil(CouncilRole role) { CultistHierarchy.RemoveCouncil(_state.Occult, role); NotifyChanged(); }
+    public void UnlockTech(TechId id) { TechTree.Unlock(_state.Occult, id); NotifyChanged(); }
+    public void SocketArtifact(string artifactId) { Grimoire.Socket(_state.Occult, artifactId); NotifyChanged(); }
+    public void UnsocketArtifact(string artifactId) { Grimoire.Unsocket(_state.Occult, artifactId); NotifyChanged(); }
+    public void ConquerNode(string nodeId) { var def = OccultData.MapNode(nodeId); if (def != null) WorldMapSystem.Conquer(_state.Occult, def); NotifyChanged(); }
+    public void SetNodeStance(string nodeId, NodeStance stance) { WorldMapSystem.SetStance(_state.Occult, nodeId, stance); NotifyChanged(); }
+    public void CraftRecipe(CauldronRecipeId id) { Cauldron.Craft(_state.Occult, id); NotifyChanged(); }
+    public void ActivateFrenzy() { OccultEngine.ActivateFrenzy(_state.Occult); NotifyChanged(); }
+    public void ActivateMassHysteria() { OccultEngine.ActivateMassHysteria(_state.Occult); NotifyChanged(); }
+    public double PerformGrandSacrifice() { var favor = GrandSacrifice.PerformSacrifice(_state); NotifyChanged(); return favor; }
 
     public void ChooseEvent(EventChoice choice)
     {

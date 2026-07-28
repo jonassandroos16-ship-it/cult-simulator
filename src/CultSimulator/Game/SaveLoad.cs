@@ -47,6 +47,15 @@ public static class SaveLoad
             c.Buildings ??= new Dictionary<BuildingType, int>();
             c.Upgrades ??= new List<UpgradeId>();
         }
+        state.Occult ??= new OccultState();
+        state.Occult.Minions ??= new List<Minion>();
+        state.Occult.HighCouncil ??= new List<CouncilMember>();
+        state.Occult.MapNodes ??= new List<MapNodeState>();
+        state.Occult.UnlockedTechs ??= new List<TechId>();
+        state.Occult.SocketedArtifacts ??= new List<string>();
+        state.Occult.OwnedArtifacts ??= new List<string>();
+        state.Occult.Materials ??= new Dictionary<MaterialKind, int>();
+        state.Occult.LeyLines ??= new List<string[]>();
     }
 
     public static string SaveGame(GameState s) =>

@@ -10,6 +10,7 @@ public class GameState
     public bool StoryShown { get; set; }
     public string ActiveCovenId { get; set; } = "";
     public List<CovenState> Covens { get; set; } = new();
+    public OccultState Occult { get; set; } = new();
 
     [JsonIgnore]
     public string? ActiveEventId { get; set; }
