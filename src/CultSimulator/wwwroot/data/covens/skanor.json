@@ -1,0 +1,14 @@
+{
+  "id": "skanor",
+  "name": "Skanör",
+  "location": "Skanör, Skåne",
+  "country": "Sweden",
+  "countryFlag": "🇸🇪",
+  "era": "Present Day",
+  "latitude": 55.41,
+  "longitude": 12.88,
+  "summary": "A windswept fishing village at the edge of the Öresund, where the medieval herring market once drew merchants from across the Baltic. Your coven begins here.",
+  "lore": "Skanör's medieval harbor was a place of wealth and whispers, where salt, fish, and strange tales crossed the water. On moonless nights, the old fishermen say, the lanterns of the dead still flicker across the strait. It is here, in the shadow of the old church, that you will found your order.",
+  "followersRequired": 0,
+  "baseMultiplier": 1.0
+}

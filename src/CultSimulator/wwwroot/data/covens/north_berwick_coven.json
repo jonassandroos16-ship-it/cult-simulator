@@ -8,5 +8,7 @@
   "latitude": 56.0,
   "longitude": -2.72,
   "summary": "A massive gathering accused of using high-seas weather magic to target royal shipping.",
-  "lore": "Over 70 people were accused of assembling at the ruined St Andrew's Auld Kirk on the Scottish coast. Led by a respected local midwife and healer named Agnes Sampson and a schoolmaster named John Fian, the circle was accused of brewing storms by drowning cats in sea-water to sink the ship carrying King James VI and his bride, Anne of Denmark. King James became so terrified by the trial details that he personally interrogated suspects and authored Daemonologie, his famous book on hunting witches."
+  "lore": "Over 70 people were accused of assembling at the ruined St Andrew's Auld Kirk on the Scottish coast. Led by a respected local midwife and healer named Agnes Sampson and a schoolmaster named John Fian, the circle was accused of brewing storms by drowning cats in sea-water to sink the ship carrying King James VI and his bride, Anne of Denmark. King James became so terrified by the trial details that he personally interrogated suspects and authored Daemonologie, his famous book on hunting witches.",
+  "followersRequired": 168,
+  "baseMultiplier": 3.375
 }

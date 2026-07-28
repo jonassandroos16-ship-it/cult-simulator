@@ -8,5 +8,7 @@
   "latitude": -42.5,
   "longitude": -73.8,
   "summary": "A shadowy brotherhood of indigenous Huilliche and mestizo sorcerers (brujos) that operated as an underground legal system on the remote island of Chiloé.",
-  "lore": "La Recta Provincia functioned like a shadowy government. According to trial documents from 1880, its leaders gathered in a hidden underground chamber called the Cueva de Quicaví. Legend says the cave was guarded by the Imbunche—a stolen child transformed through dark magic into a twisted, deformed beast. The order used magical grimoires (revisorios), communicated via glowing nocturnal signals, and levied taxes or 'protection insurance' on locals until the Chilean state brought them to trial."
+  "lore": "La Recta Provincia functioned like a shadowy government. According to trial documents from 1880, its leaders gathered in a hidden underground chamber called the Cueva de Quicaví. Legend says the cave was guarded by the Imbunche—a stolen child transformed through dark magic into a twisted, deformed beast. The order used magical grimoires (revisorios), communicated via glowing nocturnal signals, and levied taxes or 'protection insurance' on locals until the Chilean state brought them to trial.",
+  "followersRequired": 50,
+  "baseMultiplier": 1.0
 }

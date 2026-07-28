@@ -8,5 +8,7 @@
   "latitude": 46.05,
   "longitude": 13.0,
   "summary": "An agrarian spirit-guild who believed they were chosen at birth to battle malevolent sorcerers in the astral plane.",
-  "lore": "The Benandanti were born with a caul (amniotic sac) over their heads—a sign they possessed innate spiritual powers. Four times a year, during the Ember Days, their souls were said to leave their sleeping bodies in the forms of small animals (cats, hares, or butterflies). They flew to distant spiritual battlefields to clash with the Malandanti (evil witches). The Benandanti fought with bundles of fennel, while the bad witches wielded sorghum brooms. If the Good Walkers won, the harvest was saved; if they lost, famine followed."
+  "lore": "The Benandanti were born with a caul (amniotic sac) over their heads—a sign they possessed innate spiritual powers. Four times a year, during the Ember Days, their souls were said to leave their sleeping bodies in the forms of small animals (cats, hares, or butterflies). They flew to distant spiritual battlefields to clash with the Malandanti (evil witches). The Benandanti fought with bundles of fennel, while the bad witches wielded sorghum brooms. If the Good Walkers won, the harvest was saved; if they lost, famine followed.",
+  "followersRequired": 75,
+  "baseMultiplier": 1.5
 }

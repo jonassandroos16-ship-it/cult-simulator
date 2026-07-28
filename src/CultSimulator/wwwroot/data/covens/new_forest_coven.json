@@ -8,5 +8,7 @@
   "latitude": 50.85,
   "longitude": -1.6,
   "summary": "The mysterious group credited with launching the modern Wiccan revival.",
-  "lore": "According to Gerald Gardner (the founder of modern Wicca), he was initiated into a secret, surviving coven in the New Forest region during the late 1930s. Led by a high priestess known in lore as 'Old Dorothy,' the group claimed to be practicing an unbroken lineage of ancient Pagan religion preserved through centuries of secrecy. In 1940, the coven reportedly performed 'Operation Cone of Power'—a massive collective ritual in the woods intended to psychically stop Hitler's forces from invading Britain."
+  "lore": "According to Gerald Gardner (the founder of modern Wicca), he was initiated into a secret, surviving coven in the New Forest region during the late 1930s. Led by a high priestess known in lore as 'Old Dorothy,' the group claimed to be practicing an unbroken lineage of ancient Pagan religion preserved through centuries of secrecy. In 1940, the coven reportedly performed 'Operation Cone of Power'—a massive collective ritual in the woods intended to psychically stop Hitler's forces from invading Britain.",
+  "followersRequired": 567,
+  "baseMultiplier": 11.390625
 }

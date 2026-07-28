@@ -8,5 +8,7 @@
   "latitude": 43.98,
   "longitude": 7.7,
   "summary": "Perched high in the Ligurian Alps, the medieval village of Triora is often called the 'Salem of Italy.'",
-  "lore": "When a devastating famine struck the region in 1587, local authorities blamed a gathering of women who met at La Cabotina—a desolate, cavernous rock formation outside the village walls. The women were accused of holding late-night rites, manipulating crop yields, and shape-shifting. Today, Triora embraces this dark chapter of history with preserved medieval architecture and local lore dedicated to the Cabotina circle."
+  "lore": "When a devastating famine struck the region in 1587, local authorities blamed a gathering of women who met at La Cabotina—a desolate, cavernous rock formation outside the village walls. The women were accused of holding late-night rites, manipulating crop yields, and shape-shifting. Today, Triora embraces this dark chapter of history with preserved medieval architecture and local lore dedicated to the Cabotina circle.",
+  "followersRequired": 252,
+  "baseMultiplier": 5.0625
 }
