@@ -5,10 +5,10 @@
 <div class="panel buildings-panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Constructions</h2>
     <div class="building-list flex flex-col gap-2.5">
-        @foreach (var def in CultGame.Buildings)
+        @foreach (var def in GameData.Buildings)
         {
             var owned = Game.State.Buildings.GetValueOrDefault(def.Type);
-            var cost = CultGame.BuildingCost(def, owned);
+            var cost = GameEngine.BuildingCost(def, owned);
             var affordable = def.CostResource == ResourceKind.Faith ? Game.State.Faith >= cost : Game.State.Gold >= cost;
             var costIcon = def.CostResource == ResourceKind.Faith ? "✨" : "💰";
             <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full
@@ -23,7 +23,7 @@
                     <span class="building-owned text-[0.7rem] text-violet-300">Owned: @owned</span>
                 </div>
                 <div class="building-cost flex items-baseline gap-1 flex-shrink-0">
-                    <span class="cost-value font-display font-semibold text-amber-400 text-base">@CultGame.Fmt(cost)</span>
+                    <span class="cost-value font-display font-semibold text-amber-400 text-base">@NumberFormat.Fmt(cost)</span>
                     <span class="cost-icon text-sm">@costIcon</span>
                 </div>
             </button>

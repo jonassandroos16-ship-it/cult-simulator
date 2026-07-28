@@ -1,0 +1,11 @@
+.loading-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.loading-pulse { font-size: 4rem; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 0.4; transform: scale(1); } 50% { opacity: 1; transform: scale(1.15); } }
+
+.loading-progress { position: fixed; top: 50%; left: 50%; width: 200px; height: 200px; transform: translate(-50%, -50%); }
+.loading-progress circle { fill: none; stroke-width: 4; stroke-linecap: round; }
+.loading-progress circle:nth-child(1) { stroke: rgba(167,139,250,0.15); }
+.loading-progress circle:nth-child(2) { stroke: var(--gold-warm); stroke-dasharray: 50%, 200%; animation: loading-spin 1.5s ease-in-out infinite; }
+@keyframes loading-spin { from { stroke-dashoffset: 0; transform: rotate(0deg); } to { stroke-dashoffset: 0; transform: rotate(360deg); } transform-origin: center; }
+.loading-progress-text { position: fixed; top: calc(50% + 120px); left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: 0.875rem; letter-spacing: 0.25em; color: var(--violet-text); }
+.loading-progress-text::after { content: "Summoning the faithful..."; }

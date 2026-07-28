@@ -1,0 +1,11 @@
+.naming-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem; }
+.naming-card { position: relative; background: var(--panel-bg); backdrop-filter: blur(16px); border: 1px solid var(--panel-border); border-radius: 24px; padding: 3rem 2.5rem; max-width: 500px; width: 100%; text-align: center; overflow: hidden; }
+.naming-glow { position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle at center, rgba(124,58,237,0.08) 0%, transparent 60%); animation: slow-rotate 20s linear infinite; pointer-events: none; }
+@keyframes slow-rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+.naming-title { font-family: var(--font-display); font-size: 2rem; font-weight: 600; color: var(--gold-pale); letter-spacing: 0.15em; margin-bottom: 0.75rem; position: relative; }
+.naming-subtitle { color: var(--violet-text); font-size: 0.875rem; margin-bottom: 2rem; line-height: 1.6; position: relative; }
+.naming-input { width: 100%; padding: 0.875rem 1rem; background: rgba(15,10,36,0.8); border: 1px solid var(--panel-border); border-radius: 12px; color: var(--gold-soft); font-family: var(--font-display); font-size: 1.1rem; text-align: center; outline: none; transition: border-color 0.3s, box-shadow 0.3s; margin-bottom: 1.5rem; position: relative; }
+.naming-input:focus { border-color: var(--gold-warm); box-shadow: 0 0 24px rgba(245,158,11,0.15); }
+.naming-input::placeholder { color: var(--neutral); opacity: 0.5; }
+.naming-confirm { width: 100%; padding: 1rem; background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; border-radius: 12px; color: var(--void-deep); font-family: var(--font-display); font-weight: 600; font-size: 1rem; letter-spacing: 0.2em; cursor: pointer; transition: transform 0.2s, box-shadow 0.3s; position: relative; }
+.naming-confirm:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(245,158,11,0.25); }

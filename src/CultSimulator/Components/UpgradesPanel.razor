@@ -5,11 +5,11 @@
 <div class="panel upgrades-panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Sacred Rites</h2>
     <div class="upgrade-list flex flex-col gap-2.5">
-        @foreach (var def in CultGame.Upgrades)
+        @foreach (var def in GameData.Upgrades)
         {
             var owned = Game.State.HasUpgrade(def.Id);
-            var unlocked = CultGame.UpgradeUnlocked(Game.State, def);
-            var affordable = CultGame.CanAfford(Game.State, def.FaithCost, def.GoldCost);
+            var unlocked = GameEngine.UpgradeUnlocked(Game.State, def);
+            var affordable = GameEngine.CanAfford(Game.State, def.FaithCost, def.GoldCost);
             <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] transition-all duration-200 @(owned ? "border-emerald-400/20 bg-emerald-400/5" : "") @(!unlocked ? "opacity-40" : "")"
                  style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
                 <div class="upgrade-icon text-3xl flex-shrink-0">@def.Icon</div>
@@ -25,8 +25,8 @@
                         <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                                 style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
                                 disabled="@(!affordable)" @onclick="() => Game.BuyUpgrade(def.Id)">
-                            <span>@CultGame.Fmt(def.FaithCost) ✨</span>
-                            @if (def.GoldCost > 0) { <span> @CultGame.Fmt(def.GoldCost) 💰</span> }
+                            <span>@NumberFormat.Fmt(def.FaithCost) ✨</span>
+                            @if (def.GoldCost > 0) { <span> @NumberFormat.Fmt(def.GoldCost) 💰</span> }
                         </button>
                     }
                 </div>

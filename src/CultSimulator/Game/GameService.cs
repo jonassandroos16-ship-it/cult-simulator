@@ -20,17 +20,17 @@ public class GameService
     public GameService(IJSRuntime js)
     {
         _js = js;
-        _state = CultGame.InitialState();
+        _state = GameEngine.InitialState();
     }
 
     public async Task InitAsync()
     {
         try
         {
-            var json = await _js.InvokeAsync<string>("localStorage.getItem", CultGame.SaveKey);
-            _state = CultGame.LoadGame(json);
+            var json = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
+            _state = SaveLoad.LoadGame(json);
         }
-        catch { _state = CultGame.InitialState(); }
+        catch { _state = GameEngine.InitialState(); }
         NotifyChanged();
     }
 
@@ -39,12 +39,12 @@ public class GameService
         _tickTimer?.Dispose();
         _eventTimer?.Dispose();
         _tickTimer = new Timer(_ => Tick(), null, 1000, 1000);
-        _eventTimer = new Timer(_ => TryEvent(), null, CultGame.EventIntervalSeconds * 1000, CultGame.EventIntervalSeconds * 1000);
+        _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
     }
 
     private void Tick()
     {
-        var (faith, gold) = CultGame.TickIncome(_state);
+        var (faith, gold) = GameEngine.TickIncome(_state);
         _state.Faith += faith;
         _state.Gold += gold;
         NotifyChanged();
@@ -53,18 +53,18 @@ public class GameService
     private void TryEvent()
     {
         if (_eventPending || ActiveEvent != null) return;
-        if (_state.Followers < CultGame.EventMinFollowers) return;
-        if (Random.Shared.NextDouble() > CultGame.EventTriggerChance) return;
-        var ev = CultGame.Events[Random.Shared.Next(CultGame.Events.Length)];
+        if (_state.Followers < GameBalance.EventMinFollowers) return;
+        if (Random.Shared.NextDouble() > GameBalance.EventTriggerChance) return;
+        var ev = GameData.Events[Random.Shared.Next(GameData.Events.Length)];
         ActiveEvent = ev;
         _eventPending = true;
         NotifyChanged();
     }
 
-    public double Preach() { var gained = CultGame.Preach(_state); NotifyChanged(); return gained; }
-    public void Recruit() { CultGame.Recruit(_state); NotifyChanged(); }
-    public void BuyBuilding(BuildingType type) { CultGame.BuyBuilding(_state, type); NotifyChanged(); }
-    public void BuyUpgrade(UpgradeId id) { CultGame.BuyUpgrade(_state, id); NotifyChanged(); }
+    public double Preach() { var gained = GameEngine.Preach(_state); NotifyChanged(); return gained; }
+    public void Recruit() { GameEngine.Recruit(_state); NotifyChanged(); }
+    public void BuyBuilding(BuildingType type) { GameEngine.BuyBuilding(_state, type); NotifyChanged(); }
+    public void BuyUpgrade(UpgradeId id) { GameEngine.BuyUpgrade(_state, id); NotifyChanged(); }
 
     public void ChooseEvent(EventChoice choice)
     {
@@ -81,7 +81,7 @@ public class GameService
 
     public async Task ResetAsync()
     {
-        _state = CultGame.InitialState();
+        _state = GameEngine.InitialState();
         ActiveEvent = null;
         _eventPending = false;
         await SaveAsync();
@@ -100,8 +100,8 @@ public class GameService
     {
         try
         {
-            var json = CultGame.SaveGame(_state);
-            await _js.InvokeVoidAsync("localStorage.setItem", CultGame.SaveKey, json);
+            var json = SaveLoad.SaveGame(_state);
+            await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json);
         }
         catch { }
     }
