@@ -21,7 +21,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Followers = 100;
         GameEngine.Preach(s);
-        Assert.Equal(2.0, s.Faith, precision: 2);
+        // 1.0 + 100 * 0.004 = 1.4
+        Assert.Equal(1.4, s.Faith, precision: 2);
     }
 
     [Fact]
@@ -39,7 +40,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Followers = 10; s.Upgrades.Add(UpgradeId.Ascendance);
         GameEngine.Preach(s);
-        Assert.Equal(1.65, s.Faith, precision: 2);
+        // (1.0 + 10 * 0.004) * 1.5 = 1.04 * 1.5 = 1.56
+        Assert.Equal(1.56, s.Faith, precision: 2);
     }
 
     [Fact]
@@ -48,6 +50,7 @@ public class CultGameTests
         var s = NewCoven(); s.Faith = 30;
         GameEngine.Recruit(s);
         Assert.Equal(1, s.Followers);
+        // First recruit costs 10 (base cost, followers == 0)
         Assert.Equal(20, s.Faith);
     }
 
@@ -58,6 +61,17 @@ public class CultGameTests
         GameEngine.Recruit(s);
         Assert.Equal(0, s.Followers);
         Assert.Equal(9, s.Faith);
+    }
+
+    [Fact]
+    public void Recruit_CostScalesWithFollowers()
+    {
+        var s = NewCoven(); s.Followers = 5; s.Faith = 1000;
+        var costBefore = GameEngine.RecruitCostFor(s);
+        GameEngine.Recruit(s);
+        var costAfter = GameEngine.RecruitCostFor(s);
+        Assert.True(costAfter > costBefore);
+        Assert.Equal(6, s.Followers);
     }
 
     [Fact]
@@ -101,7 +115,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Followers = 10;
         var (faith, _) = GameEngine.TickIncome(s);
-        Assert.Equal(2.0, faith, precision: 2);
+        // 10 * 0.05 = 0.5
+        Assert.Equal(0.5, faith, precision: 2);
     }
 
     [Fact]
@@ -109,7 +124,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Followers = 10;
         var (_, gold) = GameEngine.TickIncome(s);
-        Assert.Equal(1.0, gold, precision: 2);
+        // 10 * 0.02 = 0.2
+        Assert.Equal(0.2, gold, precision: 2);
     }
 
     [Fact]
@@ -117,7 +133,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Buildings[BuildingType.Shrine] = 3;
         var (faith, _) = GameEngine.TickIncome(s);
-        Assert.Equal(3.0, faith, precision: 2);
+        // 3 * 0.3 = 0.9
+        Assert.Equal(0.9, faith, precision: 2);
     }
 
     [Fact]
@@ -125,7 +142,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Buildings[BuildingType.Cathedral] = 2;
         var (_, gold) = GameEngine.TickIncome(s);
-        Assert.Equal(1.2, gold, precision: 2);
+        // 2 * 0.2 = 0.4
+        Assert.Equal(0.4, gold, precision: 2);
     }
 
     [Fact]
@@ -133,7 +151,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Followers = 10; s.Buildings[BuildingType.Monolith] = 2;
         var (faith, _) = GameEngine.TickIncome(s);
-        Assert.Equal(2.4, faith, precision: 2);
+        // 10 * 0.05 = 0.5, * (1 + 2*0.08) = 0.5 * 1.16 = 0.58
+        Assert.Equal(0.58, faith, precision: 2);
     }
 
     [Fact]
@@ -141,7 +160,8 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Followers = 10; s.Buildings[BuildingType.Treasury] = 3;
         var (_, gold) = GameEngine.TickIncome(s);
-        Assert.Equal(1.3, gold, precision: 2);
+        // 10 * 0.02 = 0.2, * (1 + 3*0.08) = 0.2 * 1.24 = 0.248
+        Assert.Equal(0.25, gold, precision: 2);
     }
 
     [Fact]
@@ -149,8 +169,10 @@ public class CultGameTests
     {
         var s = NewCoven(); s.Followers = 10; s.Upgrades.Add(UpgradeId.Ascendance);
         var (faith, gold) = GameEngine.TickIncome(s);
-        Assert.Equal(3.0, faith, precision: 2);
-        Assert.Equal(1.5, gold, precision: 2);
+        // faith: 10 * 0.05 * 1.5 = 0.75
+        Assert.Equal(0.75, faith, precision: 2);
+        // gold: 10 * 0.02 * 1.5 = 0.3
+        Assert.Equal(0.3, gold, precision: 2);
     }
 
     [Fact]
@@ -336,7 +358,8 @@ public class CultGameTests
     public void GoldMultiplier_WithTreasury()
     {
         var s = NewCoven(); s.Buildings[BuildingType.Treasury] = 5;
-        Assert.Equal(1.5, GameEngine.GoldMultiplier(s));
+        // 1 + 5 * 0.08 = 1.4
+        Assert.Equal(1.4, GameEngine.GoldMultiplier(s));
     }
 
     [Fact]
@@ -380,10 +403,10 @@ public class CultGameTests
     public void CanTakeover_RequiresFollowers()
     {
         var s = NewState();
-        s.HomeCoven.Followers = 49;
-        var locs = Locations(Loc("rival", 50));
+        s.HomeCoven.Followers = 149;
+        var locs = Locations(Loc("rival", 150));
         Assert.False(CovenProgress.CanTakeover(s, locs[0]));
-        s.HomeCoven.Followers = 50;
+        s.HomeCoven.Followers = 150;
         Assert.True(CovenProgress.CanTakeover(s, locs[0]));
     }
 
@@ -484,5 +507,111 @@ public class CultGameTests
         Assert.Equal("skanor", loaded.HomeCoven.Id);
         Assert.False(loaded.StoryShown);
         Assert.Equal("skanor", loaded.ActiveCovenId);
+    }
+
+    // --- Bank tests ---
+
+    [Fact]
+    public void BankCost_ScalesGeometrically()
+    {
+        Assert.Equal(200, GameEngine.BankBuildingCost(0));
+        Assert.Equal((int)Math.Ceiling(200 * 1.25), GameEngine.BankBuildingCost(1));
+        Assert.Equal((int)Math.Ceiling(200 * Math.Pow(1.25, 3)), GameEngine.BankBuildingCost(3));
+    }
+
+    [Fact]
+    public void BuyBank_SpendGoldAndIncrement()
+    {
+        var s = NewCoven(); s.Gold = 500;
+        GameEngine.BuyBank(s);
+        Assert.Equal(300, s.Gold);
+        Assert.Equal(1, s.Buildings[BuildingType.Bank]);
+    }
+
+    [Fact]
+    public void BuyBank_InsufficientGoldDoesNothing()
+    {
+        var s = NewCoven(); s.Gold = 199;
+        GameEngine.BuyBank(s);
+        Assert.Equal(0, s.Buildings.GetValueOrDefault(BuildingType.Bank));
+        Assert.Equal(199, s.Gold);
+    }
+
+    [Fact]
+    public void IdleCap_NoBank_DefaultsToOneHour()
+    {
+        var s = NewCoven();
+        Assert.Equal(3600.0, GameEngine.IdleCapSeconds(s));
+    }
+
+    [Fact]
+    public void IdleCap_BankLevel1_TwoHours()
+    {
+        var s = NewCoven(); s.Buildings[BuildingType.Bank] = 1;
+        Assert.Equal(7200.0, GameEngine.IdleCapSeconds(s));
+    }
+
+    [Fact]
+    public void IdleCap_BankLevel4_FortyEightHours()
+    {
+        var s = NewCoven(); s.Buildings[BuildingType.Bank] = 4;
+        Assert.Equal(48 * 3600.0, GameEngine.IdleCapSeconds(s));
+    }
+
+    [Fact]
+    public void IdleCap_BankVaultDoublesCap()
+    {
+        var s = NewCoven(); s.Buildings[BuildingType.Bank] = 1;
+        s.Upgrades.Add(UpgradeId.BankVault);
+        Assert.Equal(7200.0 * 2.0, GameEngine.IdleCapSeconds(s));
+    }
+
+    [Fact]
+    public void IdleCap_AllUpgradesStack()
+    {
+        var s = NewCoven(); s.Buildings[BuildingType.Bank] = 4;
+        s.Upgrades.Add(UpgradeId.BankVault);
+        s.Upgrades.Add(UpgradeId.OffshoreAccounts);
+        s.Upgrades.Add(UpgradeId.DarkLedger);
+        s.Upgrades.Add(UpgradeId.SoulEndowment);
+        // 48h * 3600 * 2 * 2 * 1.5 * 1.5 = 48 * 3600 * 9
+        Assert.Equal(48 * 3600.0 * 9.0, GameEngine.IdleCapSeconds(s));
+    }
+
+    [Fact]
+    public void ApplyOfflineIncome_CappedByBank()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 100;
+        // income = 100 * 0.05 = 5 faith/s, 100 * 0.02 = 2 gold/s
+        // cap = 1 hour = 3600s → faith = 5 * 3600 = 18000, gold = 2 * 3600 = 7200
+        var (faith, gold) = GameEngine.ApplyOfflineIncome(s, 2 * 3600 * 1000L); // 2 hours
+        Assert.Equal(18000, faith, precision: 0);
+        Assert.Equal(7200, gold, precision: 0);
+    }
+
+    [Fact]
+    public void ApplyOfflineIncome_BankLevelIncreasesCap()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 100;
+        s.HomeCoven.Buildings[BuildingType.Bank] = 2; // 5 hour cap
+        // income = 5 faith/s, cap = 5 * 3600 = 18000s → faith = 5 * 18000 = 90000
+        var (faith, _) = GameEngine.ApplyOfflineIncome(s, 10 * 3600 * 1000L); // 10 hours
+        Assert.Equal(90000, faith, precision: 0);
+    }
+
+    [Fact]
+    public void TotalTickIncome_SumsAllCovens()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 10;
+        s.Covens.Add(new CovenState { Id = "rival", TakenOver = true, Followers = 20 });
+        var (faith, gold) = GameEngine.TotalTickIncome(s);
+        // home: 10 * 0.05 = 0.5 faith, 10 * 0.02 = 0.2 gold
+        // rival: 20 * 0.05 = 1.0 faith, 20 * 0.02 = 0.4 gold
+        // total: 1.5 faith, 0.6 gold
+        Assert.Equal(1.5, faith, precision: 2);
+        Assert.Equal(0.6, gold, precision: 2);
     }
 }
