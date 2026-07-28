@@ -21,6 +21,11 @@ public class GameService
     public string? TakeoverCovenName { get; private set; }
     public bool TakeoverPending => TakeoverCovenName != null;
 
+    // Generic popup — shown when an event choice returns an outcome message
+    public string? PopupMessage { get; private set; }
+    public string? PopupTitle { get; private set; }
+    public bool PopupPending => PopupMessage != null;
+
     // Offline income report (shown in Bank tab)
     public double OfflineFaith { get; private set; }
     public double OfflineGold { get; private set; }
@@ -113,10 +118,24 @@ public class GameService
 
     public void ChooseEvent(EventChoice choice)
     {
-        choice.Apply(_state.ActiveCoven);
+        var outcome = choice.Apply(_state.ActiveCoven);
         Clamp(_state.ActiveCoven);
         ActiveEvent = null;
         _eventPending = false;
+
+        if (!string.IsNullOrWhiteSpace(outcome))
+        {
+            PopupTitle = "Outcome";
+            PopupMessage = outcome;
+        }
+
+        NotifyChanged();
+    }
+
+    public void DismissPopup()
+    {
+        PopupMessage = null;
+        PopupTitle = null;
         NotifyChanged();
     }
 
@@ -164,6 +183,8 @@ public class GameService
         ActiveEvent = null;
         _eventPending = false;
         TakeoverCovenName = null;
+        PopupMessage = null;
+        PopupTitle = null;
         OfflineFaith = 0;
         OfflineGold = 0;
         OfflineSeconds = 0;

@@ -20,7 +20,12 @@ public record UpgradeDef(
 
 public record RankDef(string Name, int MinFollowers, string Color, string FlavorText);
 
-public record EventChoice(string Label, string Description, Action<CovenState> Apply);
+/// <summary>
+/// A player-facing event choice. <see cref="Apply"/> mutates the coven state
+/// and returns an optional outcome message shown in the generic popup
+/// (null/empty means no popup is displayed).
+/// </summary>
+public record EventChoice(string Label, string Description, Func<CovenState, string?> Apply);
 
 public record EventDef(
     string Id,
