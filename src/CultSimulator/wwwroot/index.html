@@ -2,13 +2,16 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
     <title>Cult Simulator</title>
     <base href="/" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+          integrity="sha256-p4NxAoJBhIIN+hmNHrz0fFw8Q5gTSPk0z+2D1t7J0jI="
+          crossorigin="" />
     <link href="css/base.css" rel="stylesheet" />
     <link href="css/loading.css" rel="stylesheet" />
     <link href="css/naming.css" rel="stylesheet" />
@@ -16,6 +19,8 @@
     <link href="css/altar.css" rel="stylesheet" />
     <link href="css/panels.css" rel="stylesheet" />
     <link href="css/events.css" rel="stylesheet" />
+    <link href="css/tabs.css" rel="stylesheet" />
+    <link href="css/worldmap.css" rel="stylesheet" />
     <link href="css/tailwind.css" rel="stylesheet" />
 </head>
 <body>
@@ -24,6 +29,10 @@
         <div class="loading-progress-text"></div>
     </div>
     <div id="blazor-error-ui">An unhandled error has occurred.<a href="." class="reload">Reload</a><span class="dismiss">🗙</span></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9J8mVtc6j1jG6Q5q5W5j7g6m6y6z6y6z6y6="
+            crossorigin=""></script>
+    <script src="js/worldmap.js"></script>
     <script src="_framework/blazor.webassembly.js"></script>
 </body>
 </html>
