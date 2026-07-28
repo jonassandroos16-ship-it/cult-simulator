@@ -1,3 +1,4 @@
+using System.Collections.Immutable;
 using CultSimulator.Game;
 
 namespace CultSimulator.Tests;
@@ -438,6 +439,7 @@ public class CultGameTests
     public void NextTarget_ReturnsFirstNotTakenOver()
     {
         var s = NewState();
+        s.HomeCoven.Followers = 30;
         var locs = Locations(Loc("a", 10), Loc("b", 20), Loc("c", 30));
         Assert.Equal("a", CovenProgress.NextTarget(s, locs)!.Id);
         CovenProgress.Takeover(s, locs[0]);
@@ -448,6 +450,7 @@ public class CultGameTests
     public void NextTarget_NullWhenAllTaken()
     {
         var s = NewState();
+        s.HomeCoven.Followers = 10;
         var locs = Locations(Loc("a", 10));
         CovenProgress.Takeover(s, locs[0]);
         Assert.Null(CovenProgress.NextTarget(s, locs));

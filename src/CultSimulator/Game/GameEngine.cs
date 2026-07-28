@@ -89,7 +89,7 @@ public static class GameEngine
         int bankLevel = s.Buildings.GetValueOrDefault(BuildingType.Bank);
         if (bankLevel == 0) return GameBalance.BankCapHours[0] * 3600.0;
 
-        int tier = Math.Min(bankLevel - 1, GameBalance.BankCapHours.Length - 1);
+        int tier = Math.Min(bankLevel, GameBalance.BankCapHours.Length - 1);
         double hours = GameBalance.BankCapHours[tier];
 
         double mult = 1.0;
@@ -237,7 +237,6 @@ public static class GameEngine
     public static bool CanBuyUpgrade(GameState s, UpgradeDef def) => CanBuyUpgrade(s.ActiveCoven, def);
     public static bool CanAfford(GameState s, int faithCost, int goldCost) => CanAfford(s.ActiveCoven, faithCost, goldCost);
     public static (double faith, double gold) TickIncome(GameState s) => TickIncome(s.ActiveCoven);
-    public static (double faith, double gold) TotalTickIncome(GameState s) => TotalTickIncome(s);
     public static double RankProgress(GameState s) => RankProgress(s.ActiveCoven);
     public static double Preach(GameState s) => Preach(s.ActiveCoven);
     public static void Recruit(GameState s) => Recruit(s.ActiveCoven);
