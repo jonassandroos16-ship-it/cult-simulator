@@ -32,9 +32,9 @@ public static class CovenProgress
         GameState state,
         WorldLocationDef loc)
     {
-        var home = state.HomeCoven;
-        if (home.Followers >= loc.FollowersRequired) return 1.0;
-        return (double)home.Followers / loc.FollowersRequired;
+        var total = TotalFollowers(state);
+        if (total >= loc.FollowersRequired) return 1.0;
+        return (double)total / loc.FollowersRequired;
     }
 
     public static bool CanTakeover(
@@ -44,7 +44,7 @@ public static class CovenProgress
         if (loc.Id == "skanor") return false;
         var coven = state.FindCoven(loc.Id);
         if (coven != null && coven.TakenOver) return false;
-        return state.HomeCoven.Followers >= loc.FollowersRequired;
+        return TotalFollowers(state) >= loc.FollowersRequired;
     }
 
     public static void Takeover(GameState state, WorldLocationDef loc)

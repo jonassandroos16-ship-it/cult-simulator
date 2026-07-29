@@ -14,7 +14,7 @@
         <div class="rank-badge font-display text-xs font-semibold tracking-[0.25em] uppercase px-3.5 py-1.5 border rounded-full" style="border-color: @currentRank.Color; color: @currentRank.Color;">@currentRank.Name</div>
     </div>
     <div class="rank-progress h-1 bg-white/[0.06] rounded-full overflow-hidden mb-1.5"><div class="rank-progress-bar h-full rounded-full transition-all duration-500" style="width: @(GameEngine.RankProgress(Game.State) * 100)%; background: @currentRank.Color;"></div></div>
-    <div class="rank-label text-[0.7rem] text-violet-300 tracking-[0.1em] mb-4">@if (nextRank != null) { <span>@(activeCoven.Followers - currentRank.MinFollowers) / @(nextRank.MinFollowers - currentRank.MinFollowers) followers to @nextRank.Name</span> } else { <span>Maximum rank achieved</span> }</div>
+    <div class="rank-label text-[0.7rem] text-violet-300 tracking-[0.1em] mb-4">@if (nextRank != null) { <span>@(totalFollowers - currentRank.MinFollowers) / @(nextRank.MinFollowers - currentRank.MinFollowers) followers to @nextRank.Name</span> } else { <span>Maximum rank achieved</span> }</div>
     <div class="resource-stats flex gap-6 flex-wrap">
         <div class="resource-stat flex items-baseline gap-1.5"><span class="resource-icon text-xl">👥</span><span class="resource-value font-display text-xl font-semibold text-amber-100">@activeCoven.Followers</span><span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Followers</span></div>
         <div class="resource-stat flex items-baseline gap-1.5"><span class="resource-icon text-xl">✨</span><span class="resource-value font-display text-xl font-semibold text-amber-100">@NumberFormat.Fmt(activeCoven.Faith)</span><span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Faith</span></div>
@@ -26,8 +26,9 @@
 
 @code {
     private CovenState activeCoven => Game.State.ActiveCoven;
-    private RankDef currentRank => GameEngine.RankFor(activeCoven.Followers);
-    private RankDef? nextRank => GameEngine.NextRank(activeCoven.Followers);
+    private int totalFollowers => CovenProgress.TotalFollowers(Game.State);
+    private RankDef currentRank => GameEngine.RankFor(totalFollowers);
+    private RankDef? nextRank => GameEngine.NextRank(totalFollowers);
     private string activeCovenName { get { var loc = Locations.Find(Game.State.ActiveCovenId); return loc?.Name ?? Game.State.ActiveCovenId; } }
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);

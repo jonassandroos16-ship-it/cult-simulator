@@ -40,7 +40,7 @@
                     <div class="coven-popup-takeover mt-3">
                         <div class="takeover-progress-row flex items-center justify-between text-[0.7rem] text-violet-300 mb-1">
                             <span>Followers needed</span>
-                            <span class="text-amber-200">@Game.State.HomeCoven.Followers / @selectedCoven.FollowersRequired</span>
+                            <span class="text-amber-200">@CovenProgress.TotalFollowers(Game.State) / @selectedCoven.FollowersRequired</span>
                         </div>
                         <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-3">
                             <div class="h-full rounded-full transition-all duration-500"
@@ -112,7 +112,7 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender && LocationService.IsLoaded && !mapInitialized)
+        if (!mapInitialized && LocationService.IsLoaded)
         {
             await InitMap();
             mapInitialized = true;

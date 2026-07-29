@@ -7,9 +7,28 @@
     padding: 0 0.5rem;
     position: relative;
     z-index: 10;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(167, 139, 250, 0.3) transparent;
+    -webkit-overflow-scrolling: touch;
+}
+
+.bookmark-tabs::-webkit-scrollbar {
+    height: 4px;
+}
+
+.bookmark-tabs::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.bookmark-tabs::-webkit-scrollbar-thumb {
+    background: rgba(167, 139, 250, 0.3);
+    border-radius: 4px;
 }
 
 .bookmark-tab {
+    flex-shrink: 0;
+    white-space: nowrap;
     display: flex;
     align-items: center;
     gap: 0.5rem;

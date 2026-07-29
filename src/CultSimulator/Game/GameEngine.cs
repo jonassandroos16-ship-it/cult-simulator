@@ -103,6 +103,10 @@ public static class GameEngine
     public static RankDef? NextRank(int followers) { foreach (var r in GameData.Ranks) if (r.MinFollowers > followers) return r; return null; }
     public static double RankProgress(CovenState s) { var c = RankFor(s.Followers); var n = NextRank(s.Followers); return n == null ? 1.0 : (double)(s.Followers - c.MinFollowers) / (n.MinFollowers - c.MinFollowers); }
 
+    public static RankDef RankFor(GameState s) => RankFor(CovenProgress.TotalFollowers(s));
+    public static RankDef? NextRank(GameState s) => NextRank(CovenProgress.TotalFollowers(s));
+    public static double RankProgress(GameState s) { int total = CovenProgress.TotalFollowers(s); var c = RankFor(total); var n = NextRank(total); return n == null ? 1.0 : (double)(total - c.MinFollowers) / (n.MinFollowers - c.MinFollowers); }
+
     public static double Preach(CovenState s) { s.PreachCount++; var gained = PreachMultiplier(s); s.Faith += gained; return gained; }
     public static void Recruit(CovenState s) { if (!CanRecruit(s)) return; s.Faith -= RecruitCostFor(s); s.Followers++; }
     public static void BuyBuilding(CovenState s, BuildingType type) { var def = GameData.Buildings.First(b => b.Type == type); int owned = s.Buildings.GetValueOrDefault(type); int cost = BuildingCost(def, owned); if (def.CostResource == ResourceKind.Faith) { if (s.Faith < cost) return; s.Faith -= cost; } else { if (s.Gold < cost) return; s.Gold -= cost; } s.Buildings[type] = owned + 1; }
@@ -119,7 +123,6 @@ public static class GameEngine
     public static bool CanBuyUpgrade(GameState s, UpgradeDef def) => CanBuyUpgrade(s.ActiveCoven, def);
     public static bool CanAfford(GameState s, int faithCost, int goldCost) => CanAfford(s.ActiveCoven, faithCost, goldCost);
     public static (double faith, double gold) TickIncome(GameState s) => TickIncome(s.ActiveCoven);
-    public static double RankProgress(GameState s) => RankProgress(s.ActiveCoven);
     public static double Preach(GameState s) => Preach(s.ActiveCoven);
     public static void Recruit(GameState s) => Recruit(s.ActiveCoven);
     public static void BuyBuilding(GameState s, BuildingType type) => BuyBuilding(s.ActiveCoven, type);

@@ -82,7 +82,7 @@
     protected override void OnInitialized()
     {
         Game.OnChange += StateChanged;
-        var followers = Game.State.ActiveCoven.Followers;
+        var followers = CovenProgress.TotalFollowers(Game.State);
         lastRank = GameEngine.RankFor(followers);
     }
 
@@ -90,7 +90,7 @@
     {
         _ = InvokeAsync(() =>
         {
-            var followers = Game.State.ActiveCoven.Followers;
+            var followers = CovenProgress.TotalFollowers(Game.State);
             var currentRank = GameEngine.RankFor(followers);
 
             if (lastRank != null && currentRank.MinFollowers > lastRank.MinFollowers)
