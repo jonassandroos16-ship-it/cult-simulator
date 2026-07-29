@@ -5,9 +5,24 @@
 <div class="panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">The Sanctum</h2>
     <div class="flex flex-col gap-3">
-        <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="flex items-center gap-2"><span class="text-xl">🙇</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Acolytes</span></div>
-            <span class="font-display text-lg font-semibold text-amber-100">@occult.Acolytes / @CultistHierarchy.AcolyteCap(occult)</span>
+        <div class="acolyte-block p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2"><span class="text-xl">🙇</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Acolytes</span></div>
+                <span class="font-display text-lg font-semibold text-amber-100">@occult.Acolytes / @CultistHierarchy.AcolyteCap(occult)</span>
+            </div>
+            @if (hasSanguineAutomata && occult.Acolytes > 0)
+            {
+                var acolyteRate = OccultEngine.AcolyteFaithPerSec(Game.State);
+                <div class="acolyte-autosermon mt-2.5">
+                    <div class="flex items-center justify-between text-[0.7rem] mb-1">
+                        <span class="text-emerald-400 tracking-[0.1em] uppercase">Auto-Sermon</span>
+                        <span class="text-amber-200 font-display font-medium">+@NumberFormat.Fmt(acolyteRate)/s ✨</span>
+                    </div>
+                    <div class="acolyte-progress-bar h-1 bg-white/[0.06] rounded-full overflow-hidden">
+                        <div class="acolyte-progress-fill h-full rounded-full" style="width: @(sermonProgress * 100)%; background: linear-gradient(90deg, var(--gold-warm), var(--gold-deep)); transition: width 0.1s linear;"></div>
+                    </div>
+                </div>
+            }
         </div>
         <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanHireAcolyte(Game.State))" @onclick="() => Game.HireAcolyte()">
             <div class="text-3xl flex-shrink-0">🙇</div>
@@ -84,6 +99,8 @@
 
 @code {
     private OccultState occult => Game.State.Occult;
+    private bool hasSanguineAutomata => TechTree.HasTech(occult, TechId.SanguineAutomata);
+    private double sermonProgress => (DateTime.UtcNow.Ticks / 10000000.0) % 1.0;
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
     private void AppointFromSelect(CouncilRole role, string? minionId) { if (!string.IsNullOrEmpty(minionId)) Game.AppointCouncil(role, minionId); }
