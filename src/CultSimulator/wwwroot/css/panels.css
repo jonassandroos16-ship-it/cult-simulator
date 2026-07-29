@@ -28,3 +28,7 @@
 .upgrade-buy { display: flex; align-items: center; gap: 0.375rem; padding: 0.5rem 0.875rem; background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; border-radius: 999px; color: var(--void-deep); font-family: var(--font-body); font-weight: 600; font-size: 0.8rem; cursor: pointer; transition: transform 0.2s; }
 .upgrade-buy:hover:not(.disabled) { transform: translateY(-1px); }
 .upgrade-buy.disabled { opacity: 0.4; cursor: not-allowed; }
+
+.acolyte-autosermon { animation: fade-in 0.3s ease; }
+.acolyte-progress-bar { position: relative; }
+.acolyte-progress-fill { position: absolute; top: 0; left: 0; }
