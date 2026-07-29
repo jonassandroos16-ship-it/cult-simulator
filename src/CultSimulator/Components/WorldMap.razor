@@ -6,8 +6,8 @@
 
 <div class="world-map-wrapper">
     <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-        <p class="text-violet-300">The World Map shows historical covens you can take over. Click a marker to see details. You must have enough followers to take over a coven — the next available target is highlighted. Switch between covens to change your active bonuses.</p>
-        <p class="text-slate-400 text-xs mt-2">Taking over covens is separate from conquering Ley Line nodes — the Ley Lines tab handles node conquest for materials and passive Faith. This map is about expanding your cult's reach across the world.</p>
+        <p class="text-violet-300">The World Map shows historical covens you can convert. Click a marker to see details. You must have enough followers to begin a conversion — the next available target is highlighted. Each conversion is a narrative siege: make choices, face consequences, and earn the coven's allegiance. Switch between covens to change your active bonuses.</p>
+        <p class="text-slate-400 text-xs mt-2">Converting covens is separate from conquering Ley Line nodes — the Ley Lines tab handles node conquest for materials and passive Faith. This map is about expanding your cult's reach across the world.</p>
     </div>
     <div id="world-map-container" class="world-map-container"></div>
 
@@ -34,31 +34,36 @@
             @if (selectedCoven.Id != "skanor")
             {
                 var covenState = Game.State.FindCoven(selectedCoven.Id);
-                var isTakenOver = covenState != null && covenState.TakenOver;
-                var canTake = Game.CanTakeover(selectedCoven.Id);
+                var isConverted = covenState != null && covenState.Converted;
+                var canConvert = Game.CanConvert(selectedCoven.Id);
                 var nextTarget = CovenProgress.NextTarget(Game.State, LocationService.Locations);
                 var isNextTarget = nextTarget?.Id == selectedCoven.Id;
+                var conversionDef = ConversionData.Find(selectedCoven.Id);
 
-                if (!isTakenOver)
+                if (!isConverted)
                 {
                     <div class="coven-popup-takeover mt-3">
                         <div class="takeover-progress-row flex items-center justify-between text-[0.7rem] text-violet-300 mb-1">
                             <span>Followers needed</span>
                             <span class="text-amber-200">@CovenProgress.TotalFollowers(Game.State) / @selectedCoven.FollowersRequired</span>
                         </div>
-                        <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-3">
+                        <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-2">
                             <div class="h-full rounded-full transition-all duration-500"
-                                 style="width: @(CovenProgress.TakeoverProgress(Game.State, selectedCoven) * 100)%; background: @((canTake ? "var(--success)" : "var(--danger)"));"></div>
+                                 style="width: @(CovenProgress.ConversionProgress(Game.State, selectedCoven) * 100)%; background: @((canConvert ? "var(--success)" : "var(--danger)"));"></div>
                         </div>
-                        @if (isNextTarget && !canTake)
+                        @if (conversionDef != null)
+                        {
+                            <p class="text-[0.65rem] text-violet-400 mb-2 italic">@(conversionDef.Theme) — @conversionDef.Steps.Count trials</p>
+                        }
+                        @if (isNextTarget && !canConvert)
                         {
                             <span class="coven-target-badge block text-center text-[0.65rem] font-semibold tracking-[0.2em] uppercase text-rose-300 mb-2">Next Target</span>
                         }
                         <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                                 style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
-                                disabled="@(!canTake)"
-                                @onclick="() => Takeover(selectedCoven.Id)">
-                            Take Over
+                                disabled="@(!canConvert)"
+                                @onclick="() => BeginConversion(selectedCoven.Id)">
+                            Convert
                         </button>
                     </div>
                 }
@@ -130,9 +135,9 @@
         foreach (var loc in locations)
         {
             var covenState = Game.State.FindCoven(loc.Id);
-            var takenOver = loc.Id == "skanor" || (covenState != null && covenState.TakenOver);
+            var converted = loc.Id == "skanor" || (covenState != null && covenState.Converted);
             var nextTarget = CovenProgress.NextTarget(Game.State, locations);
-            var isNextTarget = nextTarget?.Id == loc.Id && loc.Id != "skanor" && !takenOver;
+            var isNextTarget = nextTarget?.Id == loc.Id && loc.Id != "skanor" && !converted;
 
             jsLocations.Add(new {
                 id = loc.Id,
@@ -145,9 +150,9 @@
                 lore = loc.Lore,
                 location = loc.Location,
                 country = loc.Country,
-                takenOver = takenOver,
+                takenOver = converted,
                 isNextTarget = isNextTarget,
-                isActive = Game.State.ActiveCovenId == loc.Id && takenOver
+                isActive = Game.State.ActiveCovenId == loc.Id && converted
             });
         }
         await JS.InvokeVoidAsync("initWorldMap", "world-map-container", jsLocations, _dotRef);
@@ -165,17 +170,12 @@
         }
     }
 
-    private void ClosePopup()
-    {
-        selectedCoven = null;
-        showLore = false;
-    }
-
+    private void ClosePopup() { selectedCoven = null; showLore = false; }
     private void ToggleLore() => showLore = !showLore;
 
-    private void Takeover(string id)
+    private void BeginConversion(string id)
     {
-        Game.TakeoverCoven(id);
+        Game.StartConversion(id);
         selectedCoven = null;
         _ = RefreshMap();
     }
