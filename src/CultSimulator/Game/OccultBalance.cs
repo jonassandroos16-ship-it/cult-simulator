@@ -26,4 +26,8 @@ public static class OccultBalance
     public const int FrenzyDurationSec = 15;
     public const int MassHysteriaDurationSec = 30;
     public const int ElixirDurationSec = 60;
+    public const double AcolyteSacrificeSuspicionReduction = 10.0;
+    public const int DarkVigilDurationSec = 45;
+    public const int WhisperChoirDurationSec = 60;
+    public const int CovenBlessingDurationSec = 90;
 }

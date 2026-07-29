@@ -8,6 +8,7 @@ public static class OccultEngine
         double basePower = GrandSacrifice.ClickPowerBase(state) + o.SermonPowerLevel;
         double mult = CultistHierarchy.TapPowerMult(o) * Grimoire.TapPowerBonus(o) * o.ElixirTapMult;
         if (o.IsFrenzyActive) mult *= OccultBalance.FrenzyMultiplier;
+        if (o.IsWhisperChoirActive) mult *= 3.0;
         return basePower * mult;
     }
 
@@ -61,6 +62,7 @@ public static class OccultEngine
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Infiltrator) * OccultBalance.InfiltratorFaithPerSec;
         baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult;
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
+        if (o.IsCovenBlessingActive) baseFaith *= 2.0;
         return baseFaith;
     }
 
@@ -78,6 +80,9 @@ public static class OccultEngine
         Cauldron.TickElixir(o, deltaSec);
         if (o.FrenzyTimer > 0) o.FrenzyTimer = Math.Max(0, o.FrenzyTimer - deltaSec);
         if (o.MassHysteriaTimer > 0) o.MassHysteriaTimer = Math.Max(0, o.MassHysteriaTimer - deltaSec);
+        if (o.DarkVigilTimer > 0) o.DarkVigilTimer = Math.Max(0, o.DarkVigilTimer - deltaSec);
+        if (o.WhisperChoirTimer > 0) o.WhisperChoirTimer = Math.Max(0, o.WhisperChoirTimer - deltaSec);
+        if (o.CovenBlessingTimer > 0) o.CovenBlessingTimer = Math.Max(0, o.CovenBlessingTimer - deltaSec);
         if (TechTree.HasTech(o, TechId.AutophagousCult)) { int cap = CultistHierarchy.AcolyteCap(o); if (o.Acolytes > cap) { int excess = o.Acolytes - cap; o.Acolytes = cap; state.ActiveCoven.Faith += excess * OccultBalance.SacrificeSermonMult * 0.5; } }
         if (WorldMapSystem.IsRaidTriggered(o) && !TechTree.HasTech(o, TechId.InquisitorsBlindfold)) WorldMapSystem.ApplyRaid(o);
     }
@@ -86,4 +91,39 @@ public static class OccultEngine
     public static bool ActivateFrenzy(OccultState o) { if (!CanActivateFrenzy(o)) return false; o.Minions.RemoveAt(0); o.FrenzyTimer = OccultBalance.FrenzyDurationSec; return true; }
     public static bool CanActivateMassHysteria(OccultState o) => TechTree.HasTech(o, TechId.MassHysteria) && !o.IsMassHysteriaActive;
     public static bool ActivateMassHysteria(OccultState o) { if (!CanActivateMassHysteria(o)) return false; o.MassHysteriaTimer = OccultBalance.MassHysteriaDurationSec; return true; }
+
+    public static bool CanSacrificeAcolyte(GameState state) => state.Occult.Acolytes > 0 && state.Occult.Suspicion > 0;
+    public static bool SacrificeAcolyte(GameState state)
+    {
+        if (!CanSacrificeAcolyte(state)) return false;
+        var o = state.Occult;
+        o.Acolytes--;
+        o.Suspicion = Math.Max(0, o.Suspicion - OccultBalance.AcolyteSacrificeSuspicionReduction);
+        double faith = OccultBalance.SacrificeFaithBase * 5;
+        state.ActiveCoven.Faith += faith;
+        o.LifetimeFaith += faith;
+        return true;
+    }
+
+    public static bool CanActivateBloodOffering(GameState state) => state.Occult.Acolytes >= 5 && state.Occult.Suspicion > 0;
+    public static bool ActivateBloodOffering(GameState state)
+    {
+        if (!CanActivateBloodOffering(state)) return false;
+        var o = state.Occult;
+        o.Acolytes -= 5;
+        o.Suspicion = 0;
+        double faith = OccultBalance.SacrificeFaithBase * 50;
+        state.ActiveCoven.Faith += faith;
+        o.LifetimeFaith += faith;
+        return true;
+    }
+
+    public static bool CanActivateDarkVigil(OccultState o) => o.Acolytes >= 3 && !o.IsDarkVigilActive;
+    public static bool ActivateDarkVigil(OccultState o) { if (!CanActivateDarkVigil(o)) return false; o.Acolytes -= 3; o.DarkVigilTimer = OccultBalance.DarkVigilDurationSec; return true; }
+
+    public static bool CanActivateWhisperChoir(OccultState o) => o.Acolytes >= 10 && !o.IsWhisperChoirActive;
+    public static bool ActivateWhisperChoir(OccultState o) { if (!CanActivateWhisperChoir(o)) return false; o.Acolytes -= 10; o.WhisperChoirTimer = OccultBalance.WhisperChoirDurationSec; return true; }
+
+    public static bool CanActivateCovenBlessing(OccultState o) => o.Acolytes >= 20 && !o.IsCovenBlessingActive;
+    public static bool ActivateCovenBlessing(OccultState o) { if (!CanActivateCovenBlessing(o)) return false; o.Acolytes -= 20; o.CovenBlessingTimer = OccultBalance.CovenBlessingDurationSec; return true; }
 }

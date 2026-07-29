@@ -36,6 +36,8 @@ public static class WorldMapSystem
     public static void TickSuspicion(OccultState o, double deltaSec)
     {
         double gen = TotalSuspicionPerSec(o) * CultistHierarchy.SuspicionMult(o) * TechTree.SuspicionReductionMult(o) * Grimoire.SuspicionReductionBonus(o) * o.ElixirSuspicionMult;
+        if (o.IsDarkVigilActive) gen *= 0.5;
+        if (o.IsCovenBlessingActive) gen *= 0.5;
         o.Suspicion = Math.Clamp(o.Suspicion + (gen - OccultBalance.SuspicionDecayPerSec) * deltaSec, 0, OccultBalance.SuspicionMax);
     }
 

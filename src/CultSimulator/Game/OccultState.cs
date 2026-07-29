@@ -50,6 +50,9 @@ public class OccultState
     public Dictionary<MaterialKind, int> Materials { get; set; } = new();
     public double FrenzyTimer { get; set; }
     public double MassHysteriaTimer { get; set; }
+    public double DarkVigilTimer { get; set; }
+    public double WhisperChoirTimer { get; set; }
+    public double CovenBlessingTimer { get; set; }
     public double ElixirTapMult { get; set; } = 1.0;
     public double ElixirFaithMult { get; set; } = 1.0;
     public double ElixirSuspicionMult { get; set; } = 1.0;
@@ -61,6 +64,15 @@ public class OccultState
 
     [JsonIgnore]
     public bool IsMassHysteriaActive => MassHysteriaTimer > 0;
+
+    [JsonIgnore]
+    public bool IsDarkVigilActive => DarkVigilTimer > 0;
+
+    [JsonIgnore]
+    public bool IsWhisperChoirActive => WhisperChoirTimer > 0;
+
+    [JsonIgnore]
+    public bool IsCovenBlessingActive => CovenBlessingTimer > 0;
 
     [JsonIgnore]
     public int UnlockedSocketCount
