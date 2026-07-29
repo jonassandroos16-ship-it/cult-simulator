@@ -4,6 +4,7 @@
 
 <div class="panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Grimoire</h2>
+    <p class="text-xs text-slate-400 mb-3 leading-relaxed">Socket artifacts to gain passive bonuses. Collect 3 of the same suit to activate a powerful set bonus. Unlock more sockets via the Codex (Void &amp; Astral branch). Artifacts are obtained from the Forbidden Cauldron below — forge them using Materials harvested from Ley Line nodes.</p>
     <div class="flex flex-col gap-4">
         <div class="socket-display flex items-center justify-center gap-3 p-4 rounded-[14px]"
              style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
@@ -101,6 +102,10 @@
     <div class="panel glass-panel rounded-[20px] p-5">
         <h2 class="panel-title">Forbidden Cauldron</h2>
         <div class="flex flex-col gap-3">
+            <div class="mb-2 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <p class="text-violet-300">The Cauldron brews elixirs and forges artifacts from occult Materials. Materials are harvested passively from conquered Ley Line nodes — go to the Ley Lines tab, conquer nodes, and set them to <span class="text-amber-400">Harvest</span> stance to collect them.</p>
+                <p class="text-slate-400 text-xs mt-2">Elixirs grant temporary bonuses for 60 seconds. Forge recipes consume materials to create a random artifact of the matching suit — these go to your Grimoire inventory for socketing.</p>
+            </div>
             <div class="flex gap-3 flex-wrap mb-2">
                 @foreach (var mat in Enum.GetValues<MaterialKind>())
                 {
@@ -108,6 +113,7 @@
                          style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
                         <span class="text-sm">@MaterialIcon(mat)</span>
                         <span class="font-display text-sm text-amber-100">@occult.Materials.GetValueOrDefault(mat)</span>
+                        <span class="text-[0.65rem] text-slate-400">@MaterialName(mat)</span>
                     </div>
                 }
             </div>
@@ -125,9 +131,13 @@
                         <span class="text-[0.7rem] text-violet-300">
                             @foreach (var (material, amount) in recipe.Materials)
                             {
-                                <span class="mr-2">@MaterialIcon(material) @amount</span>
+                                <span class="mr-2">@MaterialIcon(material) @MaterialName(material) @amount</span>
                             }
                         </span>
+                        @if (occult.ElixirTimer > 0 && !recipe.IsPermanent)
+                        {
+                            <span class="text-[0.7rem] text-amber-400">Active elixir: @Math.Ceiling(occult.ElixirTimer)s remaining</span>
+                        }
                     </div>
                 </button>
             }
@@ -158,6 +168,14 @@
         MaterialKind.GraveDust => "💀",
         MaterialKind.DemonBile => "🧪",
         MaterialKind.AstralMercury => "⚗️",
+        _ => "?"
+    };
+
+    private static string MaterialName(MaterialKind mat) => mat switch
+    {
+        MaterialKind.GraveDust => "Grave Dust",
+        MaterialKind.DemonBile => "Demon Bile",
+        MaterialKind.AstralMercury => "Astral Mercury",
         _ => "?"
     };
 

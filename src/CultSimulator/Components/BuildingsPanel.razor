@@ -4,6 +4,7 @@
 
 <div class="panel buildings-panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Constructions</h2>
+    <p class="text-xs text-slate-400 mb-3 leading-relaxed">Build structures to automate and boost your cult's income. Each construction increases in cost as you build more. Some buildings generate Gold — visit the <strong class="text-violet-300">Bank</strong> tab to manage it.</p>
     <div class="building-list flex flex-col gap-2.5">
         @foreach (var def in GameData.Buildings.Where(b => GameData.PreachBuildings.Contains(b.Type)))
         {
