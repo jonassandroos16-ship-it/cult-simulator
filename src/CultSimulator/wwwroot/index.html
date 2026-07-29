@@ -2,34 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Cult Simulator</title>
-    <base href="/" />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
-    <link href="css/base.css" rel="stylesheet" />
-    <link href="css/loading.css" rel="stylesheet" />
-    <link href="css/naming.css" rel="stylesheet" />
-    <link href="css/layout.css" rel="stylesheet" />
-    <link href="css/altar.css" rel="stylesheet" />
-    <link href="css/panels.css" rel="stylesheet" />
-    <link href="css/events.css" rel="stylesheet" />
-    <link href="css/tabs.css" rel="stylesheet" />
-    <link href="css/worldmap.css" rel="stylesheet" />
-    <link href="css/rankup.css" rel="stylesheet" />
-    <link href="css/tailwind.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/tailwind.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background: #0a0a0f; }
+        #app:empty::after { content: 'Loading...'; display: block; text-align: center; padding: 2rem; color: #888; }
+    </style>
 </head>
 <body>
-    <div id="app">
-        <svg class="loading-progress"><circle r="40%" cx="50%" cy="50%" /><circle r="40%" cx="50%" cy="50%" /></svg>
-        <div class="loading-progress-text"></div>
-    </div>
-    <div id="blazor-error-ui">An unhandled error has occurred.<a href="." class="reload">Reload</a><span class="dismiss">🗙</span></div>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+    <div id="app">Loading...</div>
     <script src="js/worldmap.js"></script>
-    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="js/autosave.js"></script>
+    <script src="_framework/blazor.webassembly.js" autostart="true"></script>
 </body>
 </html>

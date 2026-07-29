@@ -1,5 +1,6 @@
 @page "/"
 @using CultSimulator.Game
+@inject IJSRuntime JS
 @inject GameService Game
 @implements IDisposable
 
@@ -61,11 +62,13 @@ else
     private bool initialized = false;
     private string activeTab = "preach";
     protected override async Task OnInitializedAsync() { await Game.InitAsync(); Game.OnChange += StateChanged; Game.StartTimers(); initialized = true; }
+    protected override async Task OnAfterRenderAsync(bool firstRender) { if (firstRender) { try { await JS.InvokeVoidAsync("setupAutoSave", DotNetObjectReference.Create(this)); } catch { } } }
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
     private void SwitchTab(string tab) => activeTab = tab;
     private void StoryDismissed() { }
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
     private async Task ResetGame() { await Game.ResetAsync(); }
-    public void Dispose() { Game.OnChange -= StateChanged; }
+    public void Dispose() { Game.OnChange -= StateChanged; _ = Game.SaveAsync(); }
+    [Microsoft.JSInterop.JSInvokable] public async Task SaveOnExit() => await Game.SaveAsync();
 }

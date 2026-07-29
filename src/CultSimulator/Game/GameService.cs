@@ -7,9 +7,10 @@ public class GameService
     private readonly IJSRuntime _js;
     private readonly WorldLocationService _locations;
     private GameState _state;
-    private Timer? _tickTimer, _eventTimer, _occultTimer, _saveTimer;
+    private Timer? _tickTimer, _eventTimer, _occultTimer, _saveDebounceTimer, _periodicSaveTimer;
     private bool _eventPending;
     private DateTime _lastOccultTick;
+    private DateTime _lastSave = DateTime.UtcNow;
 
     public GameState State => _state;
     public WorldLocationService Locations => _locations;
@@ -56,11 +57,12 @@ public class GameService
 
     public void StartTimers()
     {
-        _tickTimer?.Dispose(); _eventTimer?.Dispose(); _occultTimer?.Dispose();
+        _tickTimer?.Dispose(); _eventTimer?.Dispose(); _occultTimer?.Dispose(); _saveDebounceTimer?.Dispose(); _periodicSaveTimer?.Dispose();
         _tickTimer = new Timer(_ => Tick(), null, 1000, 1000);
         _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
         _lastOccultTick = DateTime.UtcNow;
         _occultTimer = new Timer(_ => OccultTick(), null, 100, 100);
+        _periodicSaveTimer = new Timer(async _ => await SaveAsync(), null, 5000, 5000);
     }
 
     private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); NotifyChanged(); }
@@ -117,6 +119,13 @@ public class GameService
 
     public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; TakeoverCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; await SaveAsync(); NotifyChanged(); }
 
-    private void NotifyChanged() { _saveTimer?.Dispose(); _saveTimer = new Timer(async _ => await SaveAsync(), null, 500, Timeout.Infinite); OnChange?.Invoke(); }
-    public async Task SaveAsync() { try { _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(); var json = SaveLoad.SaveGame(_state); await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json); } catch { } }
+    private void NotifyChanged()
+    {
+        OnChange?.Invoke();
+        var now = DateTime.UtcNow;
+        if (now - _lastSave < TimeSpan.FromSeconds(3)) return;
+        _lastSave = now;
+        _ = SaveAsync();
+    }
+    public async Task SaveAsync() { try { _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(); var json = SaveLoad.SaveGame(_state); await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json); _lastSave = DateTime.UtcNow; } catch { } }
 }
