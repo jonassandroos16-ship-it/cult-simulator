@@ -5,6 +5,10 @@
 @implements IDisposable
 
 <div class="world-map-wrapper">
+    <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+        <p class="text-violet-300">The World Map shows historical covens you can take over. Click a marker to see details. You must have enough followers to take over a coven — the next available target is highlighted. Switch between covens to change your active bonuses.</p>
+        <p class="text-slate-400 text-xs mt-2">Taking over covens is separate from conquering Ley Line nodes — the Ley Lines tab handles node conquest for materials and passive Faith. This map is about expanding your cult's reach across the world.</p>
+    </div>
     <div id="world-map-container" class="world-map-container"></div>
 
     @if (selectedCoven != null)
