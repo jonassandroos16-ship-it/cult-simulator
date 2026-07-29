@@ -7,10 +7,10 @@
 <div class="world-map-wrapper">
     <div class="mb-3 flex items-center gap-2">
         <button class="map-tab-button @(mapMode == "world" ? "active" : "")" @onclick='() => SwitchMapMode("world")'>
-            <span class="text-sm">ðŸŒ</span> World
+            <span class="text-sm">🌍</span> World
         </button>
         <button class="map-tab-button @(mapMode == "local" ? "active" : "")" @onclick='() => SwitchMapMode("local")'>
-            <span class="text-sm">ðŸ“</span> Local
+            <span class="text-sm">📍</span> Local
         </button>
         <div class="ml-auto text-[0.7rem] text-violet-400 tracking-wide">
             @if (mapMode == "local")
@@ -23,7 +23,7 @@
     @if (mapMode == "world")
     {
         <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <p class="text-violet-300">The World Map shows historical covens you can convert. Click a marker to see details. You must have enough followers to begin a conversion â€” the next available target is highlighted. Each conversion is a narrative siege: make choices, face consequences, and earn the coven's allegiance.</p>
+            <p class="text-violet-300">The World Map shows historical covens you can convert. Click a marker to see details. You must have enough followers to begin a conversion — the next available target is highlighted. Each conversion is a narrative siege: make choices, face consequences, and earn the coven's allegiance.</p>
             <p class="text-slate-400 text-xs mt-2">Switch to the Local tab to see rival cults near your active coven. Local cults are easier to convert and respawn every hour.</p>
         </div>
         <div id="world-map-container" class="world-map-container"></div>
@@ -31,7 +31,7 @@
     else
     {
         <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <p class="text-violet-300">Local cults operate near your active coven â€” @activeCovenName. They are weaker than full covens and can be converted quickly for a reward of followers or gold. A new cult appears every hour, up to @LocalCultEngine.MaxActiveLocalCults at a time.</p>
+            <p class="text-violet-300">Local cults operate near your active coven — @activeCovenName. They are weaker than full covens and can be converted quickly for a reward of followers or gold. A new cult appears every hour, up to @LocalCultEngine.MaxActiveLocalCults at a time.</p>
         </div>
         <div id="local-map-container" class="world-map-container"></div>
 
@@ -41,7 +41,7 @@
             var canConvert = Game.CanConvertLocalCult(cultDef.Id);
 
             <div class="coven-popup" style="display:block;">
-                <button class="coven-popup-close" @onclick="CloseLocalPopup">Ã—</button>
+                <button class="coven-popup-close" @onclick="CloseLocalPopup">×</button>
                 <h3 class="coven-popup-name">@cultDef.Name</h3>
                 <p class="coven-popup-summary">@cultDef.Description</p>
 
@@ -69,7 +69,7 @@
     @if (mapMode == "world" && selectedCoven != null)
     {
         <div class="coven-popup" style="display:block;">
-            <button class="coven-popup-close" @onclick="ClosePopup">Ã—</button>
+            <button class="coven-popup-close" @onclick="ClosePopup">×</button>
             <div class="coven-popup-flag">@selectedCoven.CountryFlag</div>
             <h3 class="coven-popup-name">@selectedCoven.Name</h3>
             <p class="coven-popup-location">@selectedCoven.Location, @selectedCoven.Country</p>
@@ -108,7 +108,7 @@
                         </div>
                         @if (conversionDef != null)
                         {
-                            <p class="text-[0.65rem] text-violet-400 mb-2 italic">@(conversionDef.Theme) â€” @conversionDef.Steps.Count trials</p>
+                            <p class="text-[0.65rem] text-violet-400 mb-2 italic">@(conversionDef.Theme) — @conversionDef.Steps.Count trials</p>
                         }
                         @if (isNextTarget && !canConvert)
                         {
@@ -175,7 +175,7 @@
         get
         {
             var loc = LocationService.Find(Game.State.ActiveCovenId);
-            return loc?.Name ?? "SkanÃ¶r";
+            return loc?.Name ?? "Skanör";
         }
     }
 
@@ -276,7 +276,7 @@
                     name = cult.Name,
                     lat = cult.Latitude,
                     lng = cult.Longitude,
-                    flag = "ðŸ—¡ï¸",
+                    flag = "🗡️",
                     era = "Local Cult",
                     summary = cult.Description,
                     lore = "",
