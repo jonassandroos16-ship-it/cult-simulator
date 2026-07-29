@@ -1,0 +1,66 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+@if (Game.LocalCultRewardPending && Game.PendingLocalCultDef != null)
+{
+    var cult = Game.PendingLocalCultDef;
+
+    <div class="event-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 animate-fade-in"
+         style="background: rgba(5,3,8,0.88); backdrop-filter: blur(8px);">
+        <div class="event-modal relative rounded-3xl p-6 sm:p-10 max-w-md w-full overflow-hidden animate-modal-rise"
+             style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.25);">
+
+            <div class="event-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
+                 style="background: radial-gradient(circle at center, rgba(245,158,11,0.12) 0%, transparent 60%);"></div>
+
+            <div class="relative text-center">
+                <div class="text-2xl mb-3">⚔️</div>
+                <h2 class="font-display text-sm font-semibold tracking-[0.3em] uppercase text-amber-300 mb-2">Local Cult Defeated</h2>
+                <h3 class="font-display text-xl font-bold text-amber-100 tracking-[0.08em] mb-4">@cult.Name</h3>
+                <p class="text-sm leading-7 text-violet-200 mb-6 px-2">@cult.Description</p>
+
+                <p class="text-[0.7rem] tracking-[0.2em] uppercase text-violet-400 mb-4">Choose Your Reward</p>
+
+                <div class="event-choices flex flex-col gap-3 relative">
+                    <button class="event-choice flex flex-col gap-1 p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                            style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                            @onclick="() => ChooseReward(LocalCultReward.Followers)">
+                        <span class="choice-label font-display text-base text-amber-100 font-medium">+@cult.RewardAmount Followers</span>
+                        <span class="choice-desc text-xs text-amber-200">Recruit the defeated cult's members into your fold</span>
+                    </button>
+                    <button class="event-choice flex flex-col gap-1 p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                            style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                            @onclick="() => ChooseReward(LocalCultReward.Gold)">
+                        <span class="choice-label font-display text-base text-amber-100 font-medium">+@cult.RewardAmount Gold</span>
+                        <span class="choice-desc text-xs text-amber-200">Loot their treasury and seize their wealth</span>
+                    </button>
+                </div>
+
+                <div class="mt-4">
+                    <button class="conversion-abandon text-[0.7rem] text-violet-400 hover:text-rose-400 transition-colors cursor-pointer tracking-[0.15em] uppercase"
+                            @onclick="Cancel">
+                        Decline
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void ChooseReward(LocalCultReward reward)
+    {
+        Game.ConfirmLocalCultReward(reward);
+    }
+
+    private void Cancel()
+    {
+        Game.CancelLocalCultReward();
+    }
+
+    public void Dispose() => Game.OnChange -= StateChanged;
+}
