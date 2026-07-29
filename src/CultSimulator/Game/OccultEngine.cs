@@ -29,7 +29,7 @@ public static class OccultEngine
     public static bool CanBuySermonPower(GameState state) => state.ActiveCoven.Faith >= SermonPowerUpgradeCost(state.Occult);
     public static bool BuySermonPower(GameState state) { int cost = SermonPowerUpgradeCost(state.Occult); if (state.ActiveCoven.Faith < cost) return false; state.ActiveCoven.Faith -= cost; state.Occult.SermonPowerLevel++; return true; }
 
-    public static int AcolyteHireCost(GameState state) => (int)Math.Ceiling(OccultBalance.SermonCostBase * Math.Pow(OccultBalance.SermonCostGrowth, state.Occult.Acolytes / 10.0));
+    public static int AcolyteHireCost(GameState state) => (int)Math.Ceiling(OccultBalance.AcolyteCostBase * Math.Pow(OccultBalance.AcolyteCostGrowth, state.Occult.Acolytes));
     public static bool CanHireAcolyte(GameState state) => state.ActiveCoven.Faith >= AcolyteHireCost(state) && state.Occult.Acolytes < CultistHierarchy.AcolyteCap(state.Occult);
     public static bool HireAcolyte(GameState state) { if (!CanHireAcolyte(state)) return false; state.ActiveCoven.Faith -= AcolyteHireCost(state); state.Occult.Acolytes++; return true; }
 

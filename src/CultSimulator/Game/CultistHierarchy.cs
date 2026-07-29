@@ -10,6 +10,7 @@ public static class CultistHierarchy
         int cap = OccultBalance.AcolyteCapBase;
         foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") cap += 50; }
         foreach (var m in o.Minions) if (m.Trait?.Id == "fleshspeaker") cap += 50;
+        foreach (var c in o.HighCouncil) if (c.Trait?.Id == "fleshspeaker") cap += 50;
         return cap;
     }
 

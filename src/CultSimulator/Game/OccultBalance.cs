@@ -4,6 +4,9 @@ public static class OccultBalance
 {
     public const double SermonCostGrowth = 1.15;
     public const double SermonCostBase = 100.0;
+
+    public const double AcolyteCostBase = 50.0;
+    public const double AcolyteCostGrowth = 1.04;
     public const double ScholarFaithPerSec = 0.5;
     public const double InfiltratorFaithPerSec = 0.3;
     public const double ZealotArmyPowerPerSec = 0.5;
