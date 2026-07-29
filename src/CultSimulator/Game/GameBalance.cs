@@ -4,6 +4,7 @@ public static class GameBalance
 {
     public const int RecruitCost = 10;
     public const string SaveKey = "cult_simulator_save_v1";
+    public const string BackupSaveKey = "cult_simulator_save_v1_backup";
 
     public const double FollowerFaithPerSec = 0.05;
     public const double FollowerGoldPerSec = 0.02;

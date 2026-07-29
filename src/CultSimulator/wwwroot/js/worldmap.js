@@ -6,7 +6,7 @@ let covenMarkers = [];
 let expandedMarkerId = null;
 let dotNetRef = null;
 
-window.initWorldMap = function(containerId, locations, dotNetHelper) {
+window.initWorldMap = function(containerId, locations, dotNetHelper, options) {
     if (worldMap) {
         worldMap.remove();
         worldMap = null;
@@ -19,11 +19,14 @@ window.initWorldMap = function(containerId, locations, dotNetHelper) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
+    var opts = options || {};
+    var initialZoom = opts.zoom || 2;
+
     // Create map with dark theme, mobile-friendly zoom
     worldMap = L.map(container, {
-        center: [30, 0],
-        zoom: 2,
-        minZoom: 2,
+        center: opts.center || [30, 0],
+        zoom: initialZoom,
+        minZoom: opts.minZoom || 2,
         maxZoom: 18,
         zoomControl: true,
         scrollWheelZoom: true,

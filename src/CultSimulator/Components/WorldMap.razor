@@ -289,7 +289,13 @@
             }
         }
 
-        await JS.InvokeVoidAsync("initWorldMap", "local-map-container", jsLocations, _dotRef);
+        var mapOpts = new Dictionary<string, object>
+        {
+            ["zoom"] = 6,
+            ["minZoom"] = 3,
+            ["center"] = new[] { activeCoven.Latitude, activeCoven.Longitude }
+        };
+        await JS.InvokeVoidAsync("initWorldMap", "local-map-container", jsLocations, _dotRef, mapOpts);
     }
 
     [JSInvokable]

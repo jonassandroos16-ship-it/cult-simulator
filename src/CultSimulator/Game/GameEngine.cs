@@ -95,7 +95,28 @@ public static class GameEngine
         double elapsedSec = elapsedMs / 1000.0;
         if (elapsedSec <= 0) return (0, 0);
         double totalFaith = 0, totalGold = 0;
-        foreach (var coven in state.Covens) { if (!coven.TakenOver) continue; var (fps, gps) = TickIncome(coven); double cap = IdleCapSeconds(coven); double eff = Math.Min(elapsedSec, cap); double f = fps * eff; double g = gps * eff; coven.Faith += f; coven.Gold += g; totalFaith += f; totalGold += g; }
+
+        // Per-coven follower/building income (applies to all converted covens)
+        foreach (var coven in state.Covens)
+        {
+            if (!coven.TakenOver) continue;
+            var (fps, gps) = TickIncome(coven);
+            double cap = IdleCapSeconds(coven);
+            double eff = Math.Min(elapsedSec, cap);
+            double f = fps * eff; double g = gps * eff;
+            coven.Faith += f; coven.Gold += g;
+            totalFaith += f; totalGold += g;
+        }
+
+        // Occult income (acolytes, map nodes, scholars) — all goes to the
+        // active coven. Uses the same idle cap as the active coven's bank.
+        double occultCap = IdleCapSeconds(state.ActiveCoven);
+        double occultEff = Math.Min(elapsedSec, occultCap);
+        double occultFaith = (OccultEngine.TotalFaithPerSec(state) + OccultEngine.TotalMapFaithPerSec(state)) * occultEff;
+        state.ActiveCoven.Faith += occultFaith;
+        state.Occult.LifetimeFaith += occultFaith;
+        totalFaith += occultFaith;
+
         return (totalFaith, totalGold);
     }
 

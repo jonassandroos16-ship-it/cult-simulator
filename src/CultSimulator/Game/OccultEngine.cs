@@ -6,7 +6,7 @@ public static class OccultEngine
     {
         var o = state.Occult;
         double basePower = GrandSacrifice.ClickPowerBase(state) + o.SermonPowerLevel;
-        double mult = CultistHierarchy.TapPowerMult(o) * Grimoire.TapPowerBonus(o) * o.ElixirTapMult;
+        double mult = CultistHierarchy.TapPowerMult(o) * Grimoire.TapPowerBonus(o) * o.ElixirTapMult * GrandSacrifice.GlobalProductionMult(state);
         if (o.IsFrenzyActive) mult *= OccultBalance.FrenzyMultiplier;
         if (o.IsWhisperChoirActive) mult *= 3.0;
         return basePower * mult;
@@ -48,8 +48,9 @@ public static class OccultEngine
     public static double TotalFaithPerSec(GameState state)
     {
         var o = state.Occult;
+        // AcolyteFaithPerSec already includes GrandSacrifice.GlobalProductionMult
+        // via its internal globalMult parameter — don't multiply again.
         double total = AcolyteFaithPerSec(state);
-        total *= GrandSacrifice.GlobalProductionMult(state);
         total *= WorldMapSystem.GreatSealMultiplier(o);
         return total;
     }

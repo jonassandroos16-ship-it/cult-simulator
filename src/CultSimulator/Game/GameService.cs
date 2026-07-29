@@ -37,7 +37,13 @@ public class GameService
     public async Task InitAsync()
     {
         await _locations.LoadAsync();
-        try { var json = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey); _state = SaveLoad.LoadGame(json); }
+        try
+        {
+            var primary = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
+            var backup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
+            var (loaded, success) = SaveLoad.LoadGameWithBackup(primary, backup);
+            _state = loaded;
+        }
         catch { _state = GameEngine.InitialState(); }
         EnsureHomeCoven();
         ApplyOfflineIncome();
@@ -206,5 +212,20 @@ public class GameService
         _lastSave = now;
         _ = SaveAsync();
     }
-    public async Task SaveAsync() { try { _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(); var json = SaveLoad.SaveGame(_state); await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json); _lastSave = DateTime.UtcNow; } catch { } }
+    public async Task SaveAsync()
+    {
+        _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        var json = SaveLoad.SaveGame(_state);
+        try
+        {
+            // Before overwriting the primary save, copy the previous primary
+            // to the backup slot so a corrupted write never loses all progress.
+            var prev = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
+            if (!string.IsNullOrWhiteSpace(prev))
+                await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey, prev);
+            await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json);
+        }
+        catch { }
+        _lastSave = DateTime.UtcNow;
+    }
 }
