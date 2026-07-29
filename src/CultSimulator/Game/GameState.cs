@@ -12,6 +12,12 @@ public class GameState
     public List<CovenState> Covens { get; set; } = new();
     public OccultState Occult { get; set; } = new();
 
+    /// <summary>
+    /// Active narrative-siege conversion state. Null when no conversion is
+    /// in progress. Persisted so a conversion can resume after a reload.
+    /// </summary>
+    public ConversionState? Conversion { get; set; }
+
     [JsonIgnore]
     public string? ActiveEventId { get; set; }
 

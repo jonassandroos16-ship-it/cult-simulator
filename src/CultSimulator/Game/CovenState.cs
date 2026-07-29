@@ -2,7 +2,7 @@ namespace CultSimulator.Game;
 
 /// <summary>
 /// Per-coven mutable state. The home coven (Id == "skanor") is the player's
-/// own coven; others are rival covens that can be taken over.
+/// own coven; others are rival covens that can be converted.
 /// </summary>
 public class CovenState
 {
@@ -13,7 +13,18 @@ public class CovenState
     public int PreachCount { get; set; }
     public Dictionary<BuildingType, int> Buildings { get; set; } = new();
     public List<UpgradeId> Upgrades { get; set; } = new();
-    public bool TakenOver { get; set; }
+
+    /// <summary>
+    /// True after this rival coven has been converted through the
+    /// narrative siege. Replaces the former TakenOver field.
+    /// </summary>
+    public bool Converted { get; set; }
+
+    /// <summary>
+    /// Backwards-compat: older saves stored TakenOver. Kept so deserialization
+    /// does not lose data; migrated to Converted on load.
+    /// </summary>
+    public bool TakenOver { get => Converted; set => Converted = value; }
 
     public bool HasUpgrade(UpgradeId id) => Upgrades.Contains(id);
 }
