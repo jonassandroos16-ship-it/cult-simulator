@@ -14,27 +14,9 @@
 .recruit-button:hover:not(.disabled) { background: linear-gradient(135deg, rgba(245,158,11,0.25), rgba(217,119,6,0.2)); transform: translateY(-1px); }
 .recruit-button.disabled { opacity: 0.4; cursor: not-allowed; }
 .recruit-cost { color: var(--gold); font-weight: 600; }
-
 .preach-altar-wrapper { position: relative; display: inline-block; }
-.float-faith {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--gold);
-    text-shadow: 0 0 12px rgba(245, 158, 11, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5);
-    pointer-events: none;
-    z-index: 20;
-    white-space: nowrap;
-    animation-name: float-faith-rise;
-    animation-timing-function: ease-out;
-    animation-fill-mode: forwards;
-}
-@keyframes float-faith-rise {
-    0% { transform: translateX(-50%) translateY(0) scale(0.8); opacity: 0; }
-    15% { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1.1); }
-    100% { transform: translateX(-50%) translateY(-80px) scale(1); opacity: 0; }
-}
+.float-faith { position: absolute; top: 50%; left: 50%; transform: translateX(-50%); font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--gold); text-shadow: 0 0 12px rgba(245, 158, 11, 0.6), 0 2px 4px rgba(0, 0, 0, 0.5); pointer-events: none; z-index: 20; white-space: nowrap; animation-name: float-faith-rise; animation-timing-function: ease-out; animation-fill-mode: forwards; }
+@keyframes float-faith-rise { 0% { transform: translateX(-50%) translateY(0) scale(0.8); opacity: 0; } 15% { opacity: 1; transform: translateX(-50%) translateY(-10px) scale(1.1); } 100% { transform: translateX(-50%) translateY(-80px) scale(1); opacity: 0; } }
+.occult-altar-panel { background: var(--panel-bg); }
+.occult-altar-btn { background: radial-gradient(circle at center, var(--altar-core) 0%, var(--altar-mid) 60%, var(--altar-edge) 100%) !important; border: 1px solid rgba(245, 158, 11, 0.2); box-shadow: 0 0 30px rgba(167, 139, 250, 0.1), inset 0 0 20px rgba(15, 10, 36, 0.4); }
+.occult-altar-btn:hover { box-shadow: 0 0 40px rgba(245, 158, 11, 0.15), inset 0 0 20px rgba(15, 10, 36, 0.4); }

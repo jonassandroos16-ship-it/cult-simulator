@@ -5,56 +5,31 @@
 <div class="panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Grand Sacrifice</h2>
     <div class="flex flex-col gap-4">
-        <div class="text-center p-4 rounded-[14px]"
-             style="background: radial-gradient(circle, rgba(76,29,149,0.2), rgba(15,10,36,0.5)); border: 1px solid rgba(167,139,250,0.2);">
+        <div class="text-center p-4 rounded-[14px]" style="background: radial-gradient(circle, rgba(76,29,149,0.2), rgba(15,10,36,0.5)); border: 1px solid rgba(167,139,250,0.2);">
             <div class="text-5xl mb-3">🌟</div>
             <p class="text-sm text-violet-300 mb-2">Eldritch Favor</p>
             <span class="font-display text-3xl font-semibold text-amber-100">@NumberFormat.Fmt(occult.EldritchFavor)</span>
             <p class="text-xs text-slate-400 mt-2">Global production: ×@GrandSacrifice.GlobalProductionMult(Game.State).ToString("F2")</p>
         </div>
-
         <div class="p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Lifetime Devotion</span>
-                <span class="font-display text-sm text-amber-100">@NumberFormat.Fmt(occult.LifetimeDevotion)</span>
-            </div>
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Grand Sacrifices</span>
-                <span class="font-display text-sm text-amber-100">@occult.GrandSacrificeCount</span>
-            </div>
-            <div class="flex items-center justify-between">
-                <span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Favor Yield</span>
-                <span class="font-display text-sm text-emerald-400">+@NumberFormat.Fmt(GrandSacrifice.CalculateFavor(Game.State))</span>
-            </div>
+            <div class="flex items-center justify-between mb-2"><span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Lifetime Faith</span><span class="font-display text-sm text-amber-100">@NumberFormat.Fmt(occult.LifetimeFaith)</span></div>
+            <div class="flex items-center justify-between mb-2"><span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Grand Sacrifices</span><span class="font-display text-sm text-amber-100">@occult.GrandSacrificeCount</span></div>
+            <div class="flex items-center justify-between"><span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Favor Yield</span><span class="font-display text-sm text-emerald-400">+@NumberFormat.Fmt(GrandSacrifice.CalculateFavor(Game.State))</span></div>
         </div>
-
         @if (canSacrifice)
         {
-            <button class="w-full py-3 rounded-full font-display text-sm font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 hover:scale-[1.02]"
-                    style="background: linear-gradient(135deg, #4c1d95, #2e1065); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);"
-                    @onclick="DoSacrifice">
-                Perform Grand Sacrifice
-            </button>
+            <button class="w-full py-3 rounded-full font-display text-sm font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 hover:scale-[1.02]" style="background: linear-gradient(135deg, #4c1d95, #2e1065); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);" @onclick="DoSacrifice">Perform Grand Sacrifice</button>
             <p class="text-xs text-rose-400 text-center">Warning: This resets your cult but grants permanent Eldritch Favor bonuses.</p>
         }
-        else
-        {
-            <p class="text-xs text-slate-400 text-center">Accumulate @NumberFormat.Fmt(OccultBalance.FavorDivisor) lifetime devotion to earn 1 Eldritch Favor.</p>
-        }
+        else { <p class="text-xs text-slate-400 text-center">Accumulate @NumberFormat.Fmt(OccultBalance.FavorDivisor) lifetime faith to earn 1 Eldritch Favor.</p> }
     </div>
 </div>
 
 @code {
     private OccultState occult => Game.State.Occult;
     private bool canSacrifice => GrandSacrifice.CanSacrifice(Game.State);
-
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
-
-    private void DoSacrifice()
-    {
-        Game.PerformGrandSacrifice();
-    }
-
+    private void DoSacrifice() { Game.PerformGrandSacrifice(); }
     public void Dispose() => Game.OnChange -= StateChanged;
 }

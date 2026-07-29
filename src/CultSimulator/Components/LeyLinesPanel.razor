@@ -4,83 +4,33 @@
 
 <div class="panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">Corrupted Ley Lines</h2>
-
     <div class="flex flex-col gap-3 mb-4">
-        <div class="flex items-center justify-between p-3 rounded-[14px]"
-             style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="flex items-center gap-2">
-                <span class="text-xl">⚔️</span>
-                <span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Army Power</span>
-            </div>
-            <span class="font-display text-lg font-semibold text-amber-100">@NumberFormat.Fmt(occult.ArmyPower)</span>
-        </div>
-        <div class="flex items-center justify-between p-3 rounded-[14px]"
-             style="background: rgba(15,10,36,0.5); border: 1px solid @(suspicionColor);">
-            <div class="flex items-center gap-2">
-                <span class="text-xl">👁️</span>
-                <span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Suspicion</span>
-            </div>
-            <span class="font-display text-lg font-semibold @(suspicionHigh ? "text-rose-400" : "text-amber-100")">@Math.Floor(occult.Suspicion)%</span>
-        </div>
-        <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
-            <div class="h-full rounded-full transition-all duration-500"
-                 style="width: @(occult.Suspicion)%; background: @(suspicionHigh ? "var(--danger)" : "var(--gold-warm)");"></div>
-        </div>
+        <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);"><div class="flex items-center gap-2"><span class="text-xl">⚔️</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Army Power</span></div><span class="font-display text-lg font-semibold text-amber-100">@NumberFormat.Fmt(occult.ArmyPower)</span></div>
+        <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid @(suspicionColor);"><div class="flex items-center gap-2"><span class="text-xl">👁️</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Suspicion</span></div><span class="font-display text-lg font-semibold @(suspicionHigh ? "text-rose-400" : "text-amber-100")">@Math.Floor(occult.Suspicion)%</span></div>
+        <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden"><div class="h-full rounded-full transition-all duration-500" style="width: @(occult.Suspicion)%; background: @(suspicionHigh ? "var(--danger)" : "var(--gold-warm)");"></div></div>
     </div>
-
-    @if (TechTree.HasTech(occult, TechId.LeyLineWeaving) && occult.MapNodes.Count(n => n.Conquered) >= 3)
-    {
-        <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <span class="text-xs text-amber-400">Great Seals: @WorldMapSystem.GreatSealCount(occult) (×@WorldMapSystem.GreatSealMultiplier(occult).ToString("F2") production)</span>
-        </div>
-    }
-
+    @if (TechTree.HasTech(occult, TechId.LeyLineWeaving) && occult.MapNodes.Count(n => n.Conquered) >= 3) { <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);"><span class="text-xs text-amber-400">Great Seals: @WorldMapSystem.GreatSealCount(occult) (×@WorldMapSystem.GreatSealMultiplier(occult).ToString("F2") production)</span></div> }
     <div class="flex flex-col gap-2.5">
         @foreach (var nodeDef in OccultData.MapNodes)
         {
             var nodeState = WorldMapSystem.GetNode(occult, nodeDef.Id);
             var conquered = nodeState != null && nodeState.Conquered;
-            var canConquer = WorldMapSystem.CanConquer(occult, nodeDef);
-            <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] @(conquered ? "border-emerald-400/20 bg-emerald-400/5" : "")"
-                 style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            var canConquer = WorldMapSystem.CanConquer(Game.State, nodeDef);
+            <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] @(conquered ? "border-emerald-400/20 bg-emerald-400/5" : "")" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
                 <div class="text-3xl flex-shrink-0">@nodeDef.Icon</div>
                 <div class="flex-1 flex flex-col gap-0.5">
                     <span class="font-display text-base text-amber-100 font-medium">@nodeDef.Name</span>
                     @if (conquered)
                     {
-                        <span class="text-xs text-emerald-400">+@NumberFormat.Fmt(nodeDef.FkPerSec) 📜/s · @nodeDef.SuspicionPerSec%/s suspicion</span>
+                        <span class="text-xs text-emerald-400">+@NumberFormat.Fmt(nodeDef.FaithPerSec) ✨/s · @nodeDef.SuspicionPerSec%/s suspicion</span>
                         <div class="flex gap-1.5 mt-1">
-                            <button class="px-2.5 py-1 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState!.Stance == NodeStance.Harvest ? "text-amber-400 border border-amber-400/30 bg-amber-400/5" : "text-slate-400 border border-slate-600/20")"
-                                    @onclick="() => Game.SetNodeStance(nodeDef.Id, NodeStance.Harvest)">
-                                Harvest
-                            </button>
-                            <button class="px-2.5 py-1 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState.Stance == NodeStance.Veil ? "text-violet-400 border border-violet-400/30 bg-violet-400/5" : "text-slate-400 border border-slate-600/20")"
-                                    @onclick="() => Game.SetNodeStance(nodeDef.Id, NodeStance.Veil)">
-                                Veil
-                            </button>
+                            <button class="px-2.5 py-1 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState!.Stance == NodeStance.Harvest ? "text-amber-400 border border-amber-400/30 bg-amber-400/5" : "text-slate-400 border border-slate-600/20")" @onclick="() => Game.SetNodeStance(nodeDef.Id, NodeStance.Harvest)">Harvest</button>
+                            <button class="px-2.5 py-1 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState.Stance == NodeStance.Veil ? "text-violet-400 border border-violet-400/30 bg-violet-400/5" : "text-slate-400 border border-slate-600/20")" @onclick="() => Game.SetNodeStance(nodeDef.Id, NodeStance.Veil)">Veil</button>
                         </div>
                     }
-                    else
-                    {
-                        <span class="text-xs text-violet-300">FK: +@NumberFormat.Fmt(nodeDef.FkPerSec)/s</span>
-                        <span class="text-[0.7rem] text-slate-400">Cost: @NumberFormat.Fmt(nodeDef.DevotionCost) 🩸 + @NumberFormat.Fmt(nodeDef.ArmyPowerRequired) ⚔️</span>
-                    }
+                    else { <span class="text-xs text-violet-300">Faith: +@NumberFormat.Fmt(nodeDef.FaithPerSec)/s</span><span class="text-[0.7rem] text-slate-400">Cost: @NumberFormat.Fmt(nodeDef.FaithCost) ✨ + @NumberFormat.Fmt(nodeDef.ArmyPowerRequired) ⚔️</span> }
                 </div>
-                <div class="flex-shrink-0">
-                    @if (conquered)
-                    {
-                        <span class="learned-badge text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-emerald-400 px-3 py-1.5 border border-emerald-400/30 rounded-full">Conquered</span>
-                    }
-                    else
-                    {
-                        <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                                style="background: linear-gradient(135deg, #dc2626, #991b1b); border: none; color: #fef3c7;"
-                                disabled="@(!canConquer)"
-                                @onclick="() => Game.ConquerNode(nodeDef.Id)">
-                            Conquer
-                        </button>
-                    }
-                </div>
+                <div class="flex-shrink-0">@if (conquered) { <span class="learned-badge text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-emerald-400 px-3 py-1.5 border border-emerald-400/30 rounded-full">Conquered</span> } else { <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed" style="background: linear-gradient(135deg, #dc2626, #991b1b); border: none; color: #fef3c7;" disabled="@(!canConquer)" @onclick="() => Game.ConquerNode(nodeDef.Id)">Claim</button> }</div>
             </div>
         }
     </div>
@@ -90,9 +40,7 @@
     private OccultState occult => Game.State.Occult;
     private bool suspicionHigh => occult.Suspicion >= OccultBalance.SuspicionRaidThreshold;
     private string suspicionColor => suspicionHigh ? "rgba(251,113,133,0.3)" : "var(--panel-border)";
-
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
-
     public void Dispose() => Game.OnChange -= StateChanged;
 }
