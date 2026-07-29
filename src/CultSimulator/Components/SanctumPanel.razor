@@ -83,25 +83,57 @@
     </div>
 }
 
-@if (TechTree.HasTech(occult, TechId.ExsanguinationEngine))
-{
-    <div class="panel glass-panel rounded-[20px] p-5">
-        <h2 class="panel-title">Rituals</h2>
-        <div class="flex flex-col gap-2.5">
+<div class="panel glass-panel rounded-[20px] p-5">
+    <h2 class="panel-title">Rituals</h2>
+    <div class="flex flex-col gap-2.5">
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanSacrificeAcolyte(Game.State))" @onclick="() => Game.SacrificeAcolyte()">
+            <div class="text-3xl flex-shrink-0">🩸</div>
+            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Acolyte Sacrifice</span><span class="text-xs text-rose-400">Sacrifice 1 Acolyte to reduce Suspicion by @OccultBalance.AcolyteSacrificeSuspicionReduction% and gain Faith</span></div>
+        </button>
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateBloodOffering(Game.State))" @onclick="() => Game.ActivateBloodOffering()">
+            <div class="text-3xl flex-shrink-0">💀</div>
+            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Blood Offering</span><span class="text-xs text-rose-400">Sacrifice 5 Acolytes to reset Suspicion to 0 and gain massive Faith</span></div>
+        </button>
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateDarkVigil(occult))" @onclick="() => Game.ActivateDarkVigil()">
+            <div class="text-3xl flex-shrink-0">🌙</div>
+            <div class="flex-1 flex flex-col gap-0.5">
+                <span class="font-display text-base text-amber-100 font-medium">Dark Vigil</span>
+                <span class="text-xs text-violet-300">Sacrifice 3 Acolytes for 45s of halved Suspicion generation</span>
+                @if (occult.IsDarkVigilActive) { <span class="text-[0.7rem] text-amber-400">Active: @Math.Ceiling(occult.DarkVigilTimer)s remaining</span> }
+            </div>
+        </button>
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateWhisperChoir(occult))" @onclick="() => Game.ActivateWhisperChoir()">
+            <div class="text-3xl flex-shrink-0">🗣️</div>
+            <div class="flex-1 flex flex-col gap-0.5">
+                <span class="font-display text-base text-amber-100 font-medium">Whisper Choir</span>
+                <span class="text-xs text-violet-300">Sacrifice 10 Acolytes for 60s of tripled sermon power</span>
+                @if (occult.IsWhisperChoirActive) { <span class="text-[0.7rem] text-amber-400">Active: @Math.Ceiling(occult.WhisperChoirTimer)s remaining</span> }
+            </div>
+        </button>
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateCovenBlessing(occult))" @onclick="() => Game.ActivateCovenBlessing()">
+            <div class="text-3xl flex-shrink-0">✨</div>
+            <div class="flex-1 flex flex-col gap-0.5">
+                <span class="font-display text-base text-amber-100 font-medium">Coven Blessing</span>
+                <span class="text-xs text-violet-300">Sacrifice 20 Acolytes for 90s of doubled Faith generation and halved Suspicion</span>
+                @if (occult.IsCovenBlessingActive) { <span class="text-[0.7rem] text-amber-400">Active: @Math.Ceiling(occult.CovenBlessingTimer)s remaining</span> }
+            </div>
+        </button>
+        @if (TechTree.HasTech(occult, TechId.ExsanguinationEngine))
+        {
             <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateFrenzy(occult))" @onclick="() => Game.ActivateFrenzy()">
                 <div class="text-3xl flex-shrink-0">🔥</div>
                 <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Ecstatic Frenzy</span><span class="text-xs text-rose-400">Banish a disciple for 15s of 10x sermon power</span></div>
             </button>
-            @if (TechTree.HasTech(occult, TechId.MassHysteria))
-            {
-                <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateMassHysteria(occult))" @onclick="() => Game.ActivateMassHysteria()">
-                    <div class="text-3xl flex-shrink-0">😱</div>
-                    <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Mass Hysteria</span><span class="text-xs text-violet-400">30s of doubled Faith generation</span></div>
-                </button>
-            }
-        </div>
+        }
+        @if (TechTree.HasTech(occult, TechId.MassHysteria))
+        {
+            <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateMassHysteria(occult))" @onclick="() => Game.ActivateMassHysteria()">
+                <div class="text-3xl flex-shrink-0">😱</div>
+                <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Mass Hysteria</span><span class="text-xs text-violet-400">30s of doubled Faith generation</span></div>
+            </button>
+        }
     </div>
-}
+</div>
 
 @code {
     private OccultState occult => Game.State.Occult;
