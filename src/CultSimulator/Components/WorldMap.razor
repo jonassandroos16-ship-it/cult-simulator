@@ -5,13 +5,68 @@
 @implements IDisposable
 
 <div class="world-map-wrapper">
-    <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-        <p class="text-violet-300">The World Map shows historical covens you can convert. Click a marker to see details. You must have enough followers to begin a conversion — the next available target is highlighted. Each conversion is a narrative siege: make choices, face consequences, and earn the coven's allegiance. Switch between covens to change your active bonuses.</p>
-        <p class="text-slate-400 text-xs mt-2">Converting covens is separate from conquering Ley Line nodes — the Ley Lines tab handles node conquest for materials and passive Faith. This map is about expanding your cult's reach across the world.</p>
+    <div class="mb-3 flex items-center gap-2">
+        <button class="map-tab-button @(mapMode == "world" ? "active" : "")" @onclick="() => SwitchMapMode("world")">
+            <span class="text-sm">🌍</span> World
+        </button>
+        <button class="map-tab-button @(mapMode == "local" ? "active" : "")" @onclick="() => SwitchMapMode("local")">
+            <span class="text-sm">📍</span> Local
+        </button>
+        <div class="ml-auto text-[0.7rem] text-violet-400 tracking-wide">
+            @if (mapMode == "local")
+            {
+                <span>@Game.ActiveLocalCultsForCurrentCoven.Count / @LocalCultEngine.MaxActiveLocalCults cults active</span>
+            }
+        </div>
     </div>
-    <div id="world-map-container" class="world-map-container"></div>
 
-    @if (selectedCoven != null)
+    @if (mapMode == "world")
+    {
+        <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <p class="text-violet-300">The World Map shows historical covens you can convert. Click a marker to see details. You must have enough followers to begin a conversion — the next available target is highlighted. Each conversion is a narrative siege: make choices, face consequences, and earn the coven's allegiance.</p>
+            <p class="text-slate-400 text-xs mt-2">Switch to the Local tab to see rival cults near your active coven. Local cults are easier to convert and respawn every hour.</p>
+        </div>
+        <div id="world-map-container" class="world-map-container"></div>
+    }
+    else
+    {
+        <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <p class="text-violet-300">Local cults operate near your active coven — @activeCovenName. They are weaker than full covens and can be converted quickly for a reward of followers or gold. A new cult appears every hour, up to @LocalCultEngine.MaxActiveLocalCults at a time.</p>
+        </div>
+        <div id="local-map-container" class="world-map-container"></div>
+
+        @if (selectedLocalCult != null)
+        {
+            var cultDef = selectedLocalCult;
+            var canConvert = Game.CanConvertLocalCult(cultDef.Id);
+
+            <div class="coven-popup" style="display:block;">
+                <button class="coven-popup-close" @onclick="CloseLocalPopup">×</button>
+                <h3 class="coven-popup-name">@cultDef.Name</h3>
+                <p class="coven-popup-summary">@cultDef.Description</p>
+
+                <div class="coven-popup-takeover mt-3">
+                    <div class="takeover-progress-row flex items-center justify-between text-[0.7rem] text-violet-300 mb-1">
+                        <span>Followers needed</span>
+                        <span class="text-amber-200">@CovenProgress.TotalFollowers(Game.State) / @cultDef.FollowersRequired</span>
+                    </div>
+                    <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-2">
+                        <div class="h-full rounded-full transition-all duration-500"
+                             style="width: @(Math.Min(1.0, (double)CovenProgress.TotalFollowers(Game.State) / cultDef.FollowersRequired) * 100)%; background: @((canConvert ? "var(--success)" : "var(--danger)"));"></div>
+                    </div>
+                    <p class="text-[0.65rem] text-amber-300 mb-2">Reward: @cultDef.RewardAmount followers or gold</p>
+                    <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                            style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
+                            disabled="@(!canConvert)"
+                            @onclick="() => ConvertLocalCult(cultDef.Id)">
+                        Convert
+                    </button>
+                </div>
+            </div>
+        }
+    }
+
+    @if (mapMode == "world" && selectedCoven != null)
     {
         <div class="coven-popup" style="display:block;">
             <button class="coven-popup-close" @onclick="ClosePopup">×</button>
@@ -108,10 +163,21 @@
 </div>
 
 @code {
+    private string mapMode = "world";
     private WorldLocationDef? selectedCoven;
+    private LocalCultDef? selectedLocalCult;
     private bool showLore = false;
     private bool mapInitialized = false;
     private DotNetObjectReference<WorldMap>? _dotRef;
+
+    private string activeCovenName
+    {
+        get
+        {
+            var loc = LocationService.Find(Game.State.ActiveCovenId);
+            return loc?.Name ?? "Skanör";
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -121,14 +187,30 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!mapInitialized && LocationService.IsLoaded)
+        if (mapMode == "world" && !mapInitialized && LocationService.IsLoaded)
         {
-            await InitMap();
+            await InitWorldMap();
+            mapInitialized = true;
+        }
+        else if (mapMode == "local" && !mapInitialized)
+        {
+            await InitLocalMap();
             mapInitialized = true;
         }
     }
 
-    private async Task InitMap()
+    private async Task SwitchMapMode(string mode)
+    {
+        if (mapMode == mode) return;
+        await JS.InvokeVoidAsync("destroyWorldMap");
+        mapInitialized = false;
+        mapMode = mode;
+        selectedCoven = null;
+        selectedLocalCult = null;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task InitWorldMap()
     {
         var locations = LocationService.Locations;
         var jsLocations = new List<object>();
@@ -158,25 +240,98 @@
         await JS.InvokeVoidAsync("initWorldMap", "world-map-container", jsLocations, _dotRef);
     }
 
+    private async Task InitLocalMap()
+    {
+        var activeCoven = LocationService.Find(Game.State.ActiveCovenId);
+        if (activeCoven == null) return;
+
+        var localCults = LocalCultData.ForCoven(Game.State.ActiveCovenId);
+        var activeInstances = Game.ActiveLocalCultsForCurrentCoven;
+
+        var jsLocations = new List<object>();
+
+        jsLocations.Add(new {
+            id = activeCoven.Id,
+            name = activeCoven.Name,
+            lat = activeCoven.Latitude,
+            lng = activeCoven.Longitude,
+            flag = activeCoven.CountryFlag,
+            era = "",
+            summary = "Your active coven",
+            lore = "",
+            location = activeCoven.Location,
+            country = activeCoven.Country,
+            takenOver = true,
+            isNextTarget = false,
+            isActive = true
+        });
+
+        foreach (var cult in localCults)
+        {
+            var isActive = activeInstances.Any(i => i.CultId == cult.Id);
+            if (isActive)
+            {
+                jsLocations.Add(new {
+                    id = cult.Id,
+                    name = cult.Name,
+                    lat = cult.Latitude,
+                    lng = cult.Longitude,
+                    flag = "🗡️",
+                    era = "Local Cult",
+                    summary = cult.Description,
+                    lore = "",
+                    location = "",
+                    country = "",
+                    takenOver = false,
+                    isNextTarget = true,
+                    isActive = false
+                });
+            }
+        }
+
+        await JS.InvokeVoidAsync("initWorldMap", "local-map-container", jsLocations, _dotRef);
+    }
+
     [JSInvokable]
     public void SelectCoven(string id)
     {
+        if (mapMode == "local")
+        {
+            var cultDef = LocalCultData.Find(id);
+            if (cultDef != null)
+            {
+                selectedLocalCult = cultDef;
+                selectedCoven = null;
+                StateHasChanged();
+                return;
+            }
+        }
+
         var loc = LocationService.Find(id);
         if (loc != null)
         {
             selectedCoven = loc;
+            selectedLocalCult = null;
             showLore = false;
             StateHasChanged();
         }
     }
 
     private void ClosePopup() { selectedCoven = null; showLore = false; }
+    private void CloseLocalPopup() { selectedLocalCult = null; }
     private void ToggleLore() => showLore = !showLore;
 
     private void BeginConversion(string id)
     {
         Game.StartConversion(id);
         selectedCoven = null;
+        _ = RefreshMap();
+    }
+
+    private void ConvertLocalCult(string id)
+    {
+        Game.RequestLocalCultConversion(id);
+        selectedLocalCult = null;
         _ = RefreshMap();
     }
 
@@ -191,7 +346,8 @@
     {
         await JS.InvokeVoidAsync("destroyWorldMap");
         mapInitialized = false;
-        await InitMap();
+        if (mapMode == "world") await InitWorldMap();
+        else await InitLocalMap();
         mapInitialized = true;
         StateHasChanged();
     }
