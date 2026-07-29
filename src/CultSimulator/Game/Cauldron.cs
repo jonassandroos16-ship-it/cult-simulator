@@ -27,10 +27,10 @@ public static class Cauldron
         if (recipe.IsPermanent)
         {
             var suit = id switch { CauldronRecipeId.BloodForge => ArtifactSuit.Blood, CauldronRecipeId.VoidForge => ArtifactSuit.Void, CauldronRecipeId.MindForge => ArtifactSuit.Mind, CauldronRecipeId.FleshForge => ArtifactSuit.Flesh, _ => ArtifactSuit.Blood };
-            var unowned = OccultData.Artifacts.Where(a => a.Suit == suit && !OwnsArtifact(o, a.Id)).ToList();
+            var unowned = OccultData.Artifacts.Where(a => a.Suit == suit && !Grimoire.OwnsArtifact(o, a.Id)).ToList();
             if (unowned.Count == 0) return (false, null);
             var chosen = unowned[Random.Shared.Next(unowned.Count)];
-            AddArtifact(o, chosen.Id);
+            Grimoire.AddArtifact(o, chosen.Id);
             return (true, chosen.Id);
         }
         ApplyElixir(o, id);
