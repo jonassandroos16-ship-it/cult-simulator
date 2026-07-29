@@ -18,6 +18,12 @@ public class GameState
     /// </summary>
     public ConversionState? Conversion { get; set; }
 
+    /// <summary>
+    /// Local cults currently spawned on the local map. Persisted so spawned
+    /// cults survive reloads. Max 3 at a time per coven.
+    /// </summary>
+    public List<LocalCultInstance> ActiveLocalCults { get; set; } = new();
+
     [JsonIgnore]
     public string? ActiveEventId { get; set; }
 

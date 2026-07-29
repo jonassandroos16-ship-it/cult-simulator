@@ -35,6 +35,7 @@ public static class SaveLoad
         state.Occult.Materials ??= new Dictionary<MaterialKind, int>();
         state.Occult.LeyLines ??= new List<string[]>();
         state.Conversion ??= null;
+        state.ActiveLocalCults ??= new List<LocalCultInstance>();
     }
 
     public static string SaveGame(GameState s) => JsonSerializer.Serialize(s, JsonOptions);
