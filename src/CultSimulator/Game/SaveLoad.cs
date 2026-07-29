@@ -17,10 +17,14 @@ public static class SaveLoad
     private static void Migrate(GameState state)
     {
         state.Covens ??= new List<CovenState>();
-        if (state.Covens.Count == 0) { state.Covens.Add(new CovenState { Id = "skanor", TakenOver = true }); state.StoryShown = false; }
+        if (state.Covens.Count == 0) { state.Covens.Add(new CovenState { Id = "skanor", Converted = true }); state.StoryShown = false; }
         if (string.IsNullOrEmpty(state.ActiveCovenId)) state.ActiveCovenId = "skanor";
         if (state.LastSavedAt == 0) state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        foreach (var c in state.Covens) { c.Buildings ??= new Dictionary<BuildingType, int>(); c.Upgrades ??= new List<UpgradeId>(); }
+        foreach (var c in state.Covens)
+        {
+            c.Buildings ??= new Dictionary<BuildingType, int>();
+            c.Upgrades ??= new List<UpgradeId>();
+        }
         state.Occult ??= new OccultState();
         state.Occult.Minions ??= new List<Minion>();
         state.Occult.HighCouncil ??= new List<CovenMember>();
@@ -30,6 +34,7 @@ public static class SaveLoad
         state.Occult.OwnedArtifacts ??= new List<string>();
         state.Occult.Materials ??= new Dictionary<MaterialKind, int>();
         state.Occult.LeyLines ??= new List<string[]>();
+        state.Conversion ??= null;
     }
 
     public static string SaveGame(GameState s) => JsonSerializer.Serialize(s, JsonOptions);

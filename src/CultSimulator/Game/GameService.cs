@@ -18,8 +18,8 @@ public class GameService
     public bool NeedsStory => !IsFirstRun && !_state.StoryShown;
     public EventDef? ActiveEvent { get; private set; }
     public bool EventPending => _eventPending;
-    public string? TakeoverCovenName { get; private set; }
-    public bool TakeoverPending => TakeoverCovenName != null;
+    public string? ConvertedCovenName { get; private set; }
+    public bool ConversionCompletePending => ConvertedCovenName != null;
     public string? PopupMessage { get; private set; }
     public string? PopupTitle { get; private set; }
     public bool PopupPending => PopupMessage != null;
@@ -41,7 +41,7 @@ public class GameService
         NotifyChanged();
     }
 
-    private void EnsureHomeCoven() { if (_state.Covens.Count == 0) { _state.Covens.Add(new CovenState { Id = "skanor", TakenOver = true }); _state.ActiveCovenId = "skanor"; } }
+    private void EnsureHomeCoven() { if (_state.Covens.Count == 0) { _state.Covens.Add(new CovenState { Id = "skanor", Converted = true }); _state.ActiveCovenId = "skanor"; } }
 
     private void ApplyOfflineIncome()
     {
@@ -71,6 +71,7 @@ public class GameService
     private void TryEvent()
     {
         if (_eventPending || ActiveEvent != null) return;
+        if (ConversionEngine.IsActive(_state)) return;
         if (_state.ActiveCoven.Followers < GameBalance.EventMinFollowers) return;
         if (Random.Shared.NextDouble() > GameBalance.EventTriggerChance) return;
         ActiveEvent = GameData.Events[Random.Shared.Next(GameData.Events.Length)];
@@ -118,12 +119,43 @@ public class GameService
     private static void Clamp(CovenState c) { if (c.Faith < 0) c.Faith = 0; if (c.Gold < 0) c.Gold = 0; if (c.Followers < 0) c.Followers = 0; }
     public void ConfirmName(string name) { _state.CultName = name.Trim(); NotifyChanged(); }
     public void MarkStoryShown() { _state.StoryShown = true; NotifyChanged(); }
-    public bool CanTakeover(string covenId) { var loc = _locations.Find(covenId); return loc != null && CovenProgress.CanTakeover(_state, loc); }
-    public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanTakeover(_state, loc)) return; CovenProgress.Takeover(_state, loc); TakeoverCovenName = loc.Name; NotifyChanged(); }
-    public void DismissTakeover() { TakeoverCovenName = null; NotifyChanged(); }
-    public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
 
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; TakeoverCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; await SaveAsync(); NotifyChanged(); }
+    // ── Conversion flow (narrative siege) ──────────────────────────
+
+    public bool CanConvert(string covenId) { var loc = _locations.Find(covenId); return loc != null && ConversionEngine.CanStartConversion(_state, loc); }
+
+    public void StartConversion(string covenId)
+    {
+        var loc = _locations.Find(covenId);
+        if (loc == null || !ConversionEngine.CanStartConversion(_state, loc)) return;
+        ConversionEngine.StartConversion(_state, loc);
+        NotifyChanged();
+    }
+
+    public void ApplyConversionChoice(ConversionChoice choice)
+    {
+        ConversionEngine.ApplyChoice(_state, choice);
+        if (_state.Conversion != null && _state.Conversion.Completed)
+        {
+            var loc = _locations.Find(_state.Conversion.CovenId);
+            if (loc != null) ConvertedCovenName = loc.Name;
+        }
+        NotifyChanged();
+    }
+
+    public void CancelConversion() { ConversionEngine.Cancel(_state); NotifyChanged(); }
+    public void DismissConversionComplete() { ConversionEngine.ClearCompleted(_state); ConvertedCovenName = null; NotifyChanged(); }
+    public bool IsConversionActive => ConversionEngine.IsActive(_state);
+    public ConversionStep? CurrentConversionStep => ConversionEngine.CurrentStep(_state);
+    public ConversionDef? ActiveConversion => _state.Conversion == null ? null : ConversionData.Find(_state.Conversion.CovenId);
+    public double ConversionProgressValue => _state.Conversion?.Progress ?? 0.0;
+
+    // ── Legacy / direct conversion (tests) ─────────────────────────
+
+    public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; NotifyChanged(); }
+    public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
+    public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
     {
