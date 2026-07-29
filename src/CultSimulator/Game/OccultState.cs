@@ -17,6 +17,11 @@ public class CovenMember
 {
     public CouncilRole Role { get; set; }
     public string Name { get; set; } = "";
+    public string MinionId { get; set; } = "";
+    public PromotedRole OriginalRole { get; set; }
+    public string TraitId { get; set; } = "";
+    [JsonIgnore]
+    public MinionTraitDef? Trait => OccultData.Trait(TraitId);
 }
 
 public class MapNodeState

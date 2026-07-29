@@ -53,7 +53,7 @@ public static class CultistHierarchy
         var minion = o.Minions.FirstOrDefault(m => m.Id == minionId);
         if (minion == null) return false;
         o.Minions.Remove(minion);
-        o.HighCouncil.Add(new CovenMember { Role = role, Name = CouncilNames[Random.Shared.Next(CouncilNames.Length)] });
+        o.HighCouncil.Add(new CovenMember { Role = role, Name = minion.Name, MinionId = minion.Id, TraitId = minion.TraitId, OriginalRole = minion.Role });
         return true;
     }
 
@@ -62,6 +62,8 @@ public static class CultistHierarchy
         var member = o.HighCouncil.FirstOrDefault(c => c.Role == role);
         if (member == null) return false;
         o.HighCouncil.Remove(member);
+        if (!string.IsNullOrEmpty(member.MinionId))
+            o.Minions.Add(new Minion { Id = member.MinionId, Name = member.Name, Role = member.OriginalRole, TraitId = member.TraitId });
         return true;
     }
 

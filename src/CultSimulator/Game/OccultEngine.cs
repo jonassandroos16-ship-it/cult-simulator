@@ -32,11 +32,14 @@ public static class OccultEngine
     public static bool CanHireAcolyte(GameState state) => state.ActiveCoven.Faith >= AcolyteHireCost(state) && state.Occult.Acolytes < CultistHierarchy.AcolyteCap(state.Occult);
     public static bool HireAcolyte(GameState state) { if (!CanHireAcolyte(state)) return false; state.ActiveCoven.Faith -= AcolyteHireCost(state); state.Occult.Acolytes++; return true; }
 
-    public static double AcolyteFaithPerSec(GameState state)
+    public static double AcolyteFaithPerSec(GameState state) => AcolyteFaithPerSec(state.Occult, GrandSacrifice.GlobalProductionMult(state));
+
+    public static double AcolytePassivePerSec(GameState state) => AcolyteFaithPerSec(state);
+
+    private static double AcolyteFaithPerSec(OccultState o, double globalMult)
     {
-        var o = state.Occult;
         double baseRate = o.Acolytes * 0.1;
-        double mult = GrandSacrifice.GlobalProductionMult(state) * Grimoire.GlobalProductionMult(o);
+        double mult = globalMult * Grimoire.GlobalProductionMult(o);
         if (TechTree.HasTech(o, TechId.SanguineAutomata)) baseRate += o.Acolytes * 0.05;
         return baseRate * mult;
     }
@@ -68,6 +71,8 @@ public static class OccultEngine
         state.ActiveCoven.Faith += faith; o.LifetimeFaith += faith;
         double mapFaith = TotalMapFaithPerSec(state) * deltaSec;
         state.ActiveCoven.Faith += mapFaith; o.LifetimeFaith += mapFaith;
+        double armyGain = o.Minions.Count(m => m.Role == PromotedRole.Zealot) * OccultBalance.ZealotArmyPowerPerSec * deltaSec;
+        o.ArmyPower += armyGain;
         WorldMapSystem.TickSuspicion(o, deltaSec);
         WorldMapSystem.TickMaterials(o, deltaSec);
         Cauldron.TickElixir(o, deltaSec);

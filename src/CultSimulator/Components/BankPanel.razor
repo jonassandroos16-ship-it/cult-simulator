@@ -59,6 +59,14 @@
                 </div>
                 <span class="font-display text-lg font-semibold text-amber-100">@NumberFormat.Fmt(CovenProgress.TotalFollowers(Game.State))</span>
             </div>
+            <div class="income-row flex items-center justify-between p-3 rounded-[14px]"
+                 style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">🩸</span>
+                    <span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Acolytes</span>
+                </div>
+                <span class="font-display text-lg font-semibold text-rose-300">@Game.State.Occult.Acolytes <span class="text-xs text-slate-400">(+@OccultEngine.AcolytePassivePerSec(Game.State).ToString("F1")/s faith)</span></span>
+            </div>
         </div>
     </div>
 

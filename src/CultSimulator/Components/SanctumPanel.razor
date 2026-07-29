@@ -68,7 +68,12 @@
                 var member = occult.HighCouncil.FirstOrDefault(c => c.Role == role);
                 <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] @(member != null ? "border-amber-500/20 bg-amber-500/5" : "")" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
                     <div class="text-3xl flex-shrink-0">👑</div>
-                    <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">@CouncilRoleName(role)</span>@if (member != null) { <span class="text-xs text-emerald-400">@member.Name (active)</span> } else { <span class="text-xs text-slate-400">Empty seat</span> }</div>
+                <div class="flex-1 flex flex-col gap-0.5">
+                    <span class="font-display text-base text-amber-100 font-medium">@CouncilRoleName(role)</span>
+                    <span class="text-[0.7rem] text-violet-400">@CouncilRoleBenefit(role)</span>
+                    @if (member != null) { <span class="text-xs text-emerald-400">@member.Name (@RoleName(member.OriginalRole)) · @member.Trait?.Name</span> <span class="text-[0.65rem] text-slate-400">@member.Trait?.Description</span> }
+                    else { <span class="text-xs text-slate-400">Empty seat</span> }
+                </div>
                     @if (member != null) { <button class="upgrade-buy px-3 py-1.5 rounded-full font-body text-xs cursor-pointer transition-transform duration-200" style="background: rgba(100,100,100,0.3); border: 1px solid var(--panel-border); color: var(--gold-soft);" @onclick="() => Game.RemoveCouncil(role)">Remove</button> }
                     else if (occult.Minions.Count > 0) { <select class="bg-transparent text-xs text-amber-100 border border-violet-500/20 rounded-full px-2 py-1" @onchange="(e) => AppointFromSelect(role, e.Value?.ToString())"><option value="">Appoint...</option>@foreach (var m in occult.Minions) { <option value="@m.Id">@m.Name (@RoleName(m.Role))</option> }</select> }
                 </div>
@@ -107,5 +112,6 @@
     private static string RoleIcon(PromotedRole role) => role switch { PromotedRole.Zealot => "⚔️", PromotedRole.Scholar => "📖", PromotedRole.Infiltrator => "🕵️", _ => "🔮" };
     private static string RoleName(PromotedRole role) => role switch { PromotedRole.Zealot => "Zealot", PromotedRole.Scholar => "Scholar", PromotedRole.Infiltrator => "Infiltrator", _ => "Unknown" };
     private static string CouncilRoleName(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Inquisitor", CouncilRole.Archon => "Archon", CouncilRole.HighPriest => "High Priest", _ => "Unknown" };
+    private static string CouncilRoleBenefit(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Reduces suspicion generation", CouncilRole.Archon => "Boosts army power generation", CouncilRole.HighPriest => "Boosts all faith generation", _ => "" };
     public void Dispose() => Game.OnChange -= StateChanged;
 }

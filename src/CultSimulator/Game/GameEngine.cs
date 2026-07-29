@@ -113,7 +113,7 @@ public static class GameEngine
     public static void BuyBank(CovenState s) { int owned = s.Buildings.GetValueOrDefault(BuildingType.Bank); int cost = BankBuildingCost(owned); if (s.Gold < cost) return; s.Gold -= cost; s.Buildings[BuildingType.Bank] = owned + 1; }
     public static void BuyUpgrade(CovenState s, UpgradeId id) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; s.Upgrades.Add(id); }
 
-    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true } }, StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true } }, StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), Occult = new OccultState { ArmyPower = 50 } };
 
     public static double FaithMultiplier(GameState s) => FaithMultiplier(s.ActiveCoven);
     public static double GoldMultiplier(GameState s) => GoldMultiplier(s.ActiveCoven);
@@ -123,7 +123,7 @@ public static class GameEngine
     public static bool CanBuyUpgrade(GameState s, UpgradeDef def) => CanBuyUpgrade(s.ActiveCoven, def);
     public static bool CanAfford(GameState s, int faithCost, int goldCost) => CanAfford(s.ActiveCoven, faithCost, goldCost);
     public static (double faith, double gold) TickIncome(GameState s) => TickIncome(s.ActiveCoven);
-    public static double Preach(GameState s) => Preach(s.ActiveCoven);
+    public static double Preach(GameState s) { s.ActiveCoven.PreachCount++; var gained = PreachMultiplier(s); s.ActiveCoven.Faith += gained; return gained; }
     public static void Recruit(GameState s) => Recruit(s.ActiveCoven);
     public static void BuyBuilding(GameState s, BuildingType type) => BuyBuilding(s.ActiveCoven, type);
     public static void BuyBank(GameState s) => BuyBank(s.ActiveCoven);

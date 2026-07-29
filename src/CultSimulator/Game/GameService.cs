@@ -77,7 +77,7 @@ public class GameService
         _eventPending = true; NotifyChanged();
     }
 
-    public double Preach() { var gained = GameEngine.Preach(_state.ActiveCoven); NotifyChanged(); return gained; }
+    public double Preach() { var gained = GameEngine.Preach(_state); NotifyChanged(); return gained; }
     public void Recruit() { GameEngine.Recruit(_state.ActiveCoven); NotifyChanged(); }
     public void BuyBuilding(BuildingType type) { GameEngine.BuyBuilding(_state.ActiveCoven, type); NotifyChanged(); }
     public void BuyBank() { GameEngine.BuyBank(_state.ActiveCoven); NotifyChanged(); }
