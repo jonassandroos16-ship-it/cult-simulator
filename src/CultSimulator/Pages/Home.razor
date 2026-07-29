@@ -21,127 +21,51 @@ else
 {
     <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6">
         <ResourceBar />
-
         <div class="bookmark-tabs">
-            <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick='() => SwitchTab("preach")'>
-                <span class="bookmark-tab-icon">🕯️</span>
-                <span class="bookmark-tab-label">Preach</span>
-            </button>
-            <button class="bookmark-tab @(activeTab == "altar" ? "active" : "")" @onclick='() => SwitchTab("altar")'>
-                <span class="bookmark-tab-icon">🩸</span>
-                <span class="bookmark-tab-label">Altar</span>
-            </button>
-            <button class="bookmark-tab @(activeTab == "codex" ? "active" : "")" @onclick='() => SwitchTab("codex")'>
-                <span class="bookmark-tab-icon">📜</span>
-                <span class="bookmark-tab-label">Codex</span>
-            </button>
-            <button class="bookmark-tab @(activeTab == "grimoire" ? "active" : "")" @onclick='() => SwitchTab("grimoire")'>
-                <span class="bookmark-tab-icon">🔮</span>
-                <span class="bookmark-tab-label">Grimoire</span>
-            </button>
-            <button class="bookmark-tab @(activeTab == "leylines" ? "active" : "")" @onclick='() => SwitchTab("leylines")'>
-                <span class="bookmark-tab-icon">⚡</span>
-                <span class="bookmark-tab-label">Ley Lines</span>
-            </button>
-            <button class="bookmark-tab @(activeTab == "bank" ? "active" : "")" @onclick='() => SwitchTab("bank")'>
-                <span class="bookmark-tab-icon">🏦</span>
-                <span class="bookmark-tab-label">Bank</span>
-            </button>
-            <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick='() => SwitchTab("map")'>
-                <span class="bookmark-tab-icon">🗺️</span>
-                <span class="bookmark-tab-label">Map</span>
-            </button>
+            <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick='() => SwitchTab("preach")'><span class="bookmark-tab-icon">🕯️</span><span class="bookmark-tab-label">Preach</span></button>
+            <button class="bookmark-tab @(activeTab == "sanctum" ? "active" : "")" @onclick='() => SwitchTab("sanctum")'><span class="bookmark-tab-icon">🔮</span><span class="bookmark-tab-label">Sanctum</span></button>
+            <button class="bookmark-tab @(activeTab == "codex" ? "active" : "")" @onclick='() => SwitchTab("codex")'><span class="bookmark-tab-icon">📜</span><span class="bookmark-tab-label">Codex</span></button>
+            <button class="bookmark-tab @(activeTab == "grimoire" ? "active" : "")" @onclick='() => SwitchTab("grimoire")'><span class="bookmark-tab-icon">📖</span><span class="bookmark-tab-label">Grimoire</span></button>
+            <button class="bookmark-tab @(activeTab == "leylines" ? "active" : "")" @onclick='() => SwitchTab("leylines")'><span class="bookmark-tab-icon">⚡</span><span class="bookmark-tab-label">Ley Lines</span></button>
+            <button class="bookmark-tab @(activeTab == "ascension" ? "active" : "")" @onclick='() => SwitchTab("ascension")'><span class="bookmark-tab-icon">🌟</span><span class="bookmark-tab-label">Ascension</span></button>
+            <button class="bookmark-tab @(activeTab == "bank" ? "active" : "")" @onclick='() => SwitchTab("bank")'><span class="bookmark-tab-icon">🏦</span><span class="bookmark-tab-label">Bank</span></button>
+            <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick='() => SwitchTab("map")'><span class="bookmark-tab-icon">🗺️</span><span class="bookmark-tab-label">Map</span></button>
         </div>
-
         @if (activeTab == "preach")
         {
             <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
-                <div class="game-left flex flex-col gap-6">
-                    <PreachAltar OnPreach="OnPreach" OnRecruit="OnRecruit" />
-                </div>
-                <div class="game-right flex flex-col gap-6">
-                    <BuildingsPanel />
-                    <UpgradesPanel />
-                </div>
+                <div class="game-left flex flex-col gap-6"><PreachAltar OnPreach="OnPreach" OnRecruit="OnRecruit" /></div>
+                <div class="game-right flex flex-col gap-6"><BuildingsPanel /><UpgradesPanel /></div>
             </div>
-            <div class="game-footer mt-8 text-center">
-                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
-            </div>
+            <div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div>
         }
-        else if (activeTab == "altar")
+        else if (activeTab == "sanctum")
         {
             <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
-                <div class="game-left flex flex-col gap-6">
-                    <OccultAltarPanel />
-                </div>
-                <div class="game-right flex flex-col gap-6">
-                    <GrandSacrificePanel />
-                </div>
+                <div class="game-left flex flex-col gap-6"><SanctumPanel /></div>
+                <div class="game-right flex flex-col gap-6"><GrandSacrificePanel /></div>
             </div>
-            <div class="game-footer mt-8 text-center">
-                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
-            </div>
+            <div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div>
         }
-        else if (activeTab == "codex")
-        {
-            <CodexPanel />
-            <div class="game-footer mt-8 text-center">
-                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
-            </div>
-        }
-        else if (activeTab == "grimoire")
-        {
-            <GrimoirePanel />
-            <div class="game-footer mt-8 text-center">
-                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
-            </div>
-        }
-        else if (activeTab == "leylines")
-        {
-            <LeyLinesPanel />
-            <div class="game-footer mt-8 text-center">
-                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
-            </div>
-        }
-        else if (activeTab == "bank")
-        {
-            <BankPanel />
-            <div class="game-footer mt-8 text-center">
-                <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
-            </div>
-        }
-        else if (activeTab == "map")
-        {
-            <WorldMap />
-        }
+        else if (activeTab == "codex") { <CodexPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "grimoire") { <GrimoirePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "leylines") { <LeyLinesPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "ascension") { <GrandSacrificePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "bank") { <BankPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "map") { <WorldMap /> }
     </div>
-    <EventModal />
-    <GenericPopup />
-    <RankUpModal />
+    <EventModal /><GenericPopup /><RankUpModal />
 }
 
 @code {
     private bool initialized = false;
     private string activeTab = "preach";
-
-    protected override async Task OnInitializedAsync()
-    {
-        await Game.InitAsync();
-        Game.OnChange += StateChanged;
-        Game.StartTimers();
-        initialized = true;
-    }
-
+    protected override async Task OnInitializedAsync() { await Game.InitAsync(); Game.OnChange += StateChanged; Game.StartTimers(); initialized = true; }
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
-
     private void SwitchTab(string tab) => activeTab = tab;
-
     private void StoryDismissed() { }
-
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
-
     private async Task ResetGame() { await Game.ResetAsync(); }
-
     public void Dispose() { Game.OnChange -= StateChanged; }
 }

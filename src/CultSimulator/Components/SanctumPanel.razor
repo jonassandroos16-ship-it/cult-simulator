@@ -1,0 +1,94 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+<div class="panel glass-panel rounded-[20px] p-5">
+    <h2 class="panel-title">The Sanctum</h2>
+    <div class="flex flex-col gap-3">
+        <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <div class="flex items-center gap-2"><span class="text-xl">🙇</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Acolytes</span></div>
+            <span class="font-display text-lg font-semibold text-amber-100">@occult.Acolytes / @CultistHierarchy.AcolyteCap(occult)</span>
+        </div>
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanHireAcolyte(Game.State))" @onclick="() => Game.HireAcolyte()">
+            <div class="text-3xl flex-shrink-0">🙇</div>
+            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Initiate Acolyte</span><span class="text-xs text-emerald-400">+1 Acolyte (passive Faith)</span></div>
+            <div class="flex items-baseline gap-1 flex-shrink-0"><span class="font-display font-semibold text-amber-400 text-base">@NumberFormat.Fmt(OccultEngine.AcolyteHireCost(Game.State))</span><span class="text-sm">✨</span></div>
+        </button>
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanBuySermonPower(Game.State))" @onclick="() => Game.BuySermonPower()">
+            <div class="text-3xl flex-shrink-0">📖</div>
+            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Sermon Power</span><span class="text-xs text-emerald-400">+1 base sermon power (level @occult.SermonPowerLevel)</span></div>
+            <div class="flex items-baseline gap-1 flex-shrink-0"><span class="font-display font-semibold text-amber-400 text-base">@NumberFormat.Fmt(OccultEngine.SermonPowerUpgradeCost(occult))</span><span class="text-sm">✨</span></div>
+        </button>
+        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!CultistHierarchy.CanPromote(occult))" @onclick="() => Game.PromoteMinion()">
+            <div class="text-3xl flex-shrink-0">🔮</div>
+            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Promote Disciple</span><span class="text-xs text-violet-300">Spend @OccultBalance.PromoteAcolyteCost Acolytes for a named disciple</span></div>
+        </button>
+    </div>
+</div>
+
+@if (occult.Minions.Count > 0)
+{
+    <div class="panel glass-panel rounded-[20px] p-5">
+        <h2 class="panel-title">Promoted Disciples</h2>
+        <div class="flex flex-col gap-2.5">
+            @foreach (var minion in occult.Minions)
+            {
+                <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                    <div class="text-3xl flex-shrink-0">@RoleIcon(minion.Role)</div>
+                    <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">@minion.Name</span><span class="text-xs text-violet-300">@RoleName(minion.Role) · @minion.Trait?.Name</span><span class="text-[0.7rem] text-slate-400">@minion.Trait?.Description</span></div>
+                    <button class="upgrade-buy px-3 py-1.5 rounded-full font-body text-xs cursor-pointer transition-transform duration-200" style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);" @onclick="() => Game.SacrificeMinion(minion.Id)">Banish</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (occult.HighCouncil.Count > 0 || occult.Minions.Count > 0)
+{
+    <div class="panel glass-panel rounded-[20px] p-5">
+        <h2 class="panel-title">High Council</h2>
+        <div class="flex flex-col gap-2.5">
+            @foreach (var role in OccultData.CouncilRoles)
+            {
+                var member = occult.HighCouncil.FirstOrDefault(c => c.Role == role);
+                <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] @(member != null ? "border-amber-500/20 bg-amber-500/5" : "")" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                    <div class="text-3xl flex-shrink-0">👑</div>
+                    <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">@CouncilRoleName(role)</span>@if (member != null) { <span class="text-xs text-emerald-400">@member.Name (active)</span> } else { <span class="text-xs text-slate-400">Empty seat</span> }</div>
+                    @if (member != null) { <button class="upgrade-buy px-3 py-1.5 rounded-full font-body text-xs cursor-pointer transition-transform duration-200" style="background: rgba(100,100,100,0.3); border: 1px solid var(--panel-border); color: var(--gold-soft);" @onclick="() => Game.RemoveCouncil(role)">Remove</button> }
+                    else if (occult.Minions.Count > 0) { <select class="bg-transparent text-xs text-amber-100 border border-violet-500/20 rounded-full px-2 py-1" @onchange="(e) => AppointFromSelect(role, e.Value?.ToString())"><option value="">Appoint...</option>@foreach (var m in occult.Minions) { <option value="@m.Id">@m.Name (@RoleName(m.Role))</option> }</select> }
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@if (TechTree.HasTech(occult, TechId.ExsanguinationEngine))
+{
+    <div class="panel glass-panel rounded-[20px] p-5">
+        <h2 class="panel-title">Rituals</h2>
+        <div class="flex flex-col gap-2.5">
+            <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateFrenzy(occult))" @onclick="() => Game.ActivateFrenzy()">
+                <div class="text-3xl flex-shrink-0">🔥</div>
+                <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Ecstatic Frenzy</span><span class="text-xs text-rose-400">Banish a disciple for 15s of 10x sermon power</span></div>
+            </button>
+            @if (TechTree.HasTech(occult, TechId.MassHysteria))
+            {
+                <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateMassHysteria(occult))" @onclick="() => Game.ActivateMassHysteria()">
+                    <div class="text-3xl flex-shrink-0">😱</div>
+                    <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Mass Hysteria</span><span class="text-xs text-violet-400">30s of doubled Faith generation</span></div>
+                </button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private OccultState occult => Game.State.Occult;
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+    private void AppointFromSelect(CouncilRole role, string? minionId) { if (!string.IsNullOrEmpty(minionId)) Game.AppointCouncil(role, minionId); }
+    private static string RoleIcon(PromotedRole role) => role switch { PromotedRole.Zealot => "⚔️", PromotedRole.Scholar => "📖", PromotedRole.Infiltrator => "🕵️", _ => "🔮" };
+    private static string RoleName(PromotedRole role) => role switch { PromotedRole.Zealot => "Zealot", PromotedRole.Scholar => "Scholar", PromotedRole.Infiltrator => "Infiltrator", _ => "Unknown" };
+    private static string CouncilRoleName(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Inquisitor", CouncilRole.Archon => "Archon", CouncilRole.HighPriest => "High Priest", _ => "Unknown" };
+    public void Dispose() => Game.OnChange -= StateChanged;
+}
