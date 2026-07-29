@@ -372,4 +372,85 @@ public class CultGameTests
         var unique = themes.Distinct().Count();
         Assert.Equal(themes.Count, unique);
     }
+
+    // --- Local cult tests ---
+
+    [Fact]
+    public void LocalCultData_AllCovensHaveThreeLocalCults()
+    {
+        var covenIds = new[] { "skanor", "la_recta_provincia", "benandanti", "malkin_tower_coven", "north_berwick_coven", "la_cabotina", "ixchel_priestesses", "new_forest_coven" };
+        foreach (var id in covenIds)
+        {
+            var cults = LocalCultData.ForCoven(id);
+            Assert.Equal(3, cults.Count);
+        }
+    }
+
+    [Fact]
+    public void LocalCultData_FindReturnsCorrectCult()
+    {
+        var cult = LocalCultData.Find("falsterbo");
+        Assert.NotNull(cult);
+        Assert.Equal("skanor", cult!.ParentCovenId);
+        Assert.Equal("Falsterbo Heathens", cult.Name);
+    }
+
+    [Fact]
+    public void LocalCultEngine_SpawnAddsToActiveList()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 10;
+        LocalCultEngine.SpawnOne(s, "skanor");
+        Assert.Single(s.ActiveLocalCults);
+    }
+
+    [Fact]
+    public void LocalCultEngine_MaxThreeActive()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 100;
+        LocalCultEngine.SpawnOne(s, "skanor");
+        LocalCultEngine.SpawnOne(s, "skanor");
+        LocalCultEngine.SpawnOne(s, "skanor");
+        Assert.Equal(3, s.ActiveLocalCults.Count);
+        LocalCultEngine.SpawnOne(s, "skanor");
+        Assert.Equal(3, s.ActiveLocalCults.Count);
+    }
+
+    [Fact]
+    public void LocalCultEngine_ConvertRequiresFollowers()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 5;
+        var def = LocalCultData.Find("falsterbo");
+        Assert.False(LocalCultEngine.CanConvert(s, def!));
+        s.HomeCoven.Followers = 8;
+        Assert.True(LocalCultEngine.CanConvert(s, def!));
+    }
+
+    [Fact]
+    public void LocalCultEngine_ConvertGivesRewardAndRemovesFromMap()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 10;
+        LocalCultEngine.SpawnOne(s, "skanor");
+        Assert.Single(s.ActiveLocalCults);
+        var cultId = s.ActiveLocalCults[0].CultId;
+        LocalCultEngine.Convert(s, cultId, LocalCultReward.Followers);
+        Assert.Empty(s.ActiveLocalCults);
+        Assert.True(s.HomeCoven.Followers >= 10);
+    }
+
+    [Fact]
+    public void LocalCultEngine_ConvertWithGoldReward()
+    {
+        var s = NewState();
+        s.HomeCoven.Followers = 100;
+        LocalCultEngine.SpawnOne(s, "skanor");
+        var cultId = s.ActiveLocalCults[0].CultId;
+        var goldBefore = s.HomeCoven.Gold;
+        LocalCultEngine.Convert(s, cultId, LocalCultReward.Gold);
+        Assert.True(s.HomeCoven.Gold > goldBefore);
+        Assert.Empty(s.ActiveLocalCults);
+    }
 }
