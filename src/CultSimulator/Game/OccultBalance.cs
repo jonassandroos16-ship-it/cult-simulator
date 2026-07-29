@@ -14,7 +14,7 @@ public static class OccultBalance
     public const double FavorDivisor = 1_000_000.0;
     public const double SuspicionMax = 100.0;
     public const double SuspicionRaidThreshold = 80.0;
-    public const double SuspicionDecayPerSec = 0.5;
+    public const double SuspicionDecayPerSec = 0.1;
     public const double SuspicionHarvestBase = 0.3;
     public const int PromoteAcolyteCost = 100;
     public const int AcolyteCapBase = 200;
