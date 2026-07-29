@@ -6,10 +6,10 @@
 
 <div class="world-map-wrapper">
     <div class="mb-3 flex items-center gap-2">
-        <button class="map-tab-button @(mapMode == "world" ? "active" : "")" @onclick="() => SwitchMapMode("world")">
+        <button class="map-tab-button @(mapMode == "world" ? "active" : "")" @onclick="() => SwitchMapMode('world')">
             <span class="text-sm">🌍</span> World
         </button>
-        <button class="map-tab-button @(mapMode == "local" ? "active" : "")" @onclick="() => SwitchMapMode("local")">
+        <button class="map-tab-button @(mapMode == "local" ? "active" : "")" @onclick="() => SwitchMapMode('local')">
             <span class="text-sm">📍</span> Local
         </button>
         <div class="ml-auto text-[0.7rem] text-violet-400 tracking-wide">
