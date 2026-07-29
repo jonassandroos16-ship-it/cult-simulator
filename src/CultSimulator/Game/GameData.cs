@@ -23,16 +23,14 @@ public static class GameData
         new UpgradeDef(UpgradeId.BankVault, "Reinforced Vault", "🔒", 0, 400, "Bank idle cap ×2", 10),
         new UpgradeDef(UpgradeId.OffshoreAccounts, "Offshore Accounts", "🏝️", 0, 1200, "Bank idle cap ×2", 30),
         new UpgradeDef(UpgradeId.DarkLedger, "Dark Ledger", "📓", 800, 600, "Bank idle cap ×1.5", 50),
-        new UpgradeId.SoulEndowment, "Soul Endowment", "💀", 2000, 1500, "Bank idle cap ×1.5", 100));
+        new UpgradeDef(UpgradeId.SoulEndowment, "Soul Endowment", "💀", 2000, 1500, "Bank idle cap ×1.5", 100));
 
-    // Bank-specific upgrades (shown only in the Bank tab)
     public static readonly ImmutableArray<UpgradeId> BankUpgrades = ImmutableArray.Create(
         UpgradeId.BankVault,
         UpgradeId.OffshoreAccounts,
         UpgradeId.DarkLedger,
         UpgradeId.SoulEndowment);
 
-    // Buildings shown in the Preach tab (excludes Bank)
     public static readonly ImmutableArray<BuildingType> PreachBuildings = ImmutableArray.Create(
         BuildingType.Shrine,
         BuildingType.Cathedral,
