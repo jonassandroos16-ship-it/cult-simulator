@@ -7,12 +7,12 @@
     <div class="preach-altar-wrapper relative">
         <button class="preach-altar relative w-[200px] h-[200px] rounded-full border-none cursor-pointer flex items-center justify-center transition-transform duration-150 overflow-visible
                hover:scale-105 active:scale-95"
-                style="background: radial-gradient(circle at center, var(--altar-core) 0%, var(--altar-mid) 60%, var(--altar-edge) 100%);"
+                style="background: radial-gradient(circle at center, var(--altar-core) 0%, var(--altar-mid) 60%, var(--altar-edge) 100%); box-shadow: 0 0 @(glowSize)px @(glowColor);"
                 @onclick="OnPreachClick">
             <div class="altar-glow absolute -inset-5 rounded-full pointer-events-none animate-altar-pulse"
-                 style="background: radial-gradient(circle, rgba(245,158,11,0.15) 0%, transparent 70%);"></div>
+                 style="background: radial-gradient(circle, rgba(245,158,11,@(glowOpacity)) 0%, transparent 70%); opacity: @(0.5 + glowIntensity * 0.5);"></div>
             <div class="altar-ring absolute -inset-2 rounded-full pointer-events-none animate-slow-rotate"
-                 style="background: conic-gradient(from 0deg, transparent, rgba(167,139,250,0.2), transparent, rgba(251,191,36,0.15), transparent);"></div>
+                 style="background: conic-gradient(from 0deg, transparent, rgba(167,139,250,@(0.2 + glowIntensity * 0.3)), transparent, rgba(251,191,36,@(0.15 + glowIntensity * 0.25)), transparent);"></div>
             <div class="altar-body flex flex-col items-center gap-2 z-10">
                 <span class="altar-icon text-5xl">🕯️</span>
                 <span class="altar-label font-display text-sm font-bold tracking-[0.35em] text-amber-100">PREACH</span>
@@ -26,9 +26,6 @@
     <div class="preach-info text-center">
         <p class="preach-yield text-sm text-violet-300 tracking-[0.05em]">+@NumberFormat.Fmt(GameEngine.PreachMultiplier(Game.State)) Faith per sermon</p>
     </div>
-    <div class="p-3 rounded-[14px] text-xs text-slate-400 leading-relaxed max-w-md" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-        Click the altar to Preach and earn Faith. Use Faith to recruit followers, build constructions, and unlock upgrades. As your cult grows, visit the <strong class="text-violet-300">Sanctum</strong> to hire Acolytes and promote disciples, the <strong class="text-violet-300">Codex</strong> to research technologies, and the <strong class="text-violet-300">Ley Lines</strong> tab to conquer map nodes for materials and passive income.
-    </div>
     <button class="recruit-button flex items-center gap-2 px-6 py-3 rounded-full font-body text-sm cursor-pointer transition-all duration-200
                   disabled:opacity-40 disabled:cursor-not-allowed"
             style="background: linear-gradient(135deg, rgba(245,158,11,0.15), rgba(217,119,6,0.1)); border: 1px solid var(--active-border); color: var(--gold-pale);"
@@ -38,6 +35,9 @@
         <span class="recruit-text">Recruit Follower</span>
         <span class="recruit-cost text-amber-400 font-semibold">@NumberFormat.Fmt(GameEngine.RecruitCostFor(Game.State)) ✨</span>
     </button>
+    <div class="p-3 rounded-[14px] text-xs text-slate-400 leading-relaxed max-w-md" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+        Click the altar to Preach and earn Faith. The faster you click, the brighter the altar glows. Use Faith to recruit followers, build constructions, and unlock upgrades. As your cult grows, visit the <strong class="text-violet-300">Sanctum</strong> to hire Acolytes and promote disciples, the <strong class="text-violet-300">Codex</strong> to research technologies, and the <strong class="text-violet-300">Ley Lines</strong> tab to conquer map nodes for materials and passive income.
+    </div>
 </div>
 
 @code {
@@ -48,6 +48,15 @@
     private List<FloatText> _floatTexts = new();
     private int _nextId = 0;
 
+    private double _glowIntensity;
+    private DateTime _lastClick = DateTime.MinValue;
+    private int _clickStreak;
+
+    private double glowIntensity => Math.Min(_glowIntensity, 1.0);
+    private double glowSize => 10 + glowIntensity * 50;
+    private double glowOpacity => 0.15 + glowIntensity * 0.5;
+    private string glowColor => glowIntensity > 0.7 ? "rgba(245,158,11,0.8)" : "rgba(167,139,250,0.4)";
+
     protected override void OnInitialized() => Game.OnChange += StateChanged;
 
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
@@ -56,7 +65,32 @@
     {
         var gained = Game.Preach();
         AddFloatText(gained);
+
+        var now = DateTime.UtcNow;
+        var elapsed = (now - _lastClick).TotalMilliseconds;
+        if (elapsed < 600)
+            _clickStreak++;
+        else
+            _clickStreak = 1;
+        _lastClick = now;
+
+        _glowIntensity = Math.Min(1.0, _clickStreak / 10.0);
+        _ = DecayGlow();
+
         await OnPreach.InvokeAsync();
+    }
+
+    private async Task DecayGlow()
+    {
+        await Task.Delay(800);
+        var elapsed = (DateTime.UtcNow - _lastClick).TotalMilliseconds;
+        if (elapsed >= 800)
+        {
+            _glowIntensity = Math.Max(0, _glowIntensity - 0.15);
+            _clickStreak = Math.Max(0, _clickStreak - 1);
+            await InvokeAsync(StateHasChanged);
+            if (_glowIntensity > 0) _ = DecayGlow();
+        }
     }
 
     private async Task OnRecruitClick()

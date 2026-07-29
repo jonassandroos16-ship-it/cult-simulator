@@ -110,9 +110,9 @@
             <div class="flex-shrink-0">
                 <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                         style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
-                        disabled="@(activeCoven.Gold < bankCost)"
+                        disabled="@(bankMaxed || activeCoven.Gold < bankCost)"
                         @onclick="() => Game.BuyBank()">
-                    <span>@NumberFormat.Fmt(bankCost) 💰</span>
+                    @if (bankMaxed) { <span>MAX</span> } else { <span>@NumberFormat.Fmt(bankCost) 💰</span> }
                 </button>
             </div>
         </div>
@@ -169,6 +169,7 @@
     private (double faith, double gold) totalIncome => GameEngine.TotalTickIncome(Game.State);
     private int bankOwned => activeCoven.Buildings.GetValueOrDefault(BuildingType.Bank);
     private int bankCost => GameEngine.BankBuildingCost(bankOwned);
+    private bool bankMaxed => bankOwned >= GameBalance.BankCapHours.Length;
     private List<CovenState> takenOverCovens => Game.State.Covens.Where(c => c.TakenOver).ToList();
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
