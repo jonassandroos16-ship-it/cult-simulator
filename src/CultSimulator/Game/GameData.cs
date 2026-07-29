@@ -2,10 +2,6 @@ using System.Collections.Immutable;
 
 namespace CultSimulator.Game;
 
-/// <summary>
-/// Static definitions for buildings, upgrades, ranks, and random events.
-/// All gameplay content lives here so the engine and UI stay data-driven.
-/// </summary>
 public static class GameData
 {
     public static readonly ImmutableArray<BuildingDef> Buildings = ImmutableArray.Create(
@@ -21,9 +17,9 @@ public static class GameData
         new UpgradeDef(UpgradeId.Visions, "Prophetic Visions", "🔮", 600, 0, "Followers give 2× Faith", 40),
         new UpgradeDef(UpgradeId.Ascendance, "Rite of Ascendance", "🌟", 1500, 1000, "All production ×1.5", 120),
         new UpgradeDef(UpgradeId.BankVault, "Reinforced Vault", "🔒", 0, 400, "Bank idle cap ×2", 10),
-        new UpgradeDef(UpgradeId.OffshoreAccounts, "Offshore Accounts", "🏝️", 0, 1200, "Bank idle cap ×2", 30),
-        new UpgradeDef(UpgradeId.DarkLedger, "Dark Ledger", "📓", 800, 600, "Bank idle cap ×1.5", 50),
-        new UpgradeDef(UpgradeId.SoulEndowment, "Soul Endowment", "💀", 2000, 1500, "Bank idle cap ×1.5", 100));
+        new UpgradeId(UpgradeId.OffshoreAccounts, "Offshore Accounts", "🏝️", 0, 1200, "Bank idle cap ×2", 30),
+        new UpgradeId(UpgradeId.DarkLedger, "Dark Ledger", "📓", 800, 600, "Bank idle cap ×1.5", 50),
+        new UpgradeId(UpgradeId.SoulEndowment, "Soul Endowment", "💀", 2000, 1500, "Bank idle cap ×1.5", 100));
 
     public static readonly ImmutableArray<UpgradeId> BankUpgrades = ImmutableArray.Create(
         UpgradeId.BankVault,
@@ -36,6 +32,73 @@ public static class GameData
         BuildingType.Cathedral,
         BuildingType.Monolith,
         BuildingType.Treasury);
+
+    public static readonly Dictionary<string, Dictionary<BuildingType, string>> CovenBuildingNames = new()
+    {
+        ["skanor"] = new()
+        {
+            { BuildingType.Shrine, "Seidr Altar" },
+            { BuildingType.Cathedral, "Hof" },
+            { BuildingType.Monolith, "Runestone" },
+            { BuildingType.Treasury, "Silver Hoard" }
+        },
+        ["la_recta_provincia"] = new()
+        {
+            { BuildingType.Shrine, "Capilla" },
+            { BuildingType.Cathedral, "Catedral" },
+            { BuildingType.Monolith, "Piedra de Sacrificio" },
+            { BuildingType.Treasury, "Cofre del Santo Oficio" }
+        },
+        ["benandanti"] = new()
+        {
+            { BuildingType.Shrine, "Stria Altar" },
+            { BuildingType.Cathedral, "Chiesa Rovinata" },
+            { BuildingType.Monolith, "Pietra Lunare" },
+            { BuildingType.Treasury, "Forziere delle Streghe" }
+        },
+        ["malkin_tower_coven"] = new()
+        {
+            { BuildingType.Shrine, "Witch's Altar" },
+            { BuildingType.Cathedral, "Tower Keep" },
+            { BuildingType.Monolith, "Standing Stone" },
+            { BuildingType.Treasury, "Lancashire Chest" }
+        },
+        ["north_berwick_coven"] = new()
+        {
+            { BuildingType.Shrine, "Kirk Altar" },
+            { BuildingType.Cathedral, "Auld Kirk" },
+            { BuildingType.Monolith, "Heid Stane" },
+            { BuildingType.Treasury, "Scottish Coffer" }
+        },
+        ["la_cabotina"] = new()
+        {
+            { BuildingType.Shrine, "Autel Cabotin" },
+            { BuildingType.Cathedral, "Chapelle Profane" },
+            { BuildingType.Monolith, "Menhir Occulte" },
+            { BuildingType.Treasury, "Coffre Marseillais" }
+        },
+        ["ixchel_priestesses"] = new()
+        {
+            { BuildingType.Shrine, "Isla Altar" },
+            { BuildingType.Cathedral, "Piramide" },
+            { BuildingType.Monolith, "Estela" },
+            { BuildingType.Treasury, "Cofre Maya" }
+        },
+        ["new_forest_coven"] = new()
+        {
+            { BuildingType.Shrine, "Forest Shrine" },
+            { BuildingType.Cathedral, "Grove Cathedral" },
+            { BuildingType.Monolith, "Omen Stone" },
+            { BuildingType.Treasury, "Wessex Strongbox" }
+        }
+    };
+
+    public static string BuildingNameFor(string covenId, BuildingType type)
+    {
+        if (CovenBuildingNames.TryGetValue(covenId, out var names) && names.TryGetValue(type, out var name))
+            return name;
+        return GameData.Buildings.First(b => b.Type == type).Name;
+    }
 
     public static readonly ImmutableArray<RankDef> Ranks = ImmutableArray.Create(
         new RankDef("Novice", 0, "#94a3b8", "You light your first candle in the dark. The shadows listen, curious and patient."),
