@@ -39,7 +39,7 @@ public static class GameData
         BuildingType.Reliquary,
         BuildingType.Undercroft);
 
-    public static readonly Dictionary<string, Dictionary<BuildingType, string>> CovenBuildingNames = new()
+public static readonly Dictionary<string, Dictionary<BuildingType, string>> CovenBuildingNames = new()
     {
         ["skanor"] = new()
         {
@@ -49,7 +49,97 @@ public static class GameData
             { BuildingType.Treasury, "Silver Hoard" },
             { BuildingType.Observatory, "Star Watch" },
             { BuildingType.Reliquary, "Bone Reliquary" },
-            { BuildingType.Undercroft, "Frost Crypt" }
+            { BuildingType.Undercroft, "Frost Crypt" },
+        },
+        ["uppsala_gothi"] = new()
+        {
+            { BuildingType.Shrine, "Temple Hearth" },
+            { BuildingType.Cathedral, "Great Hof" },
+            { BuildingType.Monolith, "Mound Stone" },
+            { BuildingType.Treasury, "Sacrificial Hoard" },
+            { BuildingType.Observatory, "Sky Pillar" },
+            { BuildingType.Reliquary, "King's Reliquary" },
+            { BuildingType.Undercroft, "Burial Mound" },
+        },
+        ["hedeby_vikings"] = new()
+        {
+            { BuildingType.Shrine, "Raid Altar" },
+            { BuildingType.Cathedral, "Longhouse" },
+            { BuildingType.Monolith, "Boundary Stone" },
+            { BuildingType.Treasury, "Plunder Chest" },
+            { BuildingType.Observatory, "Mast Watch" },
+            { BuildingType.Reliquary, "Amber Reliquary" },
+            { BuildingType.Undercroft, "Keel Vault" },
+        },
+        ["trossky_berserkers"] = new()
+        {
+            { BuildingType.Shrine, "Bear Altar" },
+            { BuildingType.Cathedral, "Berserker Hall" },
+            { BuildingType.Monolith, "Rage Stone" },
+            { BuildingType.Treasury, "War Hoard" },
+            { BuildingType.Observatory, "Cliff Watch" },
+            { BuildingType.Reliquary, "Pelt Reliquary" },
+            { BuildingType.Undercroft, "Ice Cellar" },
+        },
+        ["jomsborg_elite"] = new()
+        {
+            { BuildingType.Shrine, "Oath Altar" },
+            { BuildingType.Cathedral, "Jom Hall" },
+            { BuildingType.Monolith, "Code Stone" },
+            { BuildingType.Treasury, "Mercenary Coffer" },
+            { BuildingType.Observatory, "Harbor Watch" },
+            { BuildingType.Reliquary, "Oath Reliquary" },
+            { BuildingType.Undercroft, "Sea Vault" },
+        },
+        ["salem_remnant"] = new()
+        {
+            { BuildingType.Shrine, "Witch Altar" },
+            { BuildingType.Cathedral, "Tourist Temple" },
+            { BuildingType.Monolith, "Gallows Stone" },
+            { BuildingType.Treasury, "Gift Shop Vault" },
+            { BuildingType.Observatory, "Paranormal Lab" },
+            { BuildingType.Reliquary, "Trial Reliquary" },
+            { BuildingType.Undercroft, "Colonial Cellar" },
+        },
+        ["voodoo_quarter"] = new()
+        {
+            { BuildingType.Shrine, "Voodoo Altar" },
+            { BuildingType.Cathedral, "Spirit House" },
+            { BuildingType.Monolith, "Crossroads Stone" },
+            { BuildingType.Treasury, "Graveyard Coffer" },
+            { BuildingType.Observatory, "Bayou Watch" },
+            { BuildingType.Reliquary, "Gris-Gris Reliquary" },
+            { BuildingType.Undercroft, "Crypt Vault" },
+        },
+        ["silicon_circle"] = new()
+        {
+            { BuildingType.Shrine, "Data Altar" },
+            { BuildingType.Cathedral, "Server Temple" },
+            { BuildingType.Monolith, "Quantum Stone" },
+            { BuildingType.Treasury, "Crypto Vault" },
+            { BuildingType.Observatory, "Neural Watch" },
+            { BuildingType.Reliquary, "Code Reliquary" },
+            { BuildingType.Undercroft, "Cooling Crypt" },
+        },
+        ["hudson_witches"] = new()
+        {
+            { BuildingType.Shrine, "Estate Altar" },
+            { BuildingType.Cathedral, "Manor Hall" },
+            { BuildingType.Monolith, "Estate Stone" },
+            { BuildingType.Treasury, "Old Money Vault" },
+            { BuildingType.Observatory, "Rooftop Watch" },
+            { BuildingType.Reliquary, "Colonial Reliquary" },
+            { BuildingType.Undercroft, "Wine Cellar" },
+        },
+        ["montreal_night"] = new()
+        {
+            { BuildingType.Shrine, "Underground Altar" },
+            { BuildingType.Cathedral, "Tunnel Temple" },
+            { BuildingType.Monolith, "Frost Stone" },
+            { BuildingType.Treasury, "Quebec Coffer" },
+            { BuildingType.Observatory, "Sewer Watch" },
+            { BuildingType.Reliquary, "Saint Reliquary" },
+            { BuildingType.Undercroft, "Ice Vault" },
         },
         ["la_recta_provincia"] = new()
         {
@@ -59,69 +149,250 @@ public static class GameData
             { BuildingType.Treasury, "Cofre del Santo Oficio" },
             { BuildingType.Observatory, "Observatorio Austral" },
             { BuildingType.Reliquary, "Relicario Patagón" },
-            { BuildingType.Undercroft, "Bóveda de Chiloé" }
+            { BuildingType.Undercroft, "Bóveda de Chiloé" },
         },
-        ["benandanti"] = new()
+        ["amazon_curanderos"] = new()
         {
-            { BuildingType.Shrine, "Stria Altar" },
-            { BuildingType.Cathedral, "Chiesa Rovinata" },
-            { BuildingType.Monolith, "Pietra Lunare" },
-            { BuildingType.Treasury, "Forziere delle Streghe" },
-            { BuildingType.Observatory, "Osservatorio Lunare" },
-            { BuildingType.Reliquary, "Reliquiario Friulano" },
-            { BuildingType.Undercroft, "Cripta dei Benandanti" }
+            { BuildingType.Shrine, "Forest Altar" },
+            { BuildingType.Cathedral, "Canopy Temple" },
+            { BuildingType.Monolith, "Ayahuasca Stone" },
+            { BuildingType.Treasury, "Jungle Coffer" },
+            { BuildingType.Observatory, "Canopy Watch" },
+            { BuildingType.Reliquary, "Plant Reliquary" },
+            { BuildingType.Undercroft, "Root Vault" },
         },
-        ["malkin_tower_coven"] = new()
+        ["andean_pacha"] = new()
         {
-            { BuildingType.Shrine, "Witch's Altar" },
-            { BuildingType.Cathedral, "Tower Keep" },
-            { BuildingType.Monolith, "Standing Stone" },
-            { BuildingType.Treasury, "Lancashire Chest" },
-            { BuildingType.Observatory, "Tower Observatory" },
-            { BuildingType.Reliquary, "Pendle Reliquary" },
-            { BuildingType.Undercroft, "Malkin Cellar" }
+            { BuildingType.Shrine, "Pacha Altar" },
+            { BuildingType.Cathedral, "Sun Temple" },
+            { BuildingType.Monolith, "Intihuatana" },
+            { BuildingType.Treasury, "Inca Coffer" },
+            { BuildingType.Observatory, "Andean Watch" },
+            { BuildingType.Reliquary, "Mummy Reliquary" },
+            { BuildingType.Undercroft, "Mountain Crypt" },
         },
-        ["north_berwick_coven"] = new()
+        ["pantanal_feiticeira"] = new()
         {
-            { BuildingType.Shrine, "Kirk Altar" },
-            { BuildingType.Cathedral, "Auld Kirk" },
-            { BuildingType.Monolith, "Heid Stane" },
-            { BuildingType.Treasury, "Scottish Coffer" },
-            { BuildingType.Observatory, "North Berwick Watch" },
-            { BuildingType.Reliquary, "Lothian Reliquary" },
-            { BuildingType.Undercroft, "Berwick Vaults" }
+            { BuildingType.Shrine, "Swamp Altar" },
+            { BuildingType.Cathedral, "Waterside Temple" },
+            { BuildingType.Monolith, "Flood Stone" },
+            { BuildingType.Treasury, "River Coffer" },
+            { BuildingType.Observatory, "Wetland Watch" },
+            { BuildingType.Reliquary, "Caiman Reliquary" },
+            { BuildingType.Undercroft, "Mud Vault" },
         },
-        ["la_cabotina"] = new()
+        ["guarani_shadows"] = new()
         {
-            { BuildingType.Shrine, "Autel Cabotin" },
-            { BuildingType.Cathedral, "Chapelle Profane" },
-            { BuildingType.Monolith, "Menhir Occulte" },
-            { BuildingType.Treasury, "Coffre Marseillais" },
-            { BuildingType.Observatory, "Observatoire Ligurien" },
-            { BuildingType.Reliquary, "Reliquaire de Triora" },
-            { BuildingType.Undercroft, "Caveau Cabotin" }
+            { BuildingType.Shrine, "Shadow Altar" },
+            { BuildingType.Cathedral, "Council House" },
+            { BuildingType.Monolith, "Ancient Stone" },
+            { BuildingType.Treasury, "Tribal Coffer" },
+            { BuildingType.Observatory, "Sky Watch" },
+            { BuildingType.Reliquary, "Ancestor Reliquary" },
+            { BuildingType.Undercroft, "Earth Vault" },
         },
-        ["ixchel_priestesses"] = new()
+        ["kush_sorcerers"] = new()
         {
-            { BuildingType.Shrine, "Isla Altar" },
-            { BuildingType.Cathedral, "Piramide" },
-            { BuildingType.Monolith, "Estela" },
-            { BuildingType.Treasury, "Cofre Maya" },
-            { BuildingType.Observatory, "Observatorio de Ixchel" },
-            { BuildingType.Reliquary, "Reliquario Maya" },
-            { BuildingType.Undercroft, "Cenote Sagrado" }
+            { BuildingType.Shrine, "Nubian Altar" },
+            { BuildingType.Cathedral, "Pyramid Temple" },
+            { BuildingType.Monolith, "Meroë Stele" },
+            { BuildingType.Treasury, "Nubian Gold" },
+            { BuildingType.Observatory, "Desert Watch" },
+            { BuildingType.Reliquary, "Pharaoh Reliquary" },
+            { BuildingType.Undercroft, "Tomb Vault" },
         },
-        ["new_forest_coven"] = new()
+        ["ifa_oracles"] = new()
         {
-            { BuildingType.Shrine, "Forest Shrine" },
-            { BuildingType.Cathedral, "Grove Cathedral" },
-            { BuildingType.Monolith, "Omen Stone" },
-            { BuildingType.Treasury, "Wessex Strongbox" },
-            { BuildingType.Observatory, "New Forest Watch" },
-            { BuildingType.Reliquary, "Hampshire Reliquary" },
-            { BuildingType.Undercroft, "Barrow Crypt" }
-        }
+            { BuildingType.Shrine, "Ifá Altar" },
+            { BuildingType.Cathedral, "Divination Temple" },
+            { BuildingType.Monolith, "Palm Nut Stone" },
+            { BuildingType.Treasury, "Oracle Coffer" },
+            { BuildingType.Observatory, "Destiny Watch" },
+            { BuildingType.Reliquary, "Orunmila Reliquary" },
+            { BuildingType.Undercroft, "Ancestral Vault" },
+        },
+        ["dogon_star_priests"] = new()
+        {
+            { BuildingType.Shrine, "Star Altar" },
+            { BuildingType.Cathedral, "Cliff Temple" },
+            { BuildingType.Monolith, "Sirius Stone" },
+            { BuildingType.Treasury, "Cosmic Coffer" },
+            { BuildingType.Observatory, "Star Watch" },
+            { BuildingType.Reliquary, "Nommo Reliquary" },
+            { BuildingType.Undercroft, "Cliff Vault" },
+        },
+        ["zulu_sangoma"] = new()
+        {
+            { BuildingType.Shrine, "Bone Altar" },
+            { BuildingType.Cathedral, "Ancestor Temple" },
+            { BuildingType.Monolith, "Throwing Stone" },
+            { BuildingType.Treasury, "Tribal Coffer" },
+            { BuildingType.Observatory, "Spirit Watch" },
+            { BuildingType.Reliquary, "Bone Reliquary" },
+            { BuildingType.Undercroft, "Ancestor Vault" },
+        },
+        ["axum_guardians"] = new()
+        {
+            { BuildingType.Shrine, "Obelisk Altar" },
+            { BuildingType.Cathedral, "Stele Temple" },
+            { BuildingType.Monolith, "Axum Stone" },
+            { BuildingType.Treasury, "Ark Coffer" },
+            { BuildingType.Observatory, "Highland Watch" },
+            { BuildingType.Reliquary, "Covenant Reliquary" },
+            { BuildingType.Undercroft, "Ancient Vault" },
+        },
+        ["babylon_mages"] = new()
+        {
+            { BuildingType.Shrine, "Ziggurat Altar" },
+            { BuildingType.Cathedral, "Star Temple" },
+            { BuildingType.Monolith, "Cuneiform Stone" },
+            { BuildingType.Treasury, "Babylonian Gold" },
+            { BuildingType.Observatory, "Astrology Watch" },
+            { BuildingType.Reliquary, "Tablet Reliquary" },
+            { BuildingType.Undercroft, "Clay Vault" },
+        },
+        ["djinn_binders"] = new()
+        {
+            { BuildingType.Shrine, "Brass Altar" },
+            { BuildingType.Cathedral, "Tent Temple" },
+            { BuildingType.Monolith, "Desert Stone" },
+            { BuildingType.Treasury, "Djinn Vessel Vault" },
+            { BuildingType.Observatory, "Dune Watch" },
+            { BuildingType.Reliquary, "Brass Reliquary" },
+            { BuildingType.Undercroft, "Sand Vault" },
+        },
+        ["hashashin_shadow"] = new()
+        {
+            { BuildingType.Shrine, "Shadow Altar" },
+            { BuildingType.Cathedral, "Eagle Nest" },
+            { BuildingType.Monolith, "Assassin Stone" },
+            { BuildingType.Treasury, "Tribute Coffer" },
+            { BuildingType.Observatory, "Mountain Watch" },
+            { BuildingType.Reliquary, "Dagger Reliquary" },
+            { BuildingType.Undercroft, "Alamut Vault" },
+        },
+        ["sumerian_deep"] = new()
+        {
+            { BuildingType.Shrine, "Deep Altar" },
+            { BuildingType.Cathedral, "Ziggurat Temple" },
+            { BuildingType.Monolith, "Cuneiform Stele" },
+            { BuildingType.Treasury, "Ancient Gold" },
+            { BuildingType.Observatory, "Deep Watch" },
+            { BuildingType.Reliquary, "Abyss Reliquary" },
+            { BuildingType.Undercroft, "Subterranean Vault" },
+        },
+        ["qabbalah_masters"] = new()
+        {
+            { BuildingType.Shrine, "Sefirot Altar" },
+            { BuildingType.Cathedral, "Meditation Temple" },
+            { BuildingType.Monolith, "Sacred Geometry Stone" },
+            { BuildingType.Treasury, "Mystic Coffer" },
+            { BuildingType.Observatory, "Emanation Watch" },
+            { BuildingType.Reliquary, "Letter Reliquary" },
+            { BuildingType.Undercroft, "Safed Vault" },
+        },
+        ["iga_shinobi"] = new()
+        {
+            { BuildingType.Shrine, "Shadow Altar" },
+            { BuildingType.Cathedral, "Hidden Dojo" },
+            { BuildingType.Monolith, "Shuriken Stone" },
+            { BuildingType.Treasury, "Shinobi Coffer" },
+            { BuildingType.Observatory, "Mist Watch" },
+            { BuildingType.Reliquary, "Ninjutsu Reliquary" },
+            { BuildingType.Undercroft, "Shadow Vault" },
+        },
+        ["koga_nightblades"] = new()
+        {
+            { BuildingType.Shrine, "Illusion Altar" },
+            { BuildingType.Cathedral, "Poison Dojo" },
+            { BuildingType.Monolith, "Genjutsu Stone" },
+            { BuildingType.Treasury, "Night Coffer" },
+            { BuildingType.Observatory, "Night Watch" },
+            { BuildingType.Reliquary, "Venom Reliquary" },
+            { BuildingType.Undercroft, "Poison Vault" },
+        },
+        ["takeda_ronin"] = new()
+        {
+            { BuildingType.Shrine, "Blade Altar" },
+            { BuildingType.Cathedral, "Ghost Dojo" },
+            { BuildingType.Monolith, "Katana Stone" },
+            { BuildingType.Treasury, "Ronin Coffer" },
+            { BuildingType.Observatory, "Battlefield Watch" },
+            { BuildingType.Reliquary, "Spirit Blade Reliquary" },
+            { BuildingType.Undercroft, "Warrior Vault" },
+        },
+        ["wu_dang_immortals"] = new()
+        {
+            { BuildingType.Shrine, "Chi Altar" },
+            { BuildingType.Cathedral, "Mountain Temple" },
+            { BuildingType.Monolith, "Immortal Stone" },
+            { BuildingType.Treasury, "Elixir Coffer" },
+            { BuildingType.Observatory, "Peak Watch" },
+            { BuildingType.Reliquary, "Alchemy Reliquary" },
+            { BuildingType.Undercroft, "Cave Vault" },
+        },
+        ["shadow_shogun"] = new()
+        {
+            { BuildingType.Shrine, "Throne Altar" },
+            { BuildingType.Cathedral, "Edo Castle" },
+            { BuildingType.Monolith, "Shogun Stone" },
+            { BuildingType.Treasury, "Imperial Coffer" },
+            { BuildingType.Observatory, "Castle Watch" },
+            { BuildingType.Reliquary, "Shogun Reliquary" },
+            { BuildingType.Undercroft, "Castle Vault" },
+        },
+        ["maori_tohunga"] = new()
+        {
+            { BuildingType.Shrine, "Moko Altar" },
+            { BuildingType.Cathedral, "Marae Temple" },
+            { BuildingType.Monolith, "Sacred Stone" },
+            { BuildingType.Treasury, "Tribal Coffer" },
+            { BuildingType.Observatory, "Coastal Watch" },
+            { BuildingType.Reliquary, "Tiki Reliquary" },
+            { BuildingType.Undercroft, "Burial Cave" },
+        },
+        ["dreamtime_elders"] = new()
+        {
+            { BuildingType.Shrine, "Dreamtime Altar" },
+            { BuildingType.Cathedral, "Songline Temple" },
+            { BuildingType.Monolith, "Uluru Stone" },
+            { BuildingType.Treasury, "Songline Coffer" },
+            { BuildingType.Observatory, "Desert Watch" },
+            { BuildingType.Reliquary, "Ancestor Reliquary" },
+            { BuildingType.Undercroft, "Dreamtime Vault" },
+        },
+        ["polynesian_navigators"] = new()
+        {
+            { BuildingType.Shrine, "Wayfinder Altar" },
+            { BuildingType.Cathedral, "Ocean Temple" },
+            { BuildingType.Monolith, "Star Path Stone" },
+            { BuildingType.Treasury, "Voyage Coffer" },
+            { BuildingType.Observatory, "Star Path Watch" },
+            { BuildingType.Reliquary, "Navigation Reliquary" },
+            { BuildingType.Undercroft, "Deep Vault" },
+        },
+        ["papuan_spirits"] = new()
+        {
+            { BuildingType.Shrine, "Mask Altar" },
+            { BuildingType.Cathedral, "Spirit House" },
+            { BuildingType.Monolith, "Highland Stone" },
+            { BuildingType.Treasury, "Jungle Coffer" },
+            { BuildingType.Observatory, "Ridge Watch" },
+            { BuildingType.Reliquary, "Mask Reliquary" },
+            { BuildingType.Undercroft, "Highland Vault" },
+        },
+        ["pacific_abyss"] = new()
+        {
+            { BuildingType.Shrine, "Abyss Altar" },
+            { BuildingType.Cathedral, "Trench Temple" },
+            { BuildingType.Monolith, "Pressure Stone" },
+            { BuildingType.Treasury, "Deep Coffer" },
+            { BuildingType.Observatory, "Abyssal Watch" },
+            { BuildingType.Reliquary, "Deep One Reliquary" },
+            { BuildingType.Undercroft, "Mariana Vault" },
+        },
     };
+
 
     public static string BuildingNameFor(string covenId, BuildingType type)
     {
