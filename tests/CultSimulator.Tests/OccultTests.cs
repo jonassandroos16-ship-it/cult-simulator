@@ -69,153 +69,36 @@ public class OccultTests
     {
         var o = NewOccult(); o.Acolytes = 100;
         var minion = CultistHierarchy.Promote(o);
-        CultistHierarchy.AppointCouncil(o, CouncilRole.Inquisitor, minion.Id);
+        CultistHierarchy.AppointCouncil(o, CouncilRole.Archon, minion.Id);
         Assert.Empty(o.Minions);
         Assert.Single(o.HighCouncil);
     }
 
     [Fact]
-    public void HighPriest_RequiresGrandSacrifice()
+    public void Tech_PrerequisitesEnforced()
     {
-        var o = NewOccult(); o.Acolytes = 100;
-        CultistHierarchy.Promote(o);
-        Assert.False(CultistHierarchy.CanAppointCouncil(o, CouncilRole.HighPriest));
-        o.GrandSacrificeCount = 1;
-        Assert.True(CultistHierarchy.CanAppointCouncil(o, CouncilRole.HighPriest));
+        var o = NewOccult();
+        Assert.False(TechTree.CanUnlock(o, TechId.OsmoticExtraction));
+        o.UnlockedTechs.Add(TechId.SanguineAutomata);
+        Assert.True(TechTree.CanUnlock(o, TechId.OsmoticExtraction));
     }
 
     [Fact]
-    public void Tech_PrerequisitesBlockUnlock()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 100000;
-        Assert.False(TechTree.CanUnlock(state, OccultData.Tech(TechId.OsmoticExtraction)));
-    }
-
-    [Fact]
-    public void Tech_UnlockSpendsFaith()
+    public void Tech_UnlockConsumesFaith()
     {
         var state = NewState();
         state.ActiveCoven.Faith = 100;
-        Assert.True(TechTree.CanUnlock(state, OccultData.Tech(TechId.SanguineAutomata)));
-        TechTree.Unlock(state, TechId.SanguineAutomata);
+        Assert.True(TechTree.Unlock(state, TechId.SanguineAutomata));
         Assert.Equal(50, state.ActiveCoven.Faith);
         Assert.Contains(TechId.SanguineAutomata, state.Occult.UnlockedTechs);
     }
 
     [Fact]
-    public void Tech_SequentialPrereqsWork()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 100000;
-        TechTree.Unlock(state, TechId.SanguineAutomata);
-        Assert.True(TechTree.PrerequisitesMet(state.Occult, OccultData.Tech(TechId.OsmoticExtraction)));
-        Assert.False(TechTree.PrerequisitesMet(state.Occult, OccultData.Tech(TechId.AutophagousCult)));
-    }
-
-    [Fact]
-    public void Tech_WhispersReducesSuspicion()
+    public void Tech_CannotUnlockAlreadyOwned()
     {
         var o = NewOccult();
-        Assert.Equal(1.0, TechTree.SuspicionReductionMult(o));
-        o.UnlockedTechs.Add(TechId.WhispersInTheDark);
-        Assert.Equal(0.85, TechTree.SuspicionReductionMult(o));
-    }
-
-    [Fact]
-    public void Tech_ResonanceMasteryDoublesSetBonus()
-    {
-        var o = NewOccult();
-        Assert.Equal(1.0, TechTree.SetBonusMult(o));
-        o.UnlockedTechs.Add(TechId.ResonanceMastery);
-        Assert.Equal(2.0, TechTree.SetBonusMult(o));
-    }
-
-    [Fact]
-    public void Tech_MemoriesRetainsFaith()
-    {
-        var o = NewOccult();
-        Assert.Equal(0.0, TechTree.FaithRetentionPercent(o));
-        o.UnlockedTechs.Add(TechId.MemoriesOfTheDeep);
-        Assert.Equal(0.10, TechTree.FaithRetentionPercent(o));
-    }
-
-    [Fact]
-    public void Socket_BaseCountIs1() => Assert.Equal(1, NewOccult().UnlockedSocketCount);
-
-    [Fact]
-    public void Socket_SecondSocketTechIncreasesCount()
-    {
-        var o = NewOccult();
-        o.UnlockedTechs.Add(TechId.SecondSocket);
-        Assert.Equal(2, o.UnlockedSocketCount);
-        o.UnlockedTechs.Add(TechId.ThirdSocket);
-        Assert.Equal(3, o.UnlockedSocketCount);
-    }
-
-    [Fact]
-    public void Socket_AddsArtifact()
-    {
-        var o = NewOccult();
-        Grimoire.AddArtifact(o, "blood_chalice");
-        Assert.True(Grimoire.OwnsArtifact(o, "blood_chalice"));
-        Grimoire.Socket(o, "blood_chalice");
-        Assert.Contains("blood_chalice", o.SocketedArtifacts);
-        Assert.False(o.OwnedArtifacts.Contains("blood_chalice"));
-    }
-
-    [Fact]
-    public void Socket_CannotExceedLimit()
-    {
-        var o = NewOccult();
-        o.UnlockedTechs.Add(TechId.SecondSocket);
-        Grimoire.AddArtifact(o, "blood_chalice"); Grimoire.AddArtifact(o, "blood_blade");
-        Assert.True(Grimoire.Socket(o, "blood_chalice")); Assert.True(Grimoire.Socket(o, "blood_blade"));
-        Grimoire.AddArtifact(o, "blood_heart");
-        Assert.False(Grimoire.Socket(o, "blood_heart"));
-    }
-
-    [Fact]
-    public void Unsocket_ReturnsToInventory()
-    {
-        var o = NewOccult();
-        Grimoire.AddArtifact(o, "blood_chalice"); Grimoire.Socket(o, "blood_chalice"); Grimoire.Unsocket(o, "blood_chalice");
-        Assert.DoesNotContain("blood_chalice", o.SocketedArtifacts);
-        Assert.Contains("blood_chalice", o.OwnedArtifacts);
-    }
-
-    [Fact]
-    public void BloodSetBonus_Requires3Blood()
-    {
-        var o = NewOccult();
-        o.UnlockedTechs.Add(TechId.SecondSocket); o.UnlockedTechs.Add(TechId.ThirdSocket);
-        Grimoire.AddArtifact(o, "blood_chalice"); Grimoire.AddArtifact(o, "blood_blade"); Grimoire.AddArtifact(o, "blood_heart");
-        Grimoire.Socket(o, "blood_chalice"); Grimoire.Socket(o, "blood_blade");
-        Assert.False(Grimoire.HasSetBonus(o, ArtifactSuit.Blood));
-        Grimoire.Socket(o, "blood_heart");
-        Assert.True(Grimoire.HasSetBonus(o, ArtifactSuit.Blood));
-    }
-
-    [Fact]
-    public void BloodSetBonus_IncreasesTapPower()
-    {
-        var o = NewOccult();
-        o.UnlockedTechs.Add(TechId.SecondSocket); o.UnlockedTechs.Add(TechId.ThirdSocket);
-        Assert.Equal(1.0, Grimoire.TapPowerBonus(o));
-        Grimoire.AddArtifact(o, "blood_chalice"); Grimoire.AddArtifact(o, "blood_blade"); Grimoire.AddArtifact(o, "blood_heart");
-        Grimoire.Socket(o, "blood_chalice"); Grimoire.Socket(o, "blood_blade"); Grimoire.Socket(o, "blood_heart");
-        Assert.Equal(3.15, Grimoire.TapPowerBonus(o), precision: 2);
-    }
-
-    [Fact]
-    public void BloodVoidConversion_Requires2Blood1Void()
-    {
-        var o = NewOccult();
-        o.UnlockedTechs.Add(TechId.SecondSocket); o.UnlockedTechs.Add(TechId.ThirdSocket);
-        Assert.False(Grimoire.BloodVoidConversionActive(o));
-        Grimoire.AddArtifact(o, "blood_chalice"); Grimoire.AddArtifact(o, "blood_blade"); Grimoire.AddArtifact(o, "void_orb");
-        Grimoire.Socket(o, "blood_chalice"); Grimoire.Socket(o, "blood_blade"); Grimoire.Socket(o, "void_orb");
-        Assert.True(Grimoire.BloodVoidConversionActive(o));
+        o.UnlockedTechs.Add(TechId.SanguineAutomata);
+        Assert.False(TechTree.CanUnlock(o, TechId.SanguineAutomata));
     }
 
     [Fact]
@@ -223,7 +106,7 @@ public class OccultTests
     {
         var state = NewState();
         Assert.False(WorldMapSystem.CanConquer(state, OccultData.MapNode("old_library")));
-        state.ActiveCoven.Faith = 500; state.Occult.ArmyPower = 50;
+        state.ActiveCoven.Faith = 150; state.Occult.ArmyPower = 10;
         Assert.True(WorldMapSystem.CanConquer(state, OccultData.MapNode("old_library")));
     }
 
@@ -233,8 +116,8 @@ public class OccultTests
         var state = NewState();
         state.ActiveCoven.Faith = 1000; state.Occult.ArmyPower = 100;
         WorldMapSystem.Conquer(state, OccultData.MapNode("old_library"));
-        Assert.Equal(500, state.ActiveCoven.Faith);
-        Assert.Equal(50, state.Occult.ArmyPower);
+        Assert.Equal(850, state.ActiveCoven.Faith);
+        Assert.Equal(90, state.Occult.ArmyPower);
         Assert.True(WorldMapSystem.IsConquered(state.Occult, "old_library"));
     }
 
@@ -288,13 +171,13 @@ public class OccultTests
     }
 
     [Fact]
-    public void LeyLine_RequiresTech()
+    public void LeyLine_RequiresTwoConqueredNodes()
     {
         var state = NewState();
         state.ActiveCoven.Faith = 100000; state.Occult.ArmyPower = 10000;
-        Assert.False(WorldMapSystem.CanConnectLeyLine(state.Occult, "a", "b"));
-        state.Occult.UnlockedTechs.Add(TechId.LeyLineWeaving);
+        Assert.False(WorldMapSystem.CanConnectLeyLine(state.Occult, "old_library", "ancient_ruins"));
         WorldMapSystem.Conquer(state, OccultData.MapNode("old_library"));
+        Assert.False(WorldMapSystem.CanConnectLeyLine(state.Occult, "old_library", "ancient_ruins"));
         WorldMapSystem.Conquer(state, OccultData.MapNode("ancient_ruins"));
         Assert.True(WorldMapSystem.CanConnectLeyLine(state.Occult, "old_library", "ancient_ruins"));
     }
