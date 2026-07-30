@@ -7,22 +7,17 @@ namespace CultSimulator.Game;
 /// <summary>
 /// Data-driven event definitions loaded from each coven's JSON file.
 /// Each coven carries its own pool of events so the narrative stays local
-/// and flavored to the coven's region (e.g. a rival cult near Skanör is
-/// "Lund", while one near Malkin Tower is "Burnley").
+/// and flavored to the coven's region.
+/// Effects scale with the player's current resources via percentage fields,
+/// so a +15% Faith reward matters whether you have 100 or 100,000 faith.
 /// </summary>
 public class CovenEventChoiceData
 {
     public string Label { get; set; } = "";
     public string Description { get; set; } = "";
 
-    /// <summary>Flat deltas applied to the active coven when this choice is taken.</summary>
     public CovenEventEffects? Effects { get; set; }
 
-    /// <summary>
-    /// A 50/50 gamble: if won, <see cref="Effects"/> apply; if lost,
-    /// <see cref="LossEffects"/> apply (defaults to a mirror of Effects).
-    /// When null the choice is deterministic.
-    /// </summary>
     public CovenEventRandomOutcome? Random { get; set; }
 }
 
@@ -31,6 +26,13 @@ public class CovenEventEffects
     public int Followers { get; set; }
     public int Faith { get; set; }
     public int Gold { get; set; }
+
+    /// <summary>Percentage of current followers to add/remove (0.15 = +15%).</summary>
+    public double FollowersPct { get; set; }
+    /// <summary>Percentage of current faith to add/remove (0.15 = +15%).</summary>
+    public double FaithPct { get; set; }
+    /// <summary>Percentage of current gold to add/remove (0.15 = +15%).</summary>
+    public double GoldPct { get; set; }
 }
 
 public class CovenEventRandomOutcome
@@ -49,7 +51,6 @@ public class CovenEventData
     public CovenEventChoiceData ChoiceA { get; set; } = new();
     public CovenEventChoiceData ChoiceB { get; set; } = new();
 
-    /// <summary>Converts the data-driven definition into a runtime <see cref="EventDef"/>.</summary>
     public EventDef ToEventDef()
     {
         return new EventDef(Id, Title, Narrative, ToChoice(ChoiceA), ToChoice(ChoiceB));
@@ -81,8 +82,8 @@ public class CovenEventData
     private static void ApplyEffects(CovenState s, CovenEventEffects? e)
     {
         if (e == null) return;
-        s.Followers += e.Followers;
-        s.Faith += e.Faith;
-        s.Gold += e.Gold;
+        s.Followers += e.Followers + (int)(s.Followers * e.FollowersPct);
+        s.Faith += e.Faith + (int)(s.Faith * e.FaithPct);
+        s.Gold += e.Gold + (int)(s.Gold * e.GoldPct);
     }
 }
