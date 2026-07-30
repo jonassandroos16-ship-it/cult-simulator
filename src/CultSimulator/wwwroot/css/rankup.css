@@ -113,7 +113,6 @@
     text-shadow: 0 0 8px rgba(107, 15, 26, 0.5);
     animation: rankup-sigil-pulse 2.5s ease-in-out infinite;
 }
-
 .rankup-sigil-1 { animation-delay: 0s; }
 .rankup-sigil-2 { animation-delay: 0.4s; font-size: 1.25rem; }
 .rankup-sigil-3 { animation-delay: 0.8s; }
