@@ -11,6 +11,7 @@ public static class ConversionData
     public static IReadOnlyList<ConversionDef> All =>
         new[]
         {
+            HedebySiegeOfDarkness,
             LaRectaProvincia,
             Benandanti,
             MalkinTower,
@@ -24,10 +25,79 @@ public static class ConversionData
         All.FirstOrDefault(c => c.CovenId == covenId);
 
     // ─────────────────────────────────────────────────────────────────────────
-    // La Recta Provincia — Chile, Chiloé Archipelago
-    // Theme: Shadowy underground legal system, the Imbunche beast,
-    //        secret grimoires, protection rackets, underground cave.
     // ─────────────────────────────────────────────────────────────────────────
+    // Hedeby Vikings — Denmark, Viking Age
+    // Theme: Norse raiders, dark bargains, seiðr magic, the Öresund strait.
+    // This is the FIRST conversion — intentionally straightforward to ease
+    // players into the mechanic.
+    // ─────────────────────────────────────────────────────────────────────────
+    private static ConversionDef HedebySiegeOfDarkness => new(
+        "hedeby_vikings",
+        "Blood of the Öresund",
+        new[]
+        {
+            new ConversionStep(
+                "hed_1",
+                "The Longship Parley",
+                "A dragon-prowed longship beaches on the shore near Skanör. Its crew — scarred veterans of Hedeby's dark trade — have heard of your growing power and come to test you. Their jarl, Egil One-Eye, stands on the gunwale. 'We heard a witch-cult grows in this marsh. We have our own gods and our own magic. Why should the Hedeby Raiders bow to anyone?' He spits into the cold water.",
+                new ConversionChoice(
+                    "Demonstrate your power openly",
+                    "+progress — they respect strength",
+                    s => { s.Faith += 50; return "You call the fog in from the sea in an instant, shrouding their longship in grey silence. Egil watches, then laughs — a deep, approving sound. 'Not just words, then.' +50 Faith."; }),
+                new ConversionChoice(
+                    "Offer them silver and a bargain",
+                    "−40 Gold, they listen more readily",
+                    s => { if (s.Gold < 40) { s.Gold = 0; return "Your coffers are nearly empty, but the silver you press into Egil's hand buys you a hearing. He weighs it, then nods. 'Speak, then.'"; } s.Gold -= 40; return "The silver lands heavy in Egil's palm. He tosses it to his crew and turns to you with genuine interest. 'A cult that pays in real coin. Speak.'"; }),
+                0.35, 0.5),
+
+            new ConversionStep(
+                "hed_2",
+                "The Seiðr Test",
+                "Egil brings his völva — a seiðr witch named Ragnhild — to judge your worthiness. She sits on a high-seat strung with cat-gut and sings a long-spell, trying to read your true nature. 'The spirits say you carry old hunger,' she announces. 'They do not say it is evil. But it frightens them.' She offers you a carved rune: accept the reading, or challenge it.",
+                new ConversionChoice(
+                    "Accept the reading and speak truth",
+                    "+followers — honesty wins their trust",
+                    s => { s.Followers += 6; return "You meet Ragnhild's gaze and confirm it: yes, old hunger. You want what the world has hoarded away. She smiles for the first time. 'Then we are kin.' +6 Followers join from Hedeby's ranks."; }),
+                new ConversionChoice(
+                    "Challenge the reading with counter-magic",
+                    "Risky — impress or offend her",
+                    s =>
+                    {
+                        if (Random.Shared.NextDouble() < 0.55)
+                        {
+                            s.Faith += 80;
+                            return "You weave a counter-charm that silences the cat-gut strings mid-song. Ragnhild's eyes go wide — then fill with respect. 'The spirits did not tell me everything.' +80 Faith.";
+                        }
+                        s.Followers -= 3;
+                        return "Ragnhild's magic is older than yours. She unravels your counter-charm effortlessly and three of your own followers, unsettled, edge away. −3 Followers.";
+                    }),
+                0.35, 0.55),
+
+            new ConversionStep(
+                "hed_3",
+                "The Blót Bargain",
+                "Egil organises a blót — a sacrifice feast by the longship — to seal any alliance. A horse is led out. 'The gods need blood before we give our word,' he says simply. 'Your gods, our gods — all gods drink.' He hands you the ceremonial knife. The Hedeby warriors watch in firelit silence.",
+                new ConversionChoice(
+                    "Perform the blót alongside them",
+                    "−30 Faith, they embrace you as one of their own",
+                    s => { s.Faith -= 30; if (s.Faith < 0) s.Faith = 0; return "You complete the rite without flinching. Blood steams on the cold ground. Egil clasps your forearm. 'Now you are oathed.' The raiders cheer into the dark sky."; }),
+                new ConversionChoice(
+                    "Redirect the sacrifice to your own ritual",
+                    "Risky — your doctrine may not satisfy them",
+                    s =>
+                    {
+                        if (Random.Shared.NextDouble() < 0.6)
+                        {
+                            s.Followers += 4;
+                            return "You transform the blót into your own rite, weaving Norse words into your liturgy. Ragnhild nods approvingly — the gods got their blood either way. +4 Followers.";
+                        }
+                        s.Faith -= 50; if (s.Faith < 0) s.Faith = 0;
+                        return "The warriors murmur that you dishonoured the gods with a foreign rite. The evening grows cold. −50 Faith.";
+                    }),
+                0.30, 0.6),
+        });
+
+    // La Recta Provincia — Chile, Chiloé Archipelago
     private static ConversionDef LaRectaProvincia => new(
         "la_recta_provincia",
         "The Shadow Tribunal of Chiloé",
@@ -124,11 +194,7 @@ public static class ConversionData
                 0.25, 0.4),
         });
 
-    // ─────────────────────────────────────────────────────────────────────────
     // The Benandanti — Italy, Friuli
-    // Theme: Spirit battles on the astral plane, born-with-caul,
-    //        Ember Days, fennel vs sorghum, harvest protection.
-    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef Benandanti => new(
         "benandanti",
         "The Battle of the Ember Days",
@@ -227,11 +293,7 @@ public static class ConversionData
                 0.25, 0.5),
         });
 
-    // ─────────────────────────────────────────────────────────────────────────
     // The Malkin Tower Coven — England, Lancashire, 1612
-    // Theme: Pendle witch trials, rival families, cunning folk,
-    //        Old Demdike, Roger Nowell the magistrate, the law.
-    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef MalkinTower => new(
         "malkin_tower_coven",
         "The Pendle Power Struggle",
@@ -321,11 +383,7 @@ public static class ConversionData
                 0.25, 0.5),
         });
 
-    // ─────────────────────────────────────────────────────────────────────────
     // The North Berwick Coven — Scotland, 1590
-    // Theme: Storm magic, sinking royal ships, King James VI,
-    //        Agnes Sampson, the Auld Kirk, Daemonologie.
-    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef NorthBerwick => new(
         "north_berwick_coven",
         "The Storm Over the Forth",
@@ -415,11 +473,7 @@ public static class ConversionData
                 0.25, 0.45),
         });
 
-    // ─────────────────────────────────────────────────────────────────────────
     // The Circle of La Cabotina — Italy, Triora, Liguria, 1587
-    // Theme: Famine, shape-shifting, cavernous rock formation,
-    //        mountain village, crop manipulation, the "Salem of Italy."
-    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef LaCabotina => new(
         "la_cabotina",
         "The Famine of Triora",
@@ -516,11 +570,7 @@ public static class ConversionData
                 0.25, 0.5),
         });
 
-    // ─────────────────────────────────────────────────────────────────────────
     // The Ixchel Priestesses — Mexico, Cozumel, Maya
-    // Theme: Goddess of medicine, midwifery, weaving, the moon,
-    //        botanical healing, lunar rituals, syncretic brujería.
-    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef IxchelPriestesses => new(
         "ixchel_priestesses",
         "The Moon over Cozumel",
@@ -619,11 +669,7 @@ public static class ConversionData
                 0.25, 0.4),
         });
 
-    // ─────────────────────────────────────────────────────────────────────────
     // The New Forest Coven — England, Hampshire, 1930s–40s
-    // Theme: Modern Wiccan revival, Gerald Gardner, Old Dorothy,
-    //        Operation Cone of Power, stopping Hitler psychically.
-    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef NewForest => new(
         "new_forest_coven",
         "The Cone of Power",
