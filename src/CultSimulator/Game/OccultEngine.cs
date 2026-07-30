@@ -12,15 +12,26 @@ public static class OccultEngine
         return basePower * mult;
     }
 
+    public static double ClickPowerForCoven(GameState state, CovenState coven)
+    {
+        var o = coven.Occult;
+        double basePower = GrandSacrifice.ClickPowerBase(state) + o.SermonPowerLevel;
+        double mult = CultistHierarchy.TapPowerMult(o) * Grimoire.TapPowerBonus(o) * o.ElixirTapMult * GrandSacrifice.GlobalProductionMult(state);
+        if (o.IsFrenzyActive) mult *= OccultBalance.FrenzyMultiplier;
+        if (o.IsWhisperChoirActive) mult *= 3.0;
+        return basePower * mult;
+    }
+
     public static double Tap(GameState state)
     {
-        var o = state.Occult;
+        var coven = state.ActiveCoven;
+        var o = coven.Occult;
         double power = ClickPower(state);
         if (Grimoire.BloodVoidConversionActive(o))
             foreach (var node in o.MapNodes)
                 if (node.Conquered && node.RaidTimer > 0) node.RaidTimer = Math.Max(0, node.RaidTimer - power * 0.5);
         double faith = power;
-        state.ActiveCoven.Faith += faith;
+        coven.Faith += faith;
         o.LifetimeFaith += faith;
         return faith;
     }
@@ -45,33 +56,46 @@ public static class OccultEngine
         return baseRate * mult;
     }
 
-    public static double TotalFaithPerSec(GameState state)
+    public static double TotalFaithPerSec(GameState state) => TotalFaithPerSecForCoven(state, state.ActiveCoven);
+
+    public static double TotalFaithPerSecForCoven(GameState state, CovenState coven)
     {
-        var o = state.Occult;
-        double total = AcolyteFaithPerSec(state);
+        var o = coven.Occult;
+        double total = AcolyteFaithPerSecForCoven(o, state);
         total *= WorldMapSystem.GreatSealMultiplier(o);
         return total;
     }
 
-    public static double TotalMapFaithPerSec(GameState state)
+    private static double AcolyteFaithPerSecForCoven(OccultState o, GameState state)
     {
-        var o = state.Occult;
+        double baseRate = o.Acolytes * 0.1;
+        double mult = GrandSacrifice.GlobalProductionMult(state) * Grimoire.GlobalProductionMult(o);
+        if (TechTree.HasTech(o, TechId.SanguineAutomata)) baseRate += o.Acolytes * 0.05;
+        return baseRate * mult;
+    }
+
+    public static double TotalMapFaithPerSec(GameState state) => TotalMapFaithPerSecForCoven(state.Occult, state);
+
+    public static double TotalMapFaithPerSecForCoven(OccultState o, GameState state)
+    {
         double baseFaith = WorldMapSystem.TotalFaithPerSec(o);
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Scholar) * OccultBalance.ScholarFaithPerSec;
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Infiltrator) * OccultBalance.InfiltratorFaithPerSec;
-        baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult;
+        baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult * GrandSacrifice.GlobalProductionMult(state);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
         return baseFaith;
     }
 
-    public static void Tick(GameState state, double deltaSec)
+    public static void Tick(GameState state, double deltaSec) => Tick(state, state.ActiveCoven, deltaSec);
+
+    public static void Tick(GameState state, CovenState coven, double deltaSec)
     {
-        var o = state.Occult;
-        double faith = TotalFaithPerSec(state) * deltaSec;
-        state.ActiveCoven.Faith += faith; o.LifetimeFaith += faith;
-        double mapFaith = TotalMapFaithPerSec(state) * deltaSec;
-        state.ActiveCoven.Faith += mapFaith; o.LifetimeFaith += mapFaith;
+        var o = coven.Occult;
+        double faith = TotalFaithPerSecForCoven(state, coven) * deltaSec;
+        coven.Faith += faith; o.LifetimeFaith += faith;
+        double mapFaith = TotalMapFaithPerSecForCoven(o, state) * deltaSec;
+        coven.Faith += mapFaith; o.LifetimeFaith += mapFaith;
         double armyGain = o.Minions.Count(m => m.Role == PromotedRole.Zealot) * OccultBalance.ZealotArmyPowerPerSec * deltaSec;
         armyGain += o.Acolytes * OccultBalance.AcolyteArmyPowerPerSec * deltaSec;
         o.ArmyPower += armyGain;
@@ -83,7 +107,7 @@ public static class OccultEngine
         if (o.DarkVigilTimer > 0) o.DarkVigilTimer = Math.Max(0, o.DarkVigilTimer - deltaSec);
         if (o.WhisperChoirTimer > 0) o.WhisperChoirTimer = Math.Max(0, o.WhisperChoirTimer - deltaSec);
         if (o.CovenBlessingTimer > 0) o.CovenBlessingTimer = Math.Max(0, o.CovenBlessingTimer - deltaSec);
-        if (TechTree.HasTech(o, TechId.AutophagousCult)) { int cap = CultistHierarchy.AcolyteCap(o, state.ActiveCoven); if (o.Acolytes > cap) { int excess = o.Acolytes - cap; o.Acolytes = cap; state.ActiveCoven.Faith += excess * OccultBalance.SacrificeSermonMult * 0.5; } }
+        if (TechTree.HasTech(o, TechId.AutophagousCult)) { int cap = CultistHierarchy.AcolyteCap(o, coven); if (o.Acolytes > cap) { int excess = o.Acolytes - cap; o.Acolytes = cap; coven.Faith += excess * OccultBalance.SacrificeSermonMult * 0.5; } }
         if (WorldMapSystem.IsRaidTriggered(o) && !TechTree.HasTech(o, TechId.InquisitorsBlindfold)) WorldMapSystem.ApplyRaid(o);
     }
 
@@ -96,11 +120,12 @@ public static class OccultEngine
     public static bool SacrificeAcolyte(GameState state)
     {
         if (!CanSacrificeAcolyte(state)) return false;
-        var o = state.Occult;
+        var coven = state.ActiveCoven;
+        var o = coven.Occult;
         o.Acolytes--;
         o.Suspicion = Math.Max(0, o.Suspicion - OccultBalance.AcolyteSacrificeSuspicionReduction);
         double faith = OccultBalance.SacrificeFaithBase * 5;
-        state.ActiveCoven.Faith += faith;
+        coven.Faith += faith;
         o.LifetimeFaith += faith;
         return true;
     }
@@ -109,11 +134,12 @@ public static class OccultEngine
     public static bool ActivateBloodOffering(GameState state)
     {
         if (!CanActivateBloodOffering(state)) return false;
-        var o = state.Occult;
+        var coven = state.ActiveCoven;
+        var o = coven.Occult;
         o.Acolytes -= 5;
         o.Suspicion = 0;
         double faith = OccultBalance.SacrificeFaithBase * 50;
-        state.ActiveCoven.Faith += faith;
+        coven.Faith += faith;
         o.LifetimeFaith += faith;
         return true;
     }

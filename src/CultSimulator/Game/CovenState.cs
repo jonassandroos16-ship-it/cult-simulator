@@ -27,4 +27,11 @@ public class CovenState
     public bool TakenOver { get => Converted; set => Converted = value; }
 
     public bool HasUpgrade(UpgradeId id) => Upgrades.Contains(id);
+
+    /// <summary>
+    /// Per-coven occult state. Each coven has its own acolytes, disciples,
+    /// tech tree, map nodes, suspicion, materials, and ley lines — so every
+    /// coven is its own mini-game that must be managed independently.
+    /// </summary>
+    public OccultState Occult { get; set; } = new();
 }

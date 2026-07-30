@@ -4,10 +4,10 @@ public static class GrandSacrifice
 {
     public static double CalculateFavor(GameState state)
     {
-        var o = state.Occult;
-        if (o.LifetimeFaith < OccultBalance.FavorDivisor) return 0;
-        double baseFavor = Math.Sqrt(o.LifetimeFaith / OccultBalance.FavorDivisor);
-        return Math.Floor(baseFavor * ContinentMultiplier(state) * TechTree.EldritchFavorContinentMult(o));
+        double totalLifetime = state.Covens.Where(c => c.TakenOver).Sum(c => c.Occult.LifetimeFaith);
+        if (totalLifetime < OccultBalance.FavorDivisor) return 0;
+        double baseFavor = Math.Sqrt(totalLifetime / OccultBalance.FavorDivisor);
+        return Math.Floor(baseFavor * ContinentMultiplier(state) * TechTree.EldritchFavorContinentMult(state.Occult));
     }
 
     public static double ContinentMultiplier(GameState state) => 1.0 + WorldMapSystem.ConqueredNodeCount(state) * 0.1;
@@ -17,21 +17,35 @@ public static class GrandSacrifice
     {
         double favor = CalculateFavor(state);
         if (favor < 1) return 0;
-        var o = state.Occult;
-        double retainedFaith = state.ActiveCoven.Faith * TechTree.FaithRetentionPercent(o);
-        bool keepHighPriest = TechTree.HasTech(o, TechId.AstralAnchor);
-        state.Occult = new OccultState
+
+        double retainedFaithPercent = TechTree.FaithRetentionPercent(state.Occult);
+        bool keepHighPriest = TechTree.HasTech(state.Occult, TechId.AstralAnchor);
+        bool keepAstralAnchor = keepHighPriest;
+
+        foreach (var coven in state.Covens)
         {
-            EldritchFavor = o.EldritchFavor + favor,
-            HighCouncil = keepHighPriest ? o.HighCouncil.Where(c => c.Role == CouncilRole.HighPriest).ToList() : new(),
-            UnlockedTechs = keepHighPriest ? o.UnlockedTechs.Where(t => t == TechId.AstralAnchor).ToList() : new()
-        };
-        state.Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, Faith = retainedFaith } };
+            if (!coven.TakenOver) continue;
+            double retainedFaith = coven.Faith * retainedFaithPercent;
+            var oldOccult = coven.Occult;
+            coven.Occult = new OccultState
+            {
+                ArmyPower = 50,
+                HighCouncil = keepHighPriest ? oldOccult.HighCouncil.Where(c => c.Role == CouncilRole.HighPriest).ToList() : new(),
+                UnlockedTechs = keepAstralAnchor ? oldOccult.UnlockedTechs.Where(t => t == TechId.AstralAnchor).ToList() : new()
+            };
+            coven.Faith = retainedFaith;
+            coven.Followers = 0;
+            coven.Gold = 0;
+            coven.Buildings = new Dictionary<BuildingType, int>();
+            coven.Upgrades = new List<UpgradeId>();
+        }
+
         state.ActiveCovenId = "skanor";
-        state.Occult.GrandSacrificeCount = o.GrandSacrificeCount + 1;
+        state.EldritchFavor += favor;
+        state.GrandSacrificeCount++;
         return favor;
     }
 
-    public static double GlobalProductionMult(GameState state) => 1.0 + state.Occult.EldritchFavor * 0.02;
-    public static double ClickPowerBase(GameState state) => 1.0 + state.Occult.EldritchFavor * 0.05;
+    public static double GlobalProductionMult(GameState state) => 1.0 + state.EldritchFavor * 0.02;
+    public static double ClickPowerBase(GameState state) => 1.0 + state.EldritchFavor * 0.05;
 }

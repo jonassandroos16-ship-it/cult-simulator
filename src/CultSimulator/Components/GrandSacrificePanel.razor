@@ -12,12 +12,12 @@
         <div class="text-center p-4 rounded-[14px]" style="background: radial-gradient(circle, rgba(76,29,149,0.2), rgba(15,10,36,0.5)); border: 1px solid rgba(167,139,250,0.2);">
             <div class="text-5xl mb-3">🌟</div>
             <p class="text-sm text-violet-300 mb-2">Eldritch Favor</p>
-            <span class="font-display text-3xl font-semibold text-amber-100">@NumberFormat.Fmt(occult.EldritchFavor)</span>
+            <span class="font-display text-3xl font-semibold text-amber-100">@NumberFormat.Fmt(Game.State.EldritchFavor)</span>
             <p class="text-xs text-slate-400 mt-2">Global production: ×@GrandSacrifice.GlobalProductionMult(Game.State).ToString("F2")</p>
         </div>
         <div class="p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
             <div class="flex items-center justify-between mb-2"><span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Lifetime Faith</span><span class="font-display text-sm text-amber-100">@NumberFormat.Fmt(occult.LifetimeFaith)</span></div>
-            <div class="flex items-center justify-between mb-2"><span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Grand Sacrifices</span><span class="font-display text-sm text-amber-100">@occult.GrandSacrificeCount</span></div>
+            <div class="flex items-center justify-between mb-2"><span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Grand Sacrifices</span><span class="font-display text-sm text-amber-100">@Game.State.GrandSacrificeCount</span></div>
             <div class="flex items-center justify-between"><span class="text-xs text-violet-300 tracking-[0.1em] uppercase">Favor Yield</span><span class="font-display text-sm text-emerald-400">+@NumberFormat.Fmt(GrandSacrifice.CalculateFavor(Game.State))</span></div>
         </div>
         @if (canSacrifice)

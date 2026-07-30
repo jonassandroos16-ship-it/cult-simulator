@@ -133,7 +133,7 @@ public class GameService
     public void HireAcolyte() { OccultEngine.HireAcolyte(_state); NotifyChanged(); }
     public void PromoteMinion() { CultistHierarchy.Promote(_state.Occult); NotifyChanged(); }
     public void SacrificeMinion(string minionId) { CultistHierarchy.Sacrifice(_state, minionId); NotifyChanged(); }
-    public void AppointCouncil(CouncilRole role, string minionId) { CultistHierarchy.AppointCouncil(_state.Occult, role, minionId); NotifyChanged(); }
+    public void AppointCouncil(CouncilRole role, string minionId) { CultistHierarchy.AppointCouncil(_state, role, minionId); NotifyChanged(); }
     public void RemoveCouncil(CouncilRole role) { CultistHierarchy.RemoveCouncil(_state.Occult, role); NotifyChanged(); }
     public void UnlockTech(TechId id) { TechTree.Unlock(_state, id); NotifyChanged(); }
     public void SocketArtifact(string artifactId) { Grimoire.Socket(_state.Occult, artifactId); NotifyChanged(); }

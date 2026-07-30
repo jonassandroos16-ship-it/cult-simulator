@@ -96,7 +96,13 @@ public static class GameEngine
 
     public static void TickAllCovens(GameState state)
     {
-        foreach (var coven in state.Covens) { if (!coven.TakenOver) continue; var (faith, gold) = TickIncome(coven); coven.Faith += faith; coven.Gold += gold; }
+        foreach (var coven in state.Covens)
+        {
+            if (!coven.TakenOver) continue;
+            var (faith, gold) = TickIncome(coven);
+            coven.Faith += faith; coven.Gold += gold;
+            OccultEngine.Tick(state, coven, 1.0);
+        }
     }
 
     public static (double faith, double gold) ApplyOfflineIncome(GameState state, long elapsedMs)
@@ -114,14 +120,12 @@ public static class GameEngine
             double f = fps * eff; double g = gps * eff;
             coven.Faith += f; coven.Gold += g;
             totalFaith += f; totalGold += g;
-        }
 
-        double occultCap = IdleCapSeconds(state.ActiveCoven);
-        double occultEff = Math.Min(elapsedSec, occultCap);
-        double occultFaith = (OccultEngine.TotalFaithPerSec(state) + OccultEngine.TotalMapFaithPerSec(state)) * occultEff;
-        state.ActiveCoven.Faith += occultFaith;
-        state.Occult.LifetimeFaith += occultFaith;
-        totalFaith += occultFaith;
+            double occultFaith = (OccultEngine.TotalFaithPerSecForCoven(state, coven) + OccultEngine.TotalMapFaithPerSecForCoven(coven.Occult, state)) * eff;
+            coven.Faith += occultFaith;
+            coven.Occult.LifetimeFaith += occultFaith;
+            totalFaith += occultFaith;
+        }
 
         return (totalFaith, totalGold);
     }
@@ -140,7 +144,7 @@ public static class GameEngine
     public static void BuyBank(CovenState s) { int owned = s.Buildings.GetValueOrDefault(BuildingType.Bank); int cost = BankBuildingCost(owned); if (s.Gold < cost) return; s.Gold -= cost; s.Buildings[BuildingType.Bank] = owned + 1; }
     public static void BuyUpgrade(CovenState s, UpgradeId id) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; s.Upgrades.Add(id); }
 
-    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true } }, StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), Occult = new OccultState { ArmyPower = 50 } };
+    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, Occult = new OccultState { ArmyPower = 50 } } }, StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
 
     public static double FaithMultiplier(GameState s) => FaithMultiplier(s.ActiveCoven);
     public static double GoldMultiplier(GameState s) => GoldMultiplier(s.ActiveCoven);

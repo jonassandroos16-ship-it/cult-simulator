@@ -63,20 +63,39 @@ public static class SaveLoad
         if (state.Covens.Count == 0) { state.Covens.Add(new CovenState { Id = "skanor", Converted = true }); state.StoryShown = false; }
         if (string.IsNullOrEmpty(state.ActiveCovenId)) state.ActiveCovenId = "skanor";
         if (state.LastSavedAt == 0) state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        // Migrate legacy global Occult state into the home coven.
+        if (state.ExtensionData != null && state.ExtensionData.TryGetValue("Occult", out var legacyOccultJson))
+        {
+            // Extract global prestige fields before deserializing (they're no longer on OccultState).
+            if (legacyOccultJson.TryGetProperty("EldritchFavor", out var favorVal))
+                state.EldritchFavor = favorVal.GetDouble();
+            if (legacyOccultJson.TryGetProperty("GrandSacrificeCount", out var countVal))
+                state.GrandSacrificeCount = countVal.GetInt32();
+
+            var legacy = legacyOccultJson.Deserialize<OccultState>(SaveLoad.JsonOptions);
+            if (legacy != null)
+            {
+                var home = state.Covens.FirstOrDefault(c => c.Id == "skanor");
+                if (home != null) home.Occult = legacy;
+            }
+            state.ExtensionData.Remove("Occult");
+        }
+
         foreach (var c in state.Covens)
         {
             c.Buildings ??= new Dictionary<BuildingType, int>();
             c.Upgrades ??= new List<UpgradeId>();
+            c.Occult ??= new OccultState();
+            c.Occult.Minions ??= new List<Minion>();
+            c.Occult.HighCouncil ??= new List<CovenMember>();
+            c.Occult.MapNodes ??= new List<MapNodeState>();
+            c.Occult.UnlockedTechs ??= new List<TechId>();
+            c.Occult.SocketedArtifacts ??= new List<string>();
+            c.Occult.OwnedArtifacts ??= new List<string>();
+            c.Occult.Materials ??= new Dictionary<MaterialKind, int>();
+            c.Occult.LeyLines ??= new List<string[]>();
         }
-        state.Occult ??= new OccultState();
-        state.Occult.Minions ??= new List<Minion>();
-        state.Occult.HighCouncil ??= new List<CovenMember>();
-        state.Occult.MapNodes ??= new List<MapNodeState>();
-        state.Occult.UnlockedTechs ??= new List<TechId>();
-        state.Occult.SocketedArtifacts ??= new List<string>();
-        state.Occult.OwnedArtifacts ??= new List<string>();
-        state.Occult.Materials ??= new Dictionary<MaterialKind, int>();
-        state.Occult.LeyLines ??= new List<string[]>();
         state.Conversion ??= null;
         state.ActiveLocalCults ??= new List<LocalCultInstance>();
     }

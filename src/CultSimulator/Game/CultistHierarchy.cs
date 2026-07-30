@@ -42,17 +42,19 @@ public static class CultistHierarchy
         return faith;
     }
 
-    public static bool CanAppointCouncil(OccultState o, CouncilRole role)
+    public static bool CanAppointCouncil(GameState state, CouncilRole role)
     {
+        var o = state.Occult;
         if (o.HighCouncil.Any(c => c.Role == role)) return false;
         if (o.HighCouncil.Count >= 3) return false;
-        if (role == CouncilRole.HighPriest && o.GrandSacrificeCount == 0 && !o.UnlockedTechs.Contains(TechId.AstralAnchor)) return false;
+        if (role == CouncilRole.HighPriest && state.GrandSacrificeCount == 0 && !o.UnlockedTechs.Contains(TechId.AstralAnchor)) return false;
         return o.Minions.Count > 0;
     }
 
-    public static bool AppointCouncil(OccultState o, CouncilRole role, string minionId)
+    public static bool AppointCouncil(GameState state, CouncilRole role, string minionId)
     {
-        if (!CanAppointCouncil(o, role)) return false;
+        if (!CanAppointCouncil(state, role)) return false;
+        var o = state.Occult;
         var minion = o.Minions.FirstOrDefault(m => m.Id == minionId);
         if (minion == null) return false;
         o.Minions.Remove(minion);

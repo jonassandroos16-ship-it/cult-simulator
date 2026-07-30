@@ -36,8 +36,6 @@ public class OccultState
 {
     public double LifetimeFaith { get; set; }
     public int SermonPowerLevel { get; set; }
-    public double EldritchFavor { get; set; }
-    public int GrandSacrificeCount { get; set; }
     public int Acolytes { get; set; }
     public List<Minion> Minions { get; set; } = new();
     public List<CovenMember> HighCouncil { get; set; } = new();
