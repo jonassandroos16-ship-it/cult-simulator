@@ -48,7 +48,7 @@
     color: var(--gold-soft) !important;
 }
 
-/* Map mode tab buttons (World / Local) */
+/* Map mode tab buttons (World / Local / Ley Lines) */
 .map-tab-button {
     display: inline-flex;
     align-items: center;
@@ -333,3 +333,198 @@
 }
 
 .conversion-abandon:hover { color: var(--danger); }
+
+/* ---- Ley Line map markers ---- */
+
+.ley-line-marker {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: radial-gradient(circle, rgba(30, 27, 50, 0.9) 0%, rgba(10, 10, 26, 0.95) 100%);
+    border: 2px solid rgba(100, 100, 120, 0.4);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.5);
+    position: relative;
+}
+
+.ley-line-marker.conquered {
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.7) 0%, rgba(6, 78, 59, 0.95) 100%);
+    border-color: rgba(52, 211, 153, 0.6);
+    box-shadow: 0 0 14px rgba(52, 211, 153, 0.4);
+}
+
+.ley-line-marker.conquered.veiled {
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.6) 0%, rgba(46, 16, 101, 0.95) 100%);
+    border-color: rgba(167, 139, 250, 0.5);
+    box-shadow: 0 0 12px rgba(167, 139, 250, 0.35);
+}
+
+.ley-line-marker.available {
+    animation: ley-line-pulse 2s ease-in-out infinite;
+}
+
+@keyframes ley-line-pulse {
+    0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.3), 0 0 0 0 rgba(245, 158, 11, 0.3); }
+    50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.6), 0 0 0 6px rgba(245, 158, 11, 0); }
+}
+
+.ley-line-marker:hover {
+    transform: scale(1.2);
+    border-color: var(--gold-warm);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+}
+
+.ley-line-marker.expanded {
+    transform: scale(1.25);
+    border-color: var(--gold);
+    box-shadow: 0 0 24px rgba(251, 191, 36, 0.7);
+}
+
+.ley-line-marker-icon { line-height: 1; }
+
+.ley-line-marker-target {
+    position: absolute;
+    top: -8px;
+    right: -6px;
+    font-size: 0.85rem;
+    filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.8));
+}
+
+.ley-line-marker-label {
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--gold-pale);
+    background: rgba(5, 3, 8, 0.85);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid var(--panel-border);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.ley-line-marker.expanded .ley-line-marker-label { opacity: 1; }
+
+/* Ley Line connection polylines */
+.ley-line-connection {
+    filter: drop-shadow(0 0 4px rgba(167, 139, 250, 0.4));
+    animation: ley-line-flow 3s ease-in-out infinite;
+}
+
+@keyframes ley-line-flow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 0.8; }
+}
+
+/* Great Seal triangle overlays */
+.ley-line-seal {
+    animation: seal-glow 4s ease-in-out infinite;
+}
+
+@keyframes seal-glow {
+    0%, 100% { fillOpacity: 0.06; }
+    50% { fillOpacity: 0.15; }
+}
+
+.ley-line-seal-label .seal-label {
+    font-family: var(--font-display);
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fbbf24;
+    text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
+    background: rgba(5, 3, 8, 0.7);
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* Ley Line popup (reuses coven-popup styles) */
+.ley-line-popup {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    z-index: 1000;
+    max-width: 320px;
+    background: linear-gradient(135deg, rgba(46, 16, 101, 0.95), rgba(15, 10, 36, 0.95));
+    border: 1px solid rgba(167, 139, 250, 0.25);
+    border-radius: 16px;
+    padding: 1.5rem;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    animation: fade-in 0.3s ease;
+}
+
+@media (max-width: 640px) {
+    .ley-line-popup {
+        top: auto;
+        bottom: 1rem;
+        right: 0.5rem;
+        left: 0.5rem;
+        max-width: none;
+    }
+}
+
+/* Ley Lines tab phase badges */
+.ley-line-phase-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+}
+
+.ley-line-phase-badge.active {
+    background: linear-gradient(135deg, var(--violet-deep), var(--violet-void));
+    color: var(--gold-pale);
+    border: 1px solid rgba(167, 139, 250, 0.4);
+    box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
+}
+
+.ley-line-phase-badge.locked {
+    background: rgba(15, 10, 36, 0.5);
+    color: rgba(100, 100, 120, 0.6);
+    border: 1px solid rgba(100, 100, 120, 0.2);
+}
+
+/* Shortcut button to map view */
+.ley-line-shortcut-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid rgba(167, 139, 250, 0.3);
+    background: rgba(15, 10, 36, 0.6);
+    color: var(--gold-soft);
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.ley-line-shortcut-btn:hover {
+    border-color: rgba(167, 139, 250, 0.6);
+    color: var(--gold-pale);
+    box-shadow: 0 0 12px rgba(124, 58, 237, 0.2);
+}
