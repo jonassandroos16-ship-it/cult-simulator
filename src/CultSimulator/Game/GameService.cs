@@ -81,7 +81,7 @@ public class GameService
     }
 
     private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); NotifyChanged(); }
-    private void Tick() { GameEngine.TickAllCovens(_state); NotifyChanged(); }
+    private void Tick() { GameEngine.TickAllCovens(_state, _locations); NotifyChanged(); }
 
     private void TryEvent()
     {
@@ -90,9 +90,6 @@ public class GameService
         if (_state.ActiveCoven.Followers < GameBalance.EventMinFollowers) return;
         if (Random.Shared.NextDouble() > GameBalance.EventTriggerChance) return;
 
-        // Prefer the active coven's local-flavored events when available;
-        // fall back to the shared generic pool so the game still works for
-        // covens whose JSON hasn't been populated yet.
         var loc = _locations.Find(_state.ActiveCovenId);
         if (loc != null && loc.Events != null && loc.Events.Count > 0)
         {
@@ -138,9 +135,49 @@ public class GameService
     public void UnlockTech(TechId id) { TechTree.Unlock(_state, id); NotifyChanged(); }
     public void SocketArtifact(string artifactId) { Grimoire.Socket(_state.Occult, artifactId); NotifyChanged(); }
     public void UnsocketArtifact(string artifactId) { Grimoire.Unsocket(_state.Occult, artifactId); NotifyChanged(); }
-    public void ConquerNode(string nodeId) { var def = OccultData.MapNode(nodeId); if (def != null) WorldMapSystem.Conquer(_state, def); NotifyChanged(); }
+    public void ConquerNode(string nodeId)
+    {
+        var def = OccultData.MapNode(nodeId);
+        if (def == null) return;
+        if (!WorldMapSystem.CanConquer(_state, def))
+        {
+            var coven = _state.ActiveCoven;
+            if (def.CovenId != _state.ActiveCovenId)
+                PopupMessage = "This node belongs to a different coven. Switch active coven first.";
+            else if (coven.Faith < def.FaithCost)
+                PopupMessage = $"Not enough Faith. Need {NumberFormat.Fmt(def.FaithCost)} but have {NumberFormat.Fmt(coven.Faith)}.";
+            else if (_state.Occult.ArmyPower < def.ArmyPowerRequired)
+                PopupMessage = $"Not enough Army Power. Need {NumberFormat.Fmt(def.ArmyPowerRequired)} but have {NumberFormat.Fmt(_state.Occult.ArmyPower)}.";
+            else
+                PopupMessage = "Cannot conquer this node right now.";
+            PopupTitle = "Cannot Claim Node";
+            NotifyChanged();
+            return;
+        }
+        WorldMapSystem.Conquer(_state, def);
+        NotifyChanged();
+    }
     public void SetNodeStance(string nodeId, NodeStance stance) { WorldMapSystem.SetStance(_state.Occult, nodeId, stance); NotifyChanged(); }
-    public bool ConnectLeyLine(string nodeA, string nodeB) { var ok = WorldMapSystem.ConnectLeyLine(_state.Occult, nodeA, nodeB); NotifyChanged(); return ok; }
+    public bool ConnectLeyLine(string nodeA, string nodeB)
+    {
+        if (!WorldMapSystem.CanConnectLeyLine(_state.Occult, nodeA, nodeB))
+        {
+            PopupTitle = "Cannot Connect";
+            PopupMessage = "Both nodes must be conquered to connect them.";
+            NotifyChanged();
+            return false;
+        }
+        if (_state.Occult.LeyLines.Any(l => l.Contains(nodeA) && l.Contains(nodeB)))
+        {
+            PopupTitle = "Already Connected";
+            PopupMessage = "These two nodes are already linked by a Ley Line.";
+            NotifyChanged();
+            return false;
+        }
+        var ok = WorldMapSystem.ConnectLeyLine(_state.Occult, nodeA, nodeB);
+        NotifyChanged();
+        return ok;
+    }
     public void CraftRecipe(CauldronRecipeId id) { Cauldron.Craft(_state.Occult, id); NotifyChanged(); }
     public void ActivateFrenzy() { OccultEngine.ActivateFrenzy(_state.Occult); NotifyChanged(); }
     public void ActivateMassHysteria() { OccultEngine.ActivateMassHysteria(_state.Occult); NotifyChanged(); }
@@ -169,7 +206,22 @@ public class GameService
     public void StartConversion(string covenId)
     {
         var loc = _locations.Find(covenId);
-        if (loc == null || !ConversionEngine.CanStartConversion(_state, loc)) return;
+        if (loc == null) return;
+        if (!ConversionEngine.CanStartConversion(_state, loc))
+        {
+            var needed = loc.FollowersRequired - CovenProgress.TotalFollowers(_state);
+            PopupTitle = "Not Ready";
+            PopupMessage = $"You need {needed} more followers before you can convert this coven.";
+            NotifyChanged();
+            return;
+        }
+        if (ConversionEngine.DefinitionFor(covenId) == null)
+        {
+            PopupTitle = "No Conversion Available";
+            PopupMessage = "This coven cannot be converted through the narrative siege system yet. Try expanding your reach to other covens first.";
+            NotifyChanged();
+            return;
+        }
         ConversionEngine.StartConversion(_state, loc);
         NotifyChanged();
     }
@@ -204,7 +256,18 @@ public class GameService
 
     public void RequestLocalCultConversion(string cultId)
     {
-        if (!CanConvertLocalCult(cultId)) return;
+        if (!CanConvertLocalCult(cultId))
+        {
+            var def = LocalCultData.Find(cultId);
+            if (def != null)
+            {
+                var needed = def.FollowersRequired - CovenProgress.TotalFollowers(_state);
+                PopupTitle = "Not Ready";
+                PopupMessage = $"You need {needed} more followers to convert this local cult.";
+                NotifyChanged();
+            }
+            return;
+        }
         PendingLocalCultId = cultId;
         NotifyChanged();
     }
@@ -236,14 +299,14 @@ public class GameService
 
     public (bool success, string message) StartRecon(string institutionId, int agentCount)
     {
-        var r = ShadowWarEngine.StartRecon(ShadowWar, _state, institutionId, agentCount);
+        var r = ShadowWarEngine.StartRecon(ShadowWar, _state, _locations, institutionId, agentCount);
         NotifyChanged();
         return r;
     }
 
     public (bool success, string message) SendInfiltrationWave(string institutionId, int waveSize)
     {
-        var r = ShadowWarEngine.SendInfiltrationWave(ShadowWar, _state, institutionId, waveSize);
+        var r = ShadowWarEngine.SendInfiltrationWave(ShadowWar, _state, _locations, institutionId, waveSize);
         NotifyChanged();
         return r;
     }
@@ -278,8 +341,6 @@ public class GameService
         var json = SaveLoad.SaveGame(_state);
         try
         {
-            // Before overwriting the primary save, copy the previous primary
-            // to the backup slot so a corrupted write never loses all progress.
             var prev = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
             if (!string.IsNullOrWhiteSpace(prev))
                 await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey, prev);

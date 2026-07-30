@@ -1,3 +1,4 @@
+using System.Net.Http;
 using CultSimulator.Game;
 
 namespace CultSimulator.Tests;
@@ -470,7 +471,7 @@ public class OccultTests
         state.Covens.Add(new CovenState { Id = "test_coven", Converted = true, Occult = new OccultState { Acolytes = 20 } });
         var homeFaithBefore = state.Covens.First(c => c.Id == "skanor").Faith;
         var testFaithBefore = state.Covens.First(c => c.Id == "test_coven").Faith;
-        GameEngine.TickAllCovens(state);
+        GameEngine.TickAllCovens(state, new WorldLocationService(new HttpClient()));
         Assert.True(state.Covens.First(c => c.Id == "skanor").Faith > homeFaithBefore);
         Assert.True(state.Covens.First(c => c.Id == "test_coven").Faith > testFaithBefore);
     }
