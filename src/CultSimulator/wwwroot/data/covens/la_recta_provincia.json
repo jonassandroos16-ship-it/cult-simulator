@@ -10,5 +10,167 @@
   "summary": "A shadowy brotherhood of indigenous Huilliche and mestizo sorcerers (brujos) that operated as an underground legal system on the remote island of Chiloé.",
   "lore": "La Recta Provincia functioned like a shadowy government. According to trial documents from 1880, its leaders gathered in a hidden underground chamber called the Cueva de Quicaví. Legend says the cave was guarded by the Imbunche—a stolen child transformed through dark magic into a twisted, deformed beast. The order used magical grimoires (revisorios), communicated via glowing nocturnal signals, and levied taxes or 'protection insurance' on locals until the Chilean state brought them to trial.",
   "followersRequired": 25,
-  "baseMultiplier": 1.0
+  "baseMultiplier": 1.0,
+  "events": [
+    {
+      "id": "chiloe_imbunche_restless",
+      "title": "The Imbunche Stirs",
+      "narrative": "The guardian of the Cueva de Quicaví grows restless in its chains. The elders say it has not been fed in a season and is beginning to whisper the old names again.",
+      "choiceA": {
+        "label": "Perform the binding rite anew",
+        "description": "+120 Faith, −40 Gold",
+        "effects": { "faith": 120, "gold": -40 }
+      },
+      "choiceB": {
+        "label": "Let it loose on a rival village",
+        "description": "+4 Followers (fear)",
+        "effects": { "followers": 4 }
+      }
+    },
+    {
+      "id": "chiloe_ancud_rival",
+      "title": "The Ancud Tide-Callers Rise",
+      "narrative": "The coastal brujos of Ancud have been turning the fog against your boats, choking the northern trade route. They claim the strait belongs to them now.",
+      "choiceA": {
+        "label": "Break their fog with a counter-rite",
+        "description": "+150 Faith, −50 Gold",
+        "effects": { "faith": 150, "gold": -50 }
+      },
+      "choiceB": {
+        "label": "Send converts to undermine them from within",
+        "description": "+5 Followers",
+        "effects": { "followers": 5 }
+      }
+    },
+    {
+      "id": "chiloe_castro_palafitos",
+      "title": "The Stilt-Witches of Castro",
+      "narrative": "The witches of Castro's palafitos have woven a curse into the wooden pilings of the waterfront. Three houses lean at impossible angles, and no carpenter will touch them.",
+      "choiceA": {
+        "label": "Unweave the curse with fennel smoke",
+        "description": "+90 Faith, −30 Gold",
+        "effects": { "faith": 90, "gold": -30 }
+      },
+      "choiceB": {
+        "label": "Buy the cursed houses for cheap",
+        "description": "+100 Gold",
+        "effects": { "gold": 100 }
+      }
+    },
+    {
+      "id": "chiloe_quellon_deep",
+      "title": "The Deep Ones of Quellón",
+      "narrative": "Fishers at the island's southern tip refuse to cast nets. They say the Deep Ones beneath the waves have woken and are calling souls down to the black water.",
+      "choiceA": {
+        "label": "Sail out and parley with the Deep",
+        "description": "+8 Followers, −100 Faith",
+        "effects": { "followers": 8, "faith": -100 }
+      },
+      "choiceB": {
+        "label": "Prophesy protection over the fleet",
+        "description": "+200 Faith",
+        "effects": { "faith": 200 }
+      }
+    },
+    {
+      "id": "chiloe_quicavi_signals",
+      "title": "The Glowing Signals",
+      "narrative": "Strange lights pulse from the hills above Quicaví at midnight — not your own. Someone else is using the old signal system, and they are not of your order.",
+      "choiceA": {
+        "label": "Trace the signals to their source",
+        "description": "+100 Faith if found, −5 Followers if lost",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "You catch a lone brujo trying to usurp the signal network. He swears loyalty rather than face the Imbunche. +100 Faith.",
+          "lossMessage": "The lights vanish before you reach them. Word spreads that your order has lost its grip on the old ways. −5 Followers.",
+          "lossEffects": { "followers": -5 }
+        }
+      },
+      "choiceB": {
+        "label": "Ignore them and strengthen your own signals",
+        "description": "+60 Faith",
+        "effects": { "faith": 60 }
+      }
+    },
+    {
+      "id": "chiloe_revisorios",
+      "title": "The Stolen Grimoire",
+      "narrative": "A revisorio — one of the order's magical grimoires — has gone missing from the Cueva. The elders are furious. They suspect a rival sect on the mainland.",
+      "choiceA": {
+        "label": "Hunt the thief across the archipelago",
+        "description": "+150 Faith, −60 Gold",
+        "effects": { "faith": 150, "gold": -60 }
+      },
+      "choiceB": {
+        "label": "Copy a new grimoire from memory",
+        "description": "+5 Followers, −40 Gold",
+        "effects": { "followers": 5, "gold": -40 }
+      }
+    },
+    {
+      "id": "chiloe_protection_tax",
+      "title": "A Village Refuses the Tax",
+      "narrative": "A settlement on the eastern shore declares it will no longer pay the 'protection insurance.' They say the mainland courts will protect them now.",
+      "choiceA": {
+        "label": "Make an example of their headman",
+        "description": "+4 Followers (fear), −20 Faith",
+        "effects": { "followers": 4, "faith": -20 }
+      },
+      "choiceB": {
+        "label": "Offer them a year of grace",
+        "description": "+90 Faith",
+        "effects": { "faith": 90 }
+      }
+    },
+    {
+      "id": "chiloe_traveler",
+      "title": "A Traveler from the Mainland",
+      "narrative": "A gaunt stranger arrives on the island ferry, eyes wide with desperation. 'I walked south for forty days to find the Recta Provincia. I seek only purpose.'",
+      "choiceA": {
+        "label": "Welcome him into the fold",
+        "description": "+3 Followers, −20 Faith",
+        "effects": { "followers": 3, "faith": -20 }
+      },
+      "choiceB": {
+        "label": "Take his meager coin",
+        "description": "+50 Gold",
+        "effects": { "gold": 50 }
+      }
+    },
+    {
+      "id": "chiloe_volcano_omen",
+      "title": "The Volcano Speaks",
+      "narrative": "A distant volcano across the inland sea rumbles and sends a pillar of ash. The elders argue over whether it is an omen of ruin or of power.",
+      "choiceA": {
+        "label": "Prophesy it as a sign of ascendance",
+        "description": "+200 Faith",
+        "effects": { "faith": 200 }
+      },
+      "choiceB": {
+        "label": "Perform a blood rite to absorb its power",
+        "description": "+8 Followers, −100 Faith",
+        "effects": { "followers": 8, "faith": -100 }
+      }
+    },
+    {
+      "id": "chiloe_state_trial",
+      "title": "The State Comes Asking",
+      "narrative": "A Chilean official arrives in Castro with questions about 'the old brotherhood.' He is polite, but his notebook is thick, and he has a list of names.",
+      "choiceA": {
+        "label": "Bribe him with silver",
+        "description": "+120 Gold spent",
+        "effects": { "gold": -120 }
+      },
+      "choiceB": {
+        "label": "Discredit him with a curse",
+        "description": "+100 Faith if it works, −5 Followers if it fails",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "The official falls ill and flees the island. Your followers marvel at your reach. +100 Faith.",
+          "lossMessage": "The curse rebounds. Five followers, named in his book, flee the island in fear. −5 Followers.",
+          "lossEffects": { "followers": -5 }
+        }
+      }
+    }
+  ]
 }

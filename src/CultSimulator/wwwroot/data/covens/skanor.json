@@ -10,5 +10,172 @@
   "summary": "A windswept fishing village at the edge of the Öresund, where the medieval herring market once drew merchants from across the Baltic. Your coven begins here.",
   "lore": "Skanör's medieval harbor was a place of wealth and whispers, where salt, fish, and strange tales crossed the water. On moonless nights, the old fishermen say, the lanterns of the dead still flicker across the strait. It is here, in the shadow of the old church, that you will found your order.",
   "followersRequired": 0,
-  "baseMultiplier": 1.0
+  "baseMultiplier": 1.0,
+  "events": [
+    {
+      "id": "skanor_herring_omens",
+      "title": "The Herring Run Fails",
+      "narrative": "The herring vanish from the Öresund overnight. Skanör's fishers gather at the shore, muttering that the old sea-spirits have been offended. They look to you for an answer.",
+      "choiceA": {
+        "label": "Bless the nets at dawn",
+        "description": "+40 Faith, −15 Gold",
+        "effects": { "faith": 40, "gold": -15 }
+      },
+      "choiceB": {
+        "label": "Demand a tithe for intercession",
+        "description": "+60 Gold, −10 Faith",
+        "effects": { "gold": 60, "faith": -10 }
+      }
+    },
+    {
+      "id": "skanor_oresund_lanterns",
+      "title": "Lanterns Across the Strait",
+      "narrative": "On a moonless night, pale lights drift across the water from the Danish shore. The elders swear they are the souls of drowned medieval merchants, still seeking harbor.",
+      "choiceA": {
+        "label": "Sing them to rest",
+        "description": "+80 Faith",
+        "effects": { "faith": 80 }
+      },
+      "choiceB": {
+        "label": "Loot the wrecks they reveal",
+        "description": "+90 Gold",
+        "effects": { "gold": 90 }
+      }
+    },
+    {
+      "id": "skanor_lund_rival",
+      "title": "The Lund Cathedral Cult Mocks You",
+      "narrative": "Word reaches Skanör that the renegade scholars of Lund are preaching against your order from the cathedral steps, calling your rites 'fishing-village superstition.'",
+      "choiceA": {
+        "label": "Outshine their sermon with a rite on the beach",
+        "description": "+150 Faith, −50 Gold",
+        "effects": { "faith": 150, "gold": -50 }
+      },
+      "choiceB": {
+        "label": "Send converts to quietly grow in Lund",
+        "description": "+5 Followers",
+        "effects": { "followers": 5 }
+      }
+    },
+    {
+      "id": "skanor_malmo_underground",
+      "title": "The Malmö Street Circle Steals Your Signs",
+      "narrative": "Your coven's chalk sigils keep appearing, scraped off and replaced with the Malmö circle's chaos-rune. Someone is poaching your territory across the bridge.",
+      "choiceA": {
+        "label": "Ward the sigils with salt and bone",
+        "description": "+60 Faith, −20 Gold",
+        "effects": { "faith": 60, "gold": -20 }
+      },
+      "choiceB": {
+        "label": "Confront them in their basement club",
+        "description": "+4 Followers or −3 Followers",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "Your show of force impresses two of their members, who defect to your coven. +4 Followers.",
+          "lossMessage": "They laugh you out of the club, and three of your followers slip away in shame. −3 Followers.",
+          "lossEffects": { "followers": -3 }
+        }
+      }
+    },
+    {
+      "id": "skanor_falsterbo_seals",
+      "title": "The Seals of Falsterbo",
+      "narrative": "Fishers from Falsterbo report that the seals have stopped answering their old calls. They believe the seal-spirits have taken offense and beg your coven to intercede.",
+      "choiceA": {
+        "label": "Perform the old reconciliation rite",
+        "description": "+70 Faith, +2 Followers",
+        "effects": { "faith": 70, "followers": 2 }
+      },
+      "choiceB": {
+        "label": "Charge the fishers for the rite",
+        "description": "+75 Gold",
+        "effects": { "gold": 75 }
+      }
+    },
+    {
+      "id": "skanor_salt_witch",
+      "title": "The Salt-Witch of the Harbor",
+      "narrative": "An old woman who salts fish by the jetty claims to dream true. She says a storm will sink three boats unless your coven acts. The fishers are divided on whether she's a prophet or a fraud.",
+      "choiceA": {
+        "label": "Heed her warning and bless the fleet",
+        "description": "+100 Faith if true, −4 Followers if false",
+        "random": {
+          "winChance": 0.6,
+          "winMessage": "The storm comes as she foretold. The blessed boats ride it out; the unblessed sink. Word of your power spreads. +100 Faith.",
+          "lossMessage": "The sky stays clear. The fishers mock your wasted rite, and four followers drift away. −4 Followers.",
+          "lossEffects": { "followers": -4 }
+        }
+      },
+      "choiceB": {
+        "label": "Ignore her and preach confidence",
+        "description": "+50 Faith",
+        "effects": { "faith": 50 }
+      }
+    },
+    {
+      "id": "skanor_church_shadow",
+      "title": "The Shadow in the Old Church",
+      "narrative": "The parish priest notices your gatherings and denounces you from the pulpit, calling your order 'a return to heathen darkness.' The congregation is restless.",
+      "choiceA": {
+        "label": "Debate him publicly in the square",
+        "description": "+120 Faith if you win, −5 Followers if you lose",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "You dismantle his arguments before the crowd. The faithful cheer, and the priest retreats in silence. +120 Faith.",
+          "lossMessage": "His words cut deep. Doubt spreads, and five followers drift away. −5 Followers.",
+          "lossEffects": { "followers": -5 }
+        }
+      },
+      "choiceB": {
+        "label": "Perform a quiet miracle at the harbor",
+        "description": "+70 Faith, −30 Gold",
+        "effects": { "faith": 70, "gold": -30 }
+      }
+    },
+    {
+      "id": "skanor_baltic_merchant",
+      "title": "A Baltic Merchant's Offer",
+      "narrative": "A trader from across the Baltic lands at the old harbor with a chest of amber and a hunger for belonging. 'I have sailed far seeking something real,' he says.",
+      "choiceA": {
+        "label": "Welcome him into the fold",
+        "description": "+3 Followers, −20 Faith",
+        "effects": { "followers": 3, "faith": -20 }
+      },
+      "choiceB": {
+        "label": "Take his amber and send him off",
+        "description": "+120 Gold",
+        "effects": { "gold": 120 }
+      }
+    },
+    {
+      "id": "skanor_winter_solstice",
+      "title": "The Long Night of Skanör",
+      "narrative": "The winter solstice falls over the village. The longest night. Your followers gather around a bonfire on the frozen beach, hungry for a sign.",
+      "choiceA": {
+        "label": "Perform the fire rite",
+        "description": "+8 Followers, −100 Faith",
+        "effects": { "followers": 8, "faith": -100 }
+      },
+      "choiceB": {
+        "label": "Prophesy the returning sun",
+        "description": "+200 Faith",
+        "effects": { "faith": 200 }
+      }
+    },
+    {
+      "id": "skanor_drowning_vision",
+      "title": "A Drowning in the Sound",
+      "narrative": "A young fisher is pulled from the freezing water, barely alive. He babbles of a city of lights beneath the waves and a voice that offered him a bargain. He asks your coven what it means.",
+      "choiceA": {
+        "label": "Interpret it as a calling",
+        "description": "+5 Followers, −40 Faith",
+        "effects": { "followers": 5, "faith": -40 }
+      },
+      "choiceB": {
+        "label": "Sell the interpretation to his family",
+        "description": "+80 Gold",
+        "effects": { "gold": 80 }
+      }
+    }
+  ]
 }
