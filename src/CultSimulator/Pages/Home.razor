@@ -55,7 +55,7 @@ else
         else if (activeTab == "leylines") { <LeyLinesPanel OnViewMap="SwitchToLeyLineMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "ascension") { <GrandSacrificePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "bank") { <BankPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "shadowwar") { <ShadowWarPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "shadowwar") { <ShadowWarPanel OnViewMap="SwitchToShadowWarMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
     </div>
     <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><RankUpModal /><VictoryScreen />
@@ -78,6 +78,7 @@ else
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
     private void SwitchTab(string tab) => activeTab = tab;
     private void SwitchToLeyLineMap() { mapInitialMode = "leylines"; activeTab = "map"; }
+    private void SwitchToShadowWarMap() { mapInitialMode = "shadowwar"; activeTab = "map"; }
     private void StoryDismissed() { }
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);

@@ -23,42 +23,42 @@ public static class ShadowWarData
 
     public static readonly ImmutableArray<InstitutionDef> Institutions = ImmutableArray.Create(
         // Europe
-        new InstitutionDef("eu_police", "Lund Police Station", "europe", InstitutionType.Police, InstitutionTier.Tier1, 60, 1.5, 0.03, "Suspicion decay +0.5/s", 0.5, "A small-town precinct. Easy to infiltrate.", null),
-        new InstitutionDef("eu_media", "Nordic Broadcasting Corp", "europe", InstitutionType.Media, InstitutionTier.Tier2, 280, 3.0, 0.08, "Global detection rate -10%", 0.1, "Regional news network.", new[] { "eu_police" }),
-        new InstitutionDef("eu_gov", "European Parliament", "europe", InstitutionType.Government, InstitutionTier.Tier3, 600, 4.0, 0.12, "Agent recruitment +25%", 0.25, "The heart of European governance.", new[] { "eu_media" }),
+        new InstitutionDef("eu_police", "Lund Police Station", "europe", InstitutionType.Police, InstitutionTier.Tier1, 60, 1.5, 0.03, "Suspicion decay +0.5/s", 0.5, "A small-town precinct. Easy to infiltrate.", null, 55.70, 13.19),
+        new InstitutionDef("eu_media", "Nordic Broadcasting Corp", "europe", InstitutionType.Media, InstitutionTier.Tier2, 280, 3.0, 0.08, "Global detection rate -10%", 0.1, "Regional news network.", new[] { "eu_police" }, 59.33, 18.06),
+        new InstitutionDef("eu_gov", "European Parliament", "europe", InstitutionType.Government, InstitutionTier.Tier3, 600, 4.0, 0.12, "Agent recruitment +25%", 0.25, "The heart of European governance.", new[] { "eu_media" }, 48.60, 7.77),
 
         // North America
-        new InstitutionDef("na_police", "NYPD Intelligence Bureau", "north_america", InstitutionType.Police, InstitutionTier.Tier1, 140, 2.8, 0.06, "Suspicion decay +0.8/s", 0.8, "A major-city police force.", null),
-        new InstitutionDef("na_media", "Continental News Network", "north_america", InstitutionType.Media, InstitutionTier.Tier2, 350, 3.2, 0.09, "Global detection rate -12%", 0.12, "A coast-to-coast cable news empire.", new[] { "na_police" }),
-        new InstitutionDef("na_gov", "Federal Government", "north_america", InstitutionType.Government, InstitutionTier.Tier3, 800, 4.5, 0.15, "Agent recruitment +30%", 0.3, "The executive branch of a superpower.", new[] { "na_media" }),
-        new InstitutionDef("na_military", "Northern Command", "north_america", InstitutionType.Military, InstitutionTier.Tier3, 900, 5.0, 0.18, "Agent combat strength +40%", 0.4, "A unified military command.", new[] { "na_gov" }),
+        new InstitutionDef("na_police", "NYPD Intelligence Bureau", "north_america", InstitutionType.Police, InstitutionTier.Tier1, 140, 2.8, 0.06, "Suspicion decay +0.8/s", 0.8, "A major-city police force.", null, 40.71, -74.01),
+        new InstitutionDef("na_media", "Continental News Network", "north_america", InstitutionType.Media, InstitutionTier.Tier2, 350, 3.2, 0.09, "Global detection rate -12%", 0.12, "A coast-to-coast cable news empire.", new[] { "na_police" }, 38.91, -77.03),
+        new InstitutionDef("na_gov", "Federal Government", "north_america", InstitutionType.Government, InstitutionTier.Tier3, 800, 4.5, 0.15, "Agent recruitment +30%", 0.3, "The executive branch of a superpower.", new[] { "na_media" }, 38.90, -77.04),
+        new InstitutionDef("na_military", "Northern Command", "north_america", InstitutionType.Military, InstitutionTier.Tier3, 900, 5.0, 0.18, "Agent combat strength +40%", 0.4, "A unified military command.", new[] { "na_gov" }, 38.75, -104.87),
 
         // South America
-        new InstitutionDef("sa_police", "Border Constabulary", "south_america", InstitutionType.Police, InstitutionTier.Tier1, 110, 2.3, 0.05, "Suspicion decay +0.6/s", 0.6, "A border patrol force.", null),
-        new InstitutionDef("sa_media", "National Broadcaster", "south_america", InstitutionType.Media, InstitutionTier.Tier2, 260, 2.8, 0.07, "Global detection rate -8%", 0.08, "State-run media.", new[] { "sa_police" }),
-        new InstitutionDef("sa_intel", "National Intelligence Service", "south_america", InstitutionType.Intelligence, InstitutionTier.Tier3, 550, 4.2, 0.14, "Recon risk -30% globally", 0.3, "A shadowy intelligence apparatus.", new[] { "sa_media" }),
+        new InstitutionDef("sa_police", "Border Constabulary", "south_america", InstitutionType.Police, InstitutionTier.Tier1, 110, 2.3, 0.05, "Suspicion decay +0.6/s", 0.6, "A border patrol force.", null, -15.79, -47.88),
+        new InstitutionDef("sa_media", "National Broadcaster", "south_america", InstitutionType.Media, InstitutionTier.Tier2, 260, 2.8, 0.07, "Global detection rate -8%", 0.08, "State-run media.", new[] { "sa_police" }, -23.55, -46.63),
+        new InstitutionDef("sa_intel", "National Intelligence Service", "south_america", InstitutionType.Intelligence, InstitutionTier.Tier3, 550, 4.2, 0.14, "Recon risk -30% globally", 0.3, "A shadowy intelligence apparatus.", new[] { "sa_media" }, -34.60, -58.38),
 
         // Asia
-        new InstitutionDef("as_police", "Metropolitan Police Bureau", "asia", InstitutionType.Police, InstitutionTier.Tier1, 160, 2.6, 0.06, "Suspicion decay +0.7/s", 0.7, "A massive metropolitan police force.", null),
-        new InstitutionDef("as_media", "Digital Media Conglomerate", "asia", InstitutionType.Media, InstitutionTier.Tier2, 400, 3.5, 0.10, "Global detection rate -15%", 0.15, "A tech-driven media empire.", new[] { "as_police" }),
-        new InstitutionDef("as_gov", "Central Committee", "asia", InstitutionType.Government, InstitutionTier.Tier3, 850, 4.8, 0.16, "Agent recruitment +35%", 0.35, "A centralized single-party government.", new[] { "as_media" }),
-        new InstitutionDef("as_military", "Eastern Military Region", "asia", InstitutionType.Military, InstitutionTier.Tier3, 1000, 5.5, 0.20, "Agent combat strength +50%", 0.5, "The largest standing military on earth.", new[] { "as_gov" }),
+        new InstitutionDef("as_police", "Metropolitan Police Bureau", "asia", InstitutionType.Police, InstitutionTier.Tier1, 160, 2.6, 0.06, "Suspicion decay +0.7/s", 0.7, "A massive metropolitan police force.", null, 35.68, 139.69),
+        new InstitutionDef("as_media", "Digital Media Conglomerate", "asia", InstitutionType.Media, InstitutionTier.Tier2, 400, 3.5, 0.10, "Global detection rate -15%", 0.15, "A tech-driven media empire.", new[] { "as_police" }, 37.56, 126.98),
+        new InstitutionDef("as_gov", "Central Committee", "asia", InstitutionType.Government, InstitutionTier.Tier3, 850, 4.8, 0.16, "Agent recruitment +35%", 0.35, "A centralized single-party government.", new[] { "as_media" }, 39.90, 116.41),
+        new InstitutionDef("as_military", "Eastern Military Region", "asia", InstitutionType.Military, InstitutionTier.Tier3, 1000, 5.5, 0.20, "Agent combat strength +50%", 0.5, "The largest standing military on earth.", new[] { "as_gov" }, 31.23, 121.47),
 
         // Oceania
-        new InstitutionDef("oc_police", "Federal Police Service", "oceania", InstitutionType.Police, InstitutionTier.Tier1, 120, 2.4, 0.05, "Suspicion decay +0.5/s", 0.5, "A continent-wide federal police agency.", null),
-        new InstitutionDef("oc_media", "Southern Media Group", "oceania", InstitutionType.Media, InstitutionTier.Tier2, 300, 3.0, 0.08, "Global detection rate -10%", 0.1, "A media network spanning the southern hemisphere.", new[] { "oc_police" }),
-        new InstitutionDef("oc_finance", "Pacific Financial Hub", "oceania", InstitutionType.Finance, InstitutionTier.Tier3, 650, 4.0, 0.12, "Faith production +20% globally", 0.2, "A global financial center.", new[] { "oc_media" }),
+        new InstitutionDef("oc_police", "Federal Police Service", "oceania", InstitutionType.Police, InstitutionTier.Tier1, 120, 2.4, 0.05, "Suspicion decay +0.5/s", 0.5, "A continent-wide federal police agency.", null, -35.28, 149.13),
+        new InstitutionDef("oc_media", "Southern Media Group", "oceania", InstitutionType.Media, InstitutionTier.Tier2, 300, 3.0, 0.08, "Global detection rate -10%", 0.1, "A media network spanning the southern hemisphere.", new[] { "oc_police" }, -33.87, 151.21),
+        new InstitutionDef("oc_finance", "Pacific Financial Hub", "oceania", InstitutionType.Finance, InstitutionTier.Tier3, 650, 4.0, 0.12, "Faith production +20% globally", 0.2, "A global financial center.", new[] { "oc_media" }, -41.29, 174.78),
 
         // Africa
-        new InstitutionDef("af_police", "Colonial Constabulary", "africa", InstitutionType.Police, InstitutionTier.Tier1, 100, 2.2, 0.04, "Suspicion decay +0.5/s", 0.5, "A legacy colonial-era police force.", null),
-        new InstitutionDef("af_media", "Continental Radio Network", "africa", InstitutionType.Media, InstitutionTier.Tier2, 240, 2.7, 0.07, "Global detection rate -8%", 0.08, "A radio network reaching the entire continent.", new[] { "af_police" }),
-        new InstitutionDef("af_gov", "Continental Union Assembly", "africa", InstitutionType.Government, InstitutionTier.Tier3, 580, 4.0, 0.13, "Agent recruitment +25%", 0.25, "A pan-continental political body.", new[] { "af_media" }),
+        new InstitutionDef("af_police", "Colonial Constabulary", "africa", InstitutionType.Police, InstitutionTier.Tier1, 100, 2.2, 0.04, "Suspicion decay +0.5/s", 0.5, "A legacy colonial-era police force.", null, 6.52, 3.38),
+        new InstitutionDef("af_media", "Continental Radio Network", "africa", InstitutionType.Media, InstitutionTier.Tier2, 240, 2.7, 0.07, "Global detection rate -8%", 0.08, "A radio network reaching the entire continent.", new[] { "af_police" }, -1.29, 36.82),
+        new InstitutionDef("af_gov", "Continental Union Assembly", "africa", InstitutionType.Government, InstitutionTier.Tier3, 580, 4.0, 0.13, "Agent recruitment +25%", 0.25, "A pan-continental political body.", new[] { "af_media" }, 9.03, 38.74),
 
         // Middle East
-        new InstitutionDef("me_police", "Secret Police Directorate", "middle_east", InstitutionType.Police, InstitutionTier.Tier1, 150, 2.7, 0.07, "Suspicion decay +0.9/s", 0.9, "A feared secret police apparatus.", null),
-        new InstitutionDef("me_media", "State Media Authority", "middle_east", InstitutionType.Media, InstitutionTier.Tier2, 320, 3.2, 0.09, "Global detection rate -12%", 0.12, "A state-controlled media authority.", new[] { "me_police" }),
-        new InstitutionDef("me_military", "Central Military Command", "middle_east", InstitutionType.Military, InstitutionTier.Tier3, 750, 5.0, 0.17, "Agent combat strength +35%", 0.35, "A strategically critical military command.", new[] { "me_media" }),
-        new InstitutionDef("me_intel", "Global Intelligence Bureau", "middle_east", InstitutionType.Intelligence, InstitutionTier.Tier3, 700, 4.5, 0.15, "Recon risk -25% globally", 0.25, "A cross-border intelligence network.", new[] { "me_military" })
+        new InstitutionDef("me_police", "Secret Police Directorate", "middle_east", InstitutionType.Police, InstitutionTier.Tier1, 150, 2.7, 0.07, "Suspicion decay +0.9/s", 0.9, "A feared secret police apparatus.", null, 24.71, 46.68),
+        new InstitutionDef("me_media", "State Media Authority", "middle_east", InstitutionType.Media, InstitutionTier.Tier2, 320, 3.2, 0.09, "Global detection rate -12%", 0.12, "A state-controlled media authority.", new[] { "me_police" }, 25.20, 55.27),
+        new InstitutionDef("me_military", "Central Military Command", "middle_east", InstitutionType.Military, InstitutionTier.Tier3, 750, 5.0, 0.17, "Agent combat strength +35%", 0.35, "A strategically critical military command.", new[] { "me_media" }, 24.47, 54.37),
+        new InstitutionDef("me_intel", "Global Intelligence Bureau", "middle_east", InstitutionType.Intelligence, InstitutionTier.Tier3, 700, 4.5, 0.15, "Recon risk -25% globally", 0.25, "A cross-border intelligence network.", new[] { "me_military" }, 31.95, 35.23)
     );
 
     public static TerritoryDef? Territory(string id) => Territories.FirstOrDefault(t => t.Id == id);

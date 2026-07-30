@@ -12,7 +12,9 @@ public record InstitutionDef(
     string RewardLabel,
     double RewardValue,
     string Description,
-    string[]? Prerequisites);
+    string[]? Prerequisites,
+    double Latitude = 0,
+    double Longitude = 0);
 
 public record TerritoryDef(
     string Id,
