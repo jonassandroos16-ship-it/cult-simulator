@@ -22,7 +22,7 @@
             }
             else if (mapMode == "leylines")
             {
-                <span>@conqueredCount / @OccultData.MapNodes.Length nodes claimed</span>
+                <span>@conqueredCount / @activeCovenNodes.Count nodes claimed · @activeCovenName</span>
             }
         </div>
     </div>
@@ -154,7 +154,7 @@
                         <div class="mt-3">
                             <p class="text-[0.65rem] text-slate-400 mb-1.5">Connect to another conquered node:</p>
                             <div class="flex flex-col gap-1">
-                                @foreach (var other in OccultData.MapNodes)
+                                @foreach (var other in activeCovenNodes)
                                 {
                                     if (other.Id == nodeDef.Id) continue;
                                     if (!WorldMapSystem.IsConquered(occult, other.Id)) continue;
@@ -298,7 +298,8 @@
 
     private OccultState occult => Game.State.Occult;
     private bool suspicionHigh => occult.Suspicion >= OccultBalance.SuspicionRaidThreshold;
-    private int conqueredCount => WorldMapSystem.ConqueredNodeCount(occult);
+    private int conqueredCount => WorldMapSystem.ConqueredNodeCount(Game.State);
+    private IReadOnlyList<MapNodeDef> activeCovenNodes => OccultData.NodesForActiveCoven(Game.State);
     private int greatSealCount => WorldMapSystem.GreatSealCount(occult);
 
     private string activeCovenName
@@ -438,7 +439,7 @@
         var o = Game.State.Occult;
         var jsNodes = new List<object>();
 
-        foreach (var nodeDef in OccultData.MapNodes)
+        foreach (var nodeDef in activeCovenNodes)
         {
             var nodeState = WorldMapSystem.GetNode(o, nodeDef.Id);
             var conquered = nodeState != null && nodeState.Conquered;
@@ -481,11 +482,12 @@
             }
         }
 
+        var activeLoc = LocationService.Find(Game.State.ActiveCovenId);
         var mapOpts = new Dictionary<string, object>
         {
-            ["zoom"] = 2,
-            ["minZoom"] = 2,
-            ["center"] = new[] { 30.0, 10.0 }
+            ["zoom"] = 6,
+            ["minZoom"] = 3,
+            ["center"] = activeLoc != null ? new[] { activeLoc.Latitude, activeLoc.Longitude } : new[] { 30.0, 10.0 }
         };
 
         await JS.InvokeVoidAsync("initLeyLineMap", "leyline-map-container", jsNodes, jsConnections, seals, _dotRef, mapOpts);
