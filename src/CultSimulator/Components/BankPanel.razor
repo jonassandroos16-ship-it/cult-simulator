@@ -76,21 +76,39 @@
 
     <div class="panel glass-panel rounded-[20px] p-5">
         <h2 class="panel-title">Coven Breakdown</h2>
-        <div class="coven-list flex flex-col gap-2.5">
-            @foreach (var coven in takenOverCovens)
+        <div class="coven-list flex flex-col gap-4">
+            @foreach (var continentGroup in covensByContinent)
             {
-                var loc = Locations.Find(coven.Id);
-                var name = loc?.Name ?? coven.Id;
-                var (faithPerSec, goldPerSec) = GameEngine.TickIncome(coven);
-                <div class="coven-row flex items-center justify-between p-3.5 rounded-[14px] @(coven.Id == Game.State.ActiveCovenId ? "border-amber-500/30" : "")"
-                     style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                    <div class="flex flex-col gap-0.5">
-                        <span class="font-display text-base text-amber-100 font-medium">@name</span>
-                        <span class="text-xs text-violet-300">👥 @coven.Followers · ✨ @NumberFormat.Fmt(coven.Faith) · 💰 @NumberFormat.Fmt(coven.Gold)</span>
+                var continent = continentGroup.Key;
+                var theme = ContinentThemes.For(continent);
+                var allConverted = continentGroup.All(c => c.Converted);
+                <div class="continent-group">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-lg">@theme.Icon</span>
+                        <span class="font-display text-sm font-semibold tracking-[0.15em] uppercase" style="color: var(--gold-pale);">@theme.Name</span>
+                        @if (allConverted)
+                        {
+                            <span class="text-[10px] font-medium text-emerald-400 px-2 py-0.5 rounded" style="background: rgba(16,185,129,0.15);">COMPLETE</span>
+                        }
                     </div>
-                    <div class="flex flex-col items-end gap-0.5">
-                        <span class="text-xs text-emerald-400">+@NumberFormat.Fmt(faithPerSec)/s ✨</span>
-                        <span class="text-xs text-amber-500">+@NumberFormat.Fmt(goldPerSec)/s 💰</span>
+                    <div class="flex flex-col gap-2.5">
+                        @foreach (var coven in continentGroup.Where(c => c.Converted))
+                        {
+                            var loc = Locations.Find(coven.Id);
+                            var name = loc?.Name ?? coven.Id;
+                            var (faithPerSec, goldPerSec) = GameEngine.TickIncome(coven);
+                            <div class="coven-row flex items-center justify-between p-3.5 rounded-[14px] @(coven.Id == Game.State.ActiveCovenId ? "border-amber-500/30" : "")"
+                                 style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                                <div class="flex flex-col gap-0.5">
+                                    <span class="font-display text-base text-amber-100 font-medium">@name</span>
+                                    <span class="text-xs text-violet-300">👥 @coven.Followers · ✨ @NumberFormat.Fmt(coven.Faith) · 💰 @NumberFormat.Fmt(coven.Gold)</span>
+                                </div>
+                                <div class="flex flex-col items-end gap-0.5">
+                                    <span class="text-xs text-emerald-400">+@NumberFormat.Fmt(faithPerSec)/s ✨</span>
+                                    <span class="text-xs text-amber-500">+@NumberFormat.Fmt(goldPerSec)/s 💰</span>
+                                </div>
+                            </div>
+                        }
                     </div>
                 </div>
             }
@@ -171,6 +189,22 @@
     private int bankCost => GameEngine.BankBuildingCost(bankOwned);
     private bool bankMaxed => bankOwned >= GameBalance.BankCapHours.Length;
     private List<CovenState> takenOverCovens => Game.State.Covens.Where(c => c.TakenOver).ToList();
+
+    private List<IGrouping<string, CovenState>> covensByContinent
+    {
+        get
+        {
+            return Game.State.Covens
+                .Where(c => c.Converted)
+                .GroupBy(c =>
+                {
+                    var loc = Locations.Find(c.Id);
+                    return loc?.Continent ?? "europe";
+                })
+                .OrderBy(g => Array.IndexOf(ContinentThemes.ProgressionOrder, g.Key))
+                .ToList();
+        }
+    }
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
 
