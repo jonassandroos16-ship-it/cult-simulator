@@ -18,13 +18,13 @@
       "narrative": "Word reaches the coven that an invasion fleet is gathering across the Channel. The high priestess proposes the great rite: a cone of power raised in the woods to turn the enemy back.",
       "choiceA": {
         "label": "Raise the cone of power",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+25% Faith",
+        "effects": { "faithPct": 0.25 }
       },
       "choiceB": {
         "label": "Recruit more hands for the rite",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −15% Faith",
+        "effects": { "followers": 8, "faithPct": -0.15 }
       }
     },
     {
@@ -33,8 +33,8 @@
       "narrative": "The druids of Lyndhurst claim the ancient groves of the New Forest belong to them, and that your coven's rites are 'upstart Gardnerian inventions.' They challenge your right to meet in the woods.",
       "choiceA": {
         "label": "Out-rite them at the great oak",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Share the woods and grow quietly",
@@ -48,8 +48,8 @@
       "narrative": "The forest witches of Brockenhurst have been commanding the wild ponies and deer, leading them to trample a rival's crops. The landowner blames your coven by association.",
       "choiceA": {
         "label": "Bind the beasts back to the deep wood",
-        "description": "+120 Faith, −40 Gold",
-        "effects": { "faith": 120, "gold": -40 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Let them run and grow your flock",
@@ -63,13 +63,13 @@
       "narrative": "The riverbank hags of Ringwood have dammed the Avon with woven reeds and are demanding tolls from passing boats. They offer your coven a share of the take.",
       "choiceA": {
         "label": "Take the share of tolls",
-        "description": "+120 Gold, −40 Faith",
-        "effects": { "gold": 120, "faith": -40 }
+        "description": "+20% Gold, −10% Faith",
+        "effects": { "goldPct": 0.20, "faithPct": -0.10 }
       },
       "choiceB": {
         "label": "Break the dam and free the river",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       }
     },
     {
@@ -78,18 +78,18 @@
       "narrative": "Old Dorothy, the high priestess, has grown frail. She asks the coven to choose her successor before the next sabbat. Two candidates stand forward, each with her own following.",
       "choiceA": {
         "label": "Back the elder candidate",
-        "description": "+150 Faith if the coven unites, −6 Followers if it splits",
+        "description": "+20% Faith if the coven unites, −6 Followers if it splits",
         "random": {
           "winChance": 0.55,
-          "winMessage": "The coven accepts the elder, and the succession is smooth. The line holds. +150 Faith.",
+          "winMessage": "The coven accepts the elder, and the succession is smooth. The line holds. +20% Faith.",
           "lossMessage": "The younger faction walks out into the night. Six followers are lost to the schism. −6 Followers.",
           "lossEffects": { "followers": -6 }
         }
       },
       "choiceB": {
         "label": "Let the coven vote",
-        "description": "+90 Faith",
-        "effects": { "faith": 90 }
+        "description": "+15% Faith",
+        "effects": { "faithPct": 0.15 }
       }
     },
     {
@@ -98,13 +98,13 @@
       "narrative": "A curious man named Gerald Gardner arrives at the forest edge, asking to be initiated into 'the old religion.' He is a writer and collector, and some fear he will not keep the secrets.",
       "choiceA": {
         "label": "Initiate him and trust his discretion",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −15% Faith",
+        "effects": { "followers": 8, "faithPct": -0.15 }
       },
       "choiceB": {
         "label": "Turn him away and keep the secrets",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+25% Faith",
+        "effects": { "faithPct": 0.25 }
       }
     },
     {
@@ -113,18 +113,18 @@
       "narrative": "The full moon rises over the clearing. The coven gathers skyclad for the sabbat, but a gamekeeper is known to patrol the wood's edge tonight.",
       "choiceA": {
         "label": "Hold the sabbat and ward the perimeter",
-        "description": "+200 Faith if unseen, −5 Followers if caught",
+        "description": "+25% Faith if unseen, −5 Followers if caught",
         "random": {
           "winChance": 0.5,
-          "winMessage": "The warding holds. The sabbat passes in power and peace. +200 Faith.",
+          "winMessage": "The warding holds. The sabbat passes in power and peace. +25% Faith.",
           "lossMessage": "The gamekeeper stumbles into the circle. Five followers are named in his report. −5 Followers.",
           "lossEffects": { "followers": -5 }
         }
       },
       "choiceB": {
         "label": "Move the sabbat to the deeper wood",
-        "description": "+90 Faith",
-        "effects": { "faith": 90 }
+        "description": "+15% Faith",
+        "effects": { "faithPct": 0.15 }
       }
     },
     {
@@ -133,13 +133,13 @@
       "narrative": "The war's blackout rules make the forest darker than it has been in centuries. The coven proposes a rite to use the darkness to strengthen the old ways.",
       "choiceA": {
         "label": "Perform the darkness rite",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −15% Faith",
+        "effects": { "followers": 8, "faithPct": -0.15 }
       },
       "choiceB": {
         "label": "Prophesy victory in the dark",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+25% Faith",
+        "effects": { "faithPct": 0.25 }
       }
     },
     {
@@ -148,13 +148,13 @@
       "narrative": "A gentleman scholar arrives at the forest edge with a heavy purse. 'I study the old folklore. I would fund your coven's work in exchange for records of your rites.'",
       "choiceA": {
         "label": "Accept his patronage and keep careful records",
-        "description": "+120 Gold",
-        "effects": { "gold": 120 }
+        "description": "+20% Gold",
+        "effects": { "goldPct": 0.20 }
       },
       "choiceB": {
         "label": "Convert him to the old way",
-        "description": "+5 Followers, −40 Gold",
-        "effects": { "followers": 5, "gold": -40 }
+        "description": "+5 Followers, −10% Gold",
+        "effects": { "followers": 5, "goldPct": -0.10 }
       }
     },
     {
@@ -163,13 +163,13 @@
       "narrative": "Three gaunt figures emerge from the trees at dusk, eyes wide with the long search. 'We have walked from London seeking the old religion. We are told it still lives in this forest.'",
       "choiceA": {
         "label": "Welcome them into the coven",
-        "description": "+3 Followers, −20 Faith",
-        "effects": { "followers": 3, "faith": -20 }
+        "description": "+3 Followers, −5% Faith",
+        "effects": { "followers": 3, "faithPct": -0.05 }
       },
       "choiceB": {
         "label": "Take their offerings and send them on",
-        "description": "+50 Gold",
-        "effects": { "gold": 50 }
+        "description": "+10% Gold",
+        "effects": { "goldPct": 0.10 }
       }
     }
   ]

@@ -18,13 +18,13 @@
       "narrative": "The moon is swallowed by shadow. The priestesses gather at the island shrine, chanting to return Ixchel's light. The faithful wait in darkness for your word.",
       "choiceA": {
         "label": "Lead the lunar rite to restore the moon",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+25% Faith",
+        "effects": { "faithPct": 0.25 }
       },
       "choiceB": {
         "label": "Prophesy the eclipse's meaning",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −15% Faith",
+        "effects": { "followers": 8, "faithPct": -0.15 }
       }
     },
     {
@@ -33,8 +33,8 @@
       "narrative": "The diviners of Tizimin claim their cracked tortoise shells foretell the downfall of your priestess circle. They demand you acknowledge their supremacy in prophecy.",
       "choiceA": {
         "label": "Out-read them with the lunar scrying",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Ignore the challenge and grow quietly",
@@ -48,13 +48,13 @@
       "narrative": "The keepers of the sacred sinkhole at Valladolid say the spirits in the deep water are angry and have stopped blessing the harvest. They ask your circle to intercede.",
       "choiceA": {
         "label": "Descend into the cenote and parley",
-        "description": "+150 Faith, −60 Gold",
-        "effects": { "faith": 150, "gold": -60 }
+        "description": "+20% Faith, −12% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.12 }
       },
       "choiceB": {
         "label": "Bless the harvest from the surface",
-        "description": "+90 Faith",
-        "effects": { "faith": 90 }
+        "description": "+15% Faith",
+        "effects": { "faithPct": 0.15 }
       }
     },
     {
@@ -63,8 +63,8 @@
       "narrative": "The city priestesses of Mérida have been weaving lunar energy into cloth and selling blessings in the colonial market, drawing pilgrims away from your island shrine.",
       "choiceA": {
         "label": "Weave a greater blessing and reclaim the pilgrims",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Undercut their trade in the market",
@@ -78,18 +78,18 @@
       "narrative": "A Spanish friar stands in the colonial square of Mérida, denouncing 'the old goddess-worship of the island' and calling for the shrine to be torn down.",
       "choiceA": {
         "label": "Debate him before the crowd",
-        "description": "+150 Faith if you win, −6 Followers if you lose",
+        "description": "+20% Faith if you win, −6 Followers if you lose",
         "random": {
           "winChance": 0.5,
-          "winMessage": "You match him scripture for scripture and the crowd turns to listen. The friar retreats. +150 Faith.",
+          "winMessage": "You match him scripture for scripture and the crowd turns to listen. The friar retreats. +20% Faith.",
           "lossMessage": "His eloquence sways the crowd. Six of your followers slip away in shame. −6 Followers.",
           "lossEffects": { "followers": -6 }
         }
       },
       "choiceB": {
         "label": "Perform a quiet healing miracle",
-        "description": "+90 Faith, −30 Gold",
-        "effects": { "faith": 90, "gold": -30 }
+        "description": "+15% Faith, −8% Gold",
+        "effects": { "faithPct": 0.15, "goldPct": -0.08 }
       }
     },
     {
@@ -98,10 +98,10 @@
       "narrative": "A child has been bitten by a fer-de-lance in the jungle. The colonial doctor says nothing can be done. The mother runs to your priestesses, begging for the old venom-neutralizing remedy.",
       "choiceA": {
         "label": "Perform the cure and save the child",
-        "description": "+200 Faith if saved, −6 Followers if lost",
+        "description": "+25% Faith if saved, −6 Followers if lost",
         "random": {
           "winChance": 0.6,
-          "winMessage": "The child's fever breaks by dawn. Word of the old cure spreads across the peninsula. +200 Faith.",
+          "winMessage": "The child's fever breaks by dawn. Word of the old cure spreads across the peninsula. +25% Faith.",
           "lossMessage": "The child dies despite the rite. The mother's grief turns the village against you. −6 Followers.",
           "lossEffects": { "followers": -6 }
         }
@@ -118,13 +118,13 @@
       "narrative": "The season of pilgrimage to Isla Mujeres begins. Canoes gather from across the coast, carrying women seeking Ixchel's blessing. The shrine must be ready.",
       "choiceA": {
         "label": "Prepare the shrine and bless the pilgrims",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −15% Faith",
+        "effects": { "followers": 8, "faithPct": -0.15 }
       },
       "choiceB": {
         "label": "Collect offerings from the pilgrims",
-        "description": "+150 Gold",
-        "effects": { "gold": 150 }
+        "description": "+22% Gold",
+        "effects": { "goldPct": 0.22 }
       }
     },
     {
@@ -133,13 +133,13 @@
       "narrative": "A debate divides the circle: blend the old Maya rites with Catholic saints to survive the colonial gaze, or keep the old ways pure and risk destruction.",
       "choiceA": {
         "label": "Blend the rites with the saints",
-        "description": "+5 Followers, −40 Faith",
-        "effects": { "followers": 5, "faith": -40 }
+        "description": "+5 Followers, −10% Faith",
+        "effects": { "followers": 5, "faithPct": -0.10 }
       },
       "choiceB": {
         "label": "Keep the old way pure",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+25% Faith",
+        "effects": { "faithPct": 0.25 }
       }
     },
     {
@@ -148,13 +148,13 @@
       "narrative": "A Spanish noblewoman arrives at the island shrine with a chest of silver. 'I cannot bear a child. The Church offers only prayer. I am told your goddess knows women's mysteries.'",
       "choiceA": {
         "label": "Accept her silver and perform the fertility rite",
-        "description": "+120 Gold",
-        "effects": { "gold": 120 }
+        "description": "+20% Gold",
+        "effects": { "goldPct": 0.20 }
       },
       "choiceB": {
         "label": "Convert her to the circle",
-        "description": "+5 Followers, −40 Gold",
-        "effects": { "followers": 5, "gold": -40 }
+        "description": "+5 Followers, −10% Gold",
+        "effects": { "followers": 5, "goldPct": -0.10 }
       }
     },
     {
@@ -163,13 +163,13 @@
       "narrative": "A weathered woman with a bundle of Maya herbs arrives at the shrine. 'I have walked from the highlands. I know every birth-song and cord-knot. I seek a circle that honors the old mothers.'",
       "choiceA": {
         "label": "Welcome her into the circle",
-        "description": "+3 Followers, −20 Faith",
-        "effects": { "followers": 3, "faith": -20 }
+        "description": "+3 Followers, −5% Faith",
+        "effects": { "followers": 3, "faithPct": -0.05 }
       },
       "choiceB": {
         "label": "Trade for her knowledge",
-        "description": "+50 Gold",
-        "effects": { "gold": 50 }
+        "description": "+10% Gold",
+        "effects": { "goldPct": 0.10 }
       }
     }
   ]
