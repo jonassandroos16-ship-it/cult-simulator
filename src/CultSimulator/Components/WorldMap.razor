@@ -5,17 +5,24 @@
 @implements IDisposable
 
 <div class="world-map-wrapper">
-    <div class="mb-3 flex items-center gap-2">
+    <div class="mb-3 flex items-center gap-2 flex-wrap">
         <button class="map-tab-button @(mapMode == "world" ? "active" : "")" @onclick='() => SwitchMapMode("world")'>
             <span class="text-sm">🌍</span> World
         </button>
         <button class="map-tab-button @(mapMode == "local" ? "active" : "")" @onclick='() => SwitchMapMode("local")'>
             <span class="text-sm">📍</span> Local
         </button>
+        <button class="map-tab-button @(mapMode == "leylines" ? "active" : "")" @onclick='() => SwitchMapMode("leylines")'>
+            <span class="text-sm">⚡</span> Ley Lines
+        </button>
         <div class="ml-auto text-[0.7rem] text-violet-400 tracking-wide">
             @if (mapMode == "local")
             {
                 <span>@Game.ActiveLocalCultsForCurrentCoven.Count / @LocalCultEngine.MaxActiveLocalCults cults active</span>
+            }
+            else if (mapMode == "leylines")
+            {
+                <span>@conqueredCount / @OccultData.MapNodes.Length nodes claimed</span>
             }
         </div>
     </div>
@@ -28,7 +35,7 @@
         </div>
         <div id="world-map-container" class="world-map-container"></div>
     }
-    else
+    else if (mapMode == "local")
     {
         <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
             <p class="text-violet-300">Local cults operate near your active coven — @activeCovenName. They are weaker than full covens and can be converted quickly for a reward of followers or gold. A new cult appears every hour, up to @LocalCultEngine.MaxActiveLocalCults at a time.</p>
@@ -62,6 +69,124 @@
                         Convert
                     </button>
                 </div>
+            </div>
+        }
+    }
+    else if (mapMode == "leylines")
+    {
+        <div class="mb-3 flex items-center gap-2 flex-wrap">
+            <span class="ley-line-phase-badge @(conqueredCount >= 1 ? "active" : "locked")">
+                <span>1. Claim</span>
+            </span>
+            <span class="ley-line-phase-badge @(conqueredCount >= 2 ? "active" : "locked")">
+                <span>2. Connect</span>
+            </span>
+            <span class="ley-line-phase-badge @(occult.LeyLines.Count >= 3 ? "active" : "locked")">
+                <span>3. Seal</span>
+            </span>
+            <div class="ml-auto flex items-center gap-3 text-[0.7rem]">
+                <span class="text-amber-300">⚔️ @NumberFormat.Fmt(occult.ArmyPower)</span>
+                <span class="@(suspicionHigh ? "text-rose-400" : "text-amber-100")">👁️ @Math.Floor(occult.Suspicion)%</span>
+                @if (greatSealCount > 0)
+                {
+                    <span class="text-emerald-400">🔷 @greatSealCount seals · ×@WorldMapSystem.GreatSealMultiplier(occult).ToString("F2")</span>
+                }
+            </div>
+        </div>
+
+        @if (conqueredCount == 0)
+        {
+            <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <p class="text-violet-300">Corrupted Ley Lines are ancient power channels hidden across the world. Claim nodes to gain passive Faith and harvest occult Materials.</p>
+                <p class="text-slate-400 text-xs mt-2">Click a glowing marker on the map to claim it. Each node costs Faith and Army Power. Your Acolytes passively generate Army Power — promote Zealots in the Sanctum for more.</p>
+            </div>
+        }
+        else if (conqueredCount >= 2 && occult.LeyLines.Count == 0)
+        {
+            <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(167,139,250,0.3);">
+                <p class="text-amber-300">You have @conqueredCount conquered nodes. Click a node then click "Connect" to link two nodes with a Ley Line. Form a triangle between three nodes to create a Great Seal — boosting all Faith production.</p>
+            </div>
+        }
+        else if (greatSealCount > 0)
+        {
+            <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(251,191,36,0.3);">
+                <p class="text-amber-300">@greatSealCount Great Seal(s) active — Faith production boosted by ×@WorldMapSystem.GreatSealMultiplier(occult).ToString("F2"). Keep connecting nodes to form more seals.</p>
+            </div>
+        }
+
+        <div id="leyline-map-container" class="world-map-container"></div>
+
+        @if (selectedLeyLineNode != null)
+        {
+            var nodeDef = selectedLeyLineNode;
+            var nodeState = WorldMapSystem.GetNode(occult, nodeDef.Id);
+            var isConquered = nodeState != null && nodeState.Conquered;
+            var canConquer = WorldMapSystem.CanConquer(Game.State, nodeDef);
+            var connectedTo = occult.LeyLines.Where(l => l.Contains(nodeDef.Id)).ToList();
+
+            <div class="ley-line-popup" style="display:block;">
+                <button class="coven-popup-close" @onclick="CloseLeyLinePopup">×</button>
+                <div class="text-3xl mb-1">@nodeDef.Icon</div>
+                <h3 class="coven-popup-name">@nodeDef.Name</h3>
+                <p class="coven-popup-location">@nodeDef.LocationName</p>
+
+                @if (isConquered)
+                {
+                    <p class="coven-popup-summary">+@NumberFormat.Fmt(nodeDef.FaithPerSec) Faith/s · @nodeDef.SuspicionPerSec%/s Suspicion</p>
+
+                    @if (nodeDef.Materials != null)
+                    {
+                        <p class="text-[0.7rem] text-violet-300 mt-1">Drops: @foreach (var (mat, amt) in nodeDef.Materials) { <span class="mr-1.5">@MaterialIcon(mat) @MaterialName(mat)</span> }</p>
+                    }
+
+                    <div class="flex gap-1.5 mt-3">
+                        <button class="px-3 py-1.5 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState!.Stance == NodeStance.Harvest ? "text-amber-400 border border-amber-400/30 bg-amber-400/5" : "text-slate-400 border border-slate-600/20")" @onclick="() => SetStance(nodeDef.Id, NodeStance.Harvest, nodeDef.Name)">Harvest</button>
+                        <button class="px-3 py-1.5 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState.Stance == NodeStance.Veil ? "text-violet-400 border border-violet-400/30 bg-violet-400/5" : "text-slate-400 border border-slate-600/20")" @onclick="() => SetStance(nodeDef.Id, NodeStance.Veil, nodeDef.Name)">Veil</button>
+                    </div>
+
+                    @if (connectedTo.Count > 0)
+                    {
+                        <p class="text-[0.7rem] text-emerald-400 mt-2">Connected to: @string.Join(", ", connectedTo.Select(l => NodeName(l.First(n => n != nodeDef.Id))))</p>
+                    }
+
+                    @if (conqueredCount >= 2)
+                    {
+                        <div class="mt-3">
+                            <p class="text-[0.65rem] text-slate-400 mb-1.5">Connect to another conquered node:</p>
+                            <div class="flex flex-col gap-1">
+                                @foreach (var other in OccultData.MapNodes)
+                                {
+                                    if (other.Id == nodeDef.Id) continue;
+                                    if (!WorldMapSystem.IsConquered(occult, other.Id)) continue;
+                                    var alreadyConnected = occult.LeyLines.Any(l => l.Contains(nodeDef.Id) && l.Contains(other.Id));
+                                    <button class="px-3 py-1.5 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed @(alreadyConnected ? "text-emerald-400 border border-emerald-400/20" : "text-violet-300 border border-violet-500/20")" disabled="@alreadyConnected" @onclick="() => ConnectFromPopup(nodeDef.Id, other.Id)">
+                                        @(alreadyConnected ? "✓ " + other.Name : "↗ " + other.Name)
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="coven-popup-summary">An unclaimed ley line node. Conquer it to harvest Faith and Materials.</p>
+                    <div class="coven-popup-takeover mt-3">
+                        <div class="takeover-progress-row flex items-center justify-between text-[0.7rem] text-violet-300 mb-1">
+                            <span>Cost</span>
+                            <span class="text-amber-200">@NumberFormat.Fmt(nodeDef.FaithCost) ✨ + @NumberFormat.Fmt(nodeDef.ArmyPowerRequired) ⚔️</span>
+                        </div>
+                        <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-2">
+                            <div class="h-full rounded-full transition-all duration-500"
+                                 style="width: @(canConquer ? 100 : Math.Min(100, (Game.State.ActiveCoven.Faith / nodeDef.FaithCost) * 50))%; background: @((canConquer ? "var(--success)" : "var(--danger)"));"></div>
+                        </div>
+                        <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                style="background: linear-gradient(135deg, #dc2626, #991b1b); border: none; color: #fef3c7;"
+                                disabled="@(!canConquer)"
+                                @onclick="() => ConquerFromPopup(nodeDef.Id)">
+                            Claim
+                        </button>
+                    </div>
+                }
             </div>
         }
     }
@@ -166,9 +291,15 @@
     private string mapMode = "world";
     private WorldLocationDef? selectedCoven;
     private LocalCultDef? selectedLocalCult;
+    private MapNodeDef? selectedLeyLineNode;
     private bool showLore = false;
     private bool mapInitialized = false;
     private DotNetObjectReference<WorldMap>? _dotRef;
+
+    private OccultState occult => Game.State.Occult;
+    private bool suspicionHigh => occult.Suspicion >= OccultBalance.SuspicionRaidThreshold;
+    private int conqueredCount => WorldMapSystem.ConqueredNodeCount(occult);
+    private int greatSealCount => WorldMapSystem.GreatSealCount(occult);
 
     private string activeCovenName
     {
@@ -179,22 +310,24 @@
         }
     }
 
+    [Parameter]
+    public string? InitialMode { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await LocationService.LoadAsync();
+        if (!string.IsNullOrEmpty(InitialMode))
+            mapMode = InitialMode;
         _dotRef = DotNetObjectReference.Create(this);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (mapMode == "world" && !mapInitialized && LocationService.IsLoaded)
+        if (!mapInitialized && LocationService.IsLoaded)
         {
-            await InitWorldMap();
-            mapInitialized = true;
-        }
-        else if (mapMode == "local" && !mapInitialized)
-        {
-            await InitLocalMap();
+            if (mapMode == "world") await InitWorldMap();
+            else if (mapMode == "local") await InitLocalMap();
+            else if (mapMode == "leylines") await InitLeyLineMap();
             mapInitialized = true;
         }
     }
@@ -203,10 +336,12 @@
     {
         if (mapMode == mode) return;
         await JS.InvokeVoidAsync("destroyWorldMap");
+        await JS.InvokeVoidAsync("destroyLeyLineMap");
         mapInitialized = false;
         mapMode = mode;
         selectedCoven = null;
         selectedLocalCult = null;
+        selectedLeyLineNode = null;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -298,6 +433,64 @@
         await JS.InvokeVoidAsync("initWorldMap", "local-map-container", jsLocations, _dotRef, mapOpts);
     }
 
+    private async Task InitLeyLineMap()
+    {
+        var o = Game.State.Occult;
+        var jsNodes = new List<object>();
+
+        foreach (var nodeDef in OccultData.MapNodes)
+        {
+            var nodeState = WorldMapSystem.GetNode(o, nodeDef.Id);
+            var conquered = nodeState != null && nodeState.Conquered;
+            var canConquer = WorldMapSystem.CanConquer(Game.State, nodeDef);
+            var veiled = conquered && nodeState!.Stance == NodeStance.Veil;
+
+            jsNodes.Add(new
+            {
+                id = nodeDef.Id,
+                name = nodeDef.Name,
+                icon = nodeDef.Icon,
+                lat = nodeDef.Latitude,
+                lng = nodeDef.Longitude,
+                conquered = conquered,
+                canConquer = canConquer,
+                veiled = veiled
+            });
+        }
+
+        var jsConnections = occult.LeyLines.Select(l => new[] { l[0], l[1] }).ToList();
+
+        var seals = new List<object>();
+        var sealCount = WorldMapSystem.GreatSealCount(occult);
+        if (sealCount > 0)
+        {
+            var sealMultiplier = WorldMapSystem.GreatSealMultiplier(occult);
+            for (int i = 0; i < occult.LeyLines.Count; i++)
+            {
+                for (int j = i + 1; j < occult.LeyLines.Count; j++)
+                {
+                    for (int k = j + 1; k < occult.LeyLines.Count; k++)
+                    {
+                        var nodeIds = occult.LeyLines[i].Concat(occult.LeyLines[j]).Concat(occult.LeyLines[k]).Distinct().ToList();
+                        if (nodeIds.Count == 3)
+                        {
+                            seals.Add(new { nodeIds = nodeIds, multiplier = sealMultiplier });
+                        }
+                    }
+                }
+            }
+        }
+
+        var mapOpts = new Dictionary<string, object>
+        {
+            ["zoom"] = 2,
+            ["minZoom"] = 2,
+            ["center"] = new[] { 30.0, 10.0 }
+        };
+
+        await JS.InvokeVoidAsync("initLeyLineMap", "leyline-map-container", jsNodes, jsConnections, seals, _dotRef, mapOpts);
+    }
+
     [JSInvokable]
     public void SelectCoven(string id)
     {
@@ -323,8 +516,20 @@
         }
     }
 
+    [JSInvokable]
+    public void SelectLeyLineNode(string id)
+    {
+        var nodeDef = OccultData.MapNode(id);
+        if (nodeDef != null)
+        {
+            selectedLeyLineNode = nodeDef;
+            StateHasChanged();
+        }
+    }
+
     private void ClosePopup() { selectedCoven = null; showLore = false; }
     private void CloseLocalPopup() { selectedLocalCult = null; }
+    private void CloseLeyLinePopup() { selectedLeyLineNode = null; }
     private void ToggleLore() => showLore = !showLore;
 
     private void BeginConversion(string id)
@@ -348,12 +553,42 @@
         _ = RefreshMap();
     }
 
+    private void ConquerFromPopup(string id)
+    {
+        Game.ConquerNode(id);
+        selectedLeyLineNode = null;
+        _ = RefreshLeyLineMap();
+    }
+
+    private void SetStance(string nodeId, NodeStance stance, string nodeName)
+    {
+        Game.SetNodeStance(nodeId, stance);
+        _ = RefreshLeyLineMap();
+    }
+
+    private void ConnectFromPopup(string nodeA, string nodeB)
+    {
+        Game.ConnectLeyLine(nodeA, nodeB);
+        _ = RefreshLeyLineMap();
+    }
+
     private async Task RefreshMap()
     {
         await JS.InvokeVoidAsync("destroyWorldMap");
+        await JS.InvokeVoidAsync("destroyLeyLineMap");
         mapInitialized = false;
         if (mapMode == "world") await InitWorldMap();
-        else await InitLocalMap();
+        else if (mapMode == "local") await InitLocalMap();
+        else if (mapMode == "leylines") await InitLeyLineMap();
+        mapInitialized = true;
+        StateHasChanged();
+    }
+
+    private async Task RefreshLeyLineMap()
+    {
+        await JS.InvokeVoidAsync("destroyLeyLineMap");
+        mapInitialized = false;
+        await InitLeyLineMap();
         mapInitialized = true;
         StateHasChanged();
     }
@@ -361,6 +596,25 @@
     public void Dispose()
     {
         _ = JS.InvokeVoidAsync("destroyWorldMap");
+        _ = JS.InvokeVoidAsync("destroyLeyLineMap");
         _dotRef?.Dispose();
     }
+
+    private string NodeName(string id) => OccultData.MapNode(id)?.Name ?? id;
+
+    private static string MaterialIcon(MaterialKind mat) => mat switch
+    {
+        MaterialKind.GraveDust => "💀",
+        MaterialKind.DemonBile => "🧪",
+        MaterialKind.AstralMercury => "⚗️",
+        _ => "?"
+    };
+
+    private static string MaterialName(MaterialKind mat) => mat switch
+    {
+        MaterialKind.GraveDust => "Grave Dust",
+        MaterialKind.DemonBile => "Demon Bile",
+        MaterialKind.AstralMercury => "Astral Mercury",
+        _ => "?"
+    };
 }
