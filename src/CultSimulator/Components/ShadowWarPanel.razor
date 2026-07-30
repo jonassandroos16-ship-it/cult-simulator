@@ -4,15 +4,20 @@
 @implements IDisposable
 
 <div class="panel glass-panel rounded-[20px] p-5">
-    <h2 class="panel-title">🕯️ The Shadow War</h2>
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="panel-title">🕯️ The Shadow War</h2>
+        <button class="ley-line-shortcut-btn" @onclick="OnViewMap">
+            <span>🗺️</span> View on Map
+        </button>
+    </div>
     <p class="text-sm text-violet-300 mb-3">Your cult does not fight openly — it seeps into society. Train acolytes into sleeper agents, then deploy them to infiltrate real-world institutions across the globe.</p>
     <div class="mb-4 p-3 rounded-[12px] text-xs leading-relaxed text-slate-300" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
         <p class="text-amber-300 font-medium mb-1">How it works</p>
         <p class="mb-1">1. <span class="text-slate-200">Recon</span> — send 1–3 agents to scout an institution. There's a risk they get detected.</p>
         <p class="mb-1">2. <span class="text-slate-200">Infiltrate</span> — send waves of agents to wear down its defense. Watch the detection meter — if it hits 100%, agents are lost and heat rises.</p>
         <p class="mb-1">3. <span class="text-slate-200">Control</span> — once defense reaches zero, the institution is yours and grants a permanent bonus.</p>
-        <p class="mb-1">🏰 <span class="text-emerald-300">Coven Support:</span> Each converted coven in the same continent as an institution reduces detection and recon risk by 5% (up to 40%). Convert more covens to make infiltration easier.</p>
-        <p>👁️ <span class="text-rose-300">Heat</span> rises when agents are caught and decays passively over time. If heat gets too high, investigations trigger. Control Police institutions to increase heat decay.</p>
+        <p class="mb-1">🏰 <span class="text-emerald-300">Coven Support:</span> Each converted coven in the same continent as an institution reduces detection and recon risk by 5% (up to 40%).</p>
+        <p>🌑 <span class="text-rose-300">Rival Cults:</span> Once you control 3 institutions, rival cults emerge and compete for territory. Defend your institutions or lose them.</p>
     </div>
 
     <!-- Resource summary -->
@@ -37,6 +42,29 @@
             <div class="text-[10px] text-slate-400">@ShadowWarEngine.ControlledTerritories(sw).Count territories</div>
         </div>
     </div>
+
+    @if (rivalCount > 0)
+    {
+        <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(127,29,29,0.15); border: 1px solid rgba(239,68,68,0.3);">
+            <div class="text-xs text-rose-400 uppercase tracking-wider mb-2">⚠️ Rival Cults Active</div>
+            <div class="flex flex-col gap-2">
+                @foreach (var (def, state) in RivalCultEngine.ActiveRivals(Game.State))
+                {
+                    <div class="flex items-center justify-between text-xs">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">@def.Icon</span>
+                            <span class="text-amber-100 font-medium">@def.Name</span>
+                            <span class="text-slate-400">· @state.Status</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-rose-300">Power: @((int)state.Power)</span>
+                            <span class="text-slate-400">Holds: @state.ControlledInstitutions.Count</span>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
 
     <!-- Territory grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -67,22 +95,21 @@
                 }
                 else
                 {
-                    <div class="text-[10px] text-slate-600 mb-2 px-2">No coven support yet</div>
+                    <div class="text-[10px] text-slate-600 mb-2 px-2 py-0.5">No coven support yet</div>
                 }
                 <div class="flex flex-col gap-1.5">
                     @foreach (var def in insts)
                     {
                         var inst = sw.GetInstitution(def.Id);
                         if (inst == null) continue;
-                        <button class="text-left p-2 rounded-[10px] transition-all hover:scale-[1.02] @GetStatusClass(inst.Status)"
-                                disabled="@(inst.Status == InstitutionStatus.Locked)"
-                                @onclick="() => SelectInstitution(def.Id)">
+                        var rivalHeld = rivalCount > 0 && Game.State.RivalCultsOrInit.Rivals.Any(r => r.ControlledInstitutions.Contains(def.Id));
+                        <div class="text-left p-2 rounded-[10px] @GetStatusClass(inst.Status) @(rivalHeld ? "border-rose-700/40 bg-rose-950/20" : "")">
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-1.5">
                                     <span>@GetTypeIcon(def.Type)</span>
                                     <div>
                                         <div class="text-xs font-medium text-amber-100">@def.Name</div>
-                                        <div class="text-[9px] text-slate-400 uppercase">@GetStatusLabel(inst.Status)</div>
+                                        <div class="text-[9px] text-slate-400 uppercase">@GetStatusLabel(inst.Status)@(rivalHeld ? " · 🔴 Rival Held" : "")</div>
                                     </div>
                                 </div>
                                 <div class="text-[9px] text-slate-500">T@((int)def.Tier + 1)</div>
@@ -115,7 +142,7 @@
                                     <span class="text-emerald-400 font-medium">@def.RewardLabel</span>
                                 }
                             </div>
-                        </button>
+                        </div>
                     }
                 </div>
             </div>
@@ -131,31 +158,29 @@
                 var inst = sw.GetInstitution(def.Id);
                 var isControlled = inst?.Status == InstitutionStatus.Controlled;
                 var isInvestigated = inst?.Status == InstitutionStatus.Investigated;
-                <div class="h-3 w-3 rounded-full transition-colors @(isControlled ? "bg-emerald-500" : isInvestigated ? "bg-orange-500" : "bg-stone-700")" title="@def.Name"></div>
+                var isRivalHeld = rivalCount > 0 && Game.State.RivalCultsOrInit.Rivals.Any(r => r.ControlledInstitutions.Contains(def.Id));
+                <div class="h-3 w-3 rounded-full transition-colors @(isRivalHeld ? "bg-rose-500" : isControlled ? "bg-emerald-500" : isInvestigated ? "bg-orange-500" : "bg-stone-700")" title="@def.Name"></div>
             }
         </div>
         <div class="mt-1.5 text-[10px] text-slate-500">@sw.TotalControlled / @ShadowWarData.Institutions.Length institutions controlled</div>
     </div>
 </div>
 
-@if (selectedInstitution != null)
-{
-    <ShadowWarModal InstitutionId="@selectedInstitution" OnClose="() => selectedInstitution = null" />
-}
-
 @code {
-    private string? selectedInstitution;
+    [Parameter] public EventCallback OnViewMap { get; set; }
+
     private ShadowWarState sw => Game.ShadowWar;
+    private int rivalCount => RivalCultEngine.ActiveRivals(Game.State).Count;
 
     private string GetStatusClass(InstitutionStatus s) => s switch
     {
-        InstitutionStatus.Locked => "opacity-40 cursor-not-allowed",
+        InstitutionStatus.Locked => "opacity-40",
         InstitutionStatus.Controlled => "border border-emerald-700/40 bg-emerald-950/20",
         InstitutionStatus.Investigated => "border border-orange-700/40 bg-orange-950/20",
         InstitutionStatus.Alerted => "border border-red-700/40 bg-red-950/20",
         InstitutionStatus.Infiltrating => "border border-amber-700/40 bg-amber-950/20",
         InstitutionStatus.Recon => "border border-blue-700/40 bg-blue-950/20",
-        _ => "border border-stone-700/40 bg-stone-900/40 hover:border-stone-600/50"
+        _ => "border border-stone-700/40 bg-stone-900/40"
     };
 
     private string GetStatusLabel(InstitutionStatus s) => s switch
@@ -180,8 +205,6 @@
         InstitutionType.Intelligence => "🕵️",
         _ => ""
     };
-
-    private void SelectInstitution(string id) => selectedInstitution = id;
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);

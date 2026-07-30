@@ -15,6 +15,9 @@
         <button class="map-tab-button @(mapMode == "leylines" ? "active" : "")" @onclick='() => SwitchMapMode("leylines")'>
             <span class="text-sm">⚡</span> Ley Lines
         </button>
+        <button class="map-tab-button @(mapMode == "shadowwar" ? "active" : "")" @onclick='() => SwitchMapMode("shadowwar")'>
+            <span class="text-sm">🌑</span> Shadow War
+        </button>
         <div class="ml-auto text-[0.7rem] text-violet-400 tracking-wide">
             @if (mapMode == "local")
             {
@@ -23,6 +26,10 @@
             else if (mapMode == "leylines")
             {
                 <span>@conqueredCount / @activeCovenNodes.Count nodes claimed · @activeCovenName</span>
+            }
+            else if (mapMode == "shadowwar")
+            {
+                <span>@sw.TotalControlled / @ShadowWarData.Institutions.Length institutions · @rivalCount rivals active</span>
             }
         </div>
     </div>
@@ -191,6 +198,27 @@
         }
     }
 
+    else if (mapMode == "shadowwar")
+    {
+        <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <p class="text-violet-300">The Shadow War map shows institutions across the globe you can infiltrate. Click a marker to recon, infiltrate, or defend. Green = controlled, blue = recon, amber = infiltrating, red = alerted, orange = under investigation.</p>
+            @if (rivalCount > 0)
+            {
+                <p class="text-rose-300 text-xs mt-2">⚠️ @rivalCount rival cult(s) are active and competing for control. Red markers indicate institutions they've seized. Act fast to defend your territory.</p>
+            }
+            else
+            {
+                <p class="text-slate-400 text-xs mt-2">Rival cults will emerge once you control 3 institutions. Control more to trigger the rivalry system.</p>
+            }
+        </div>
+        <div id="shadowwar-map-container" class="world-map-container"></div>
+
+        @if (selectedInstitution != null)
+        {
+            <ShadowWarModal InstitutionId="@selectedInstitution" OnClose="CloseInstitutionPopup" />
+        }
+    }
+
     @if (mapMode == "world" && selectedCoven != null)
     {
         <div class="coven-popup" style="display:block;">
@@ -292,6 +320,7 @@
     private WorldLocationDef? selectedCoven;
     private LocalCultDef? selectedLocalCult;
     private MapNodeDef? selectedLeyLineNode;
+    private string? selectedInstitution;
     private bool showLore = false;
     private bool mapInitialized = false;
     private DotNetObjectReference<WorldMap>? _dotRef;
@@ -301,6 +330,19 @@
     private int conqueredCount => WorldMapSystem.ConqueredNodeCount(Game.State);
     private IReadOnlyList<MapNodeDef> activeCovenNodes => OccultData.NodesForActiveCoven(Game.State);
     private int greatSealCount => WorldMapSystem.GreatSealCount(occult);
+    private ShadowWarState sw => Game.ShadowWar;
+    private int rivalCount => RivalCultEngine.ActiveRivals(Game.State).Count;
+
+    private static string GetTypeIcon(InstitutionType t) => t switch
+    {
+        InstitutionType.Police => "🚔",
+        InstitutionType.Media => "📡",
+        InstitutionType.Government => "🏛️",
+        InstitutionType.Military => "⚔️",
+        InstitutionType.Finance => "💰",
+        InstitutionType.Intelligence => "🕵️",
+        _ => ""
+    };
 
     private string activeCovenName
     {
@@ -329,6 +371,7 @@
             if (mapMode == "world") await InitWorldMap();
             else if (mapMode == "local") await InitLocalMap();
             else if (mapMode == "leylines") await InitLeyLineMap();
+            else if (mapMode == "shadowwar") await InitShadowWarMap();
             mapInitialized = true;
         }
     }
@@ -338,11 +381,13 @@
         if (mapMode == mode) return;
         await JS.InvokeVoidAsync("destroyWorldMap");
         await JS.InvokeVoidAsync("destroyLeyLineMap");
+        await JS.InvokeVoidAsync("destroyShadowWarMap");
         mapInitialized = false;
         mapMode = mode;
         selectedCoven = null;
         selectedLocalCult = null;
         selectedLeyLineNode = null;
+        selectedInstitution = null;
         await InvokeAsync(StateHasChanged);
     }
 
@@ -529,6 +574,86 @@
         }
     }
 
+    [JSInvokable]
+    public void SelectInstitution(string id)
+    {
+        selectedInstitution = id;
+        StateHasChanged();
+    }
+
+    private void CloseInstitutionPopup() { selectedInstitution = null; _ = RefreshShadowWarMap(); }
+
+    private async Task InitShadowWarMap()
+    {
+        var sw = Game.ShadowWar;
+        var jsInstitutions = new List<object>();
+        var rivalState = Game.State.RivalCultsOrInit;
+
+        foreach (var def in ShadowWarData.Institutions)
+        {
+            var inst = sw.GetInstitution(def.Id);
+            if (inst == null) continue;
+            var rivalControlled = rivalState.IsActive && rivalState.Rivals
+                .Any(r => r.ControlledInstitutions.Contains(def.Id));
+
+            jsInstitutions.Add(new
+            {
+                id = def.Id,
+                name = def.Name,
+                icon = GetTypeIcon(def.Type),
+                lat = def.Latitude,
+                lng = def.Longitude,
+                status = inst.Status.ToString().ToLower(),
+                rivalControlled = rivalControlled
+            });
+        }
+
+        var jsRivals = new List<object>();
+        if (rivalState.IsActive)
+        {
+            foreach (var rival in rivalState.Rivals)
+            {
+                var def = RivalCultData.Find(rival.Id);
+                if (def == null) continue;
+                var territory = ShadowWarData.Territory(def.PreferredTerritoryId);
+                if (territory == null) continue;
+
+                var firstInst = ShadowWarData.InstitutionsForTerritory(def.PreferredTerritoryId).FirstOrDefault();
+                var lat = firstInst?.Latitude ?? 30;
+                var lng = firstInst?.Longitude ?? 10;
+
+                jsRivals.Add(new
+                {
+                    id = rival.Id,
+                    name = def.Name,
+                    icon = def.Icon,
+                    lat = lat,
+                    lng = lng,
+                    status = rival.Status.ToString().ToLower(),
+                    power = rival.Power
+                });
+            }
+        }
+
+        var mapOpts = new Dictionary<string, object>
+        {
+            ["zoom"] = 2,
+            ["minZoom"] = 2,
+            ["center"] = new[] { 30.0, 10.0 }
+        };
+
+        await JS.InvokeVoidAsync("initShadowWarMap", "shadowwar-map-container", jsInstitutions, jsRivals, _dotRef, mapOpts);
+    }
+
+    private async Task RefreshShadowWarMap()
+    {
+        await JS.InvokeVoidAsync("destroyShadowWarMap");
+        mapInitialized = false;
+        await InitShadowWarMap();
+        mapInitialized = true;
+        StateHasChanged();
+    }
+
     private void ClosePopup() { selectedCoven = null; showLore = false; }
     private void CloseLocalPopup() { selectedLocalCult = null; }
     private void CloseLeyLinePopup() { selectedLeyLineNode = null; }
@@ -578,10 +703,12 @@
     {
         await JS.InvokeVoidAsync("destroyWorldMap");
         await JS.InvokeVoidAsync("destroyLeyLineMap");
+        await JS.InvokeVoidAsync("destroyShadowWarMap");
         mapInitialized = false;
         if (mapMode == "world") await InitWorldMap();
         else if (mapMode == "local") await InitLocalMap();
         else if (mapMode == "leylines") await InitLeyLineMap();
+        else if (mapMode == "shadowwar") await InitShadowWarMap();
         mapInitialized = true;
         StateHasChanged();
     }
@@ -599,6 +726,7 @@
     {
         _ = JS.InvokeVoidAsync("destroyWorldMap");
         _ = JS.InvokeVoidAsync("destroyLeyLineMap");
+        _ = JS.InvokeVoidAsync("destroyShadowWarMap");
         _dotRef?.Dispose();
     }
 

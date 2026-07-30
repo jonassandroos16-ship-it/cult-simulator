@@ -106,6 +106,7 @@ public static class GameEngine
             OccultEngine.Tick(state, coven, 1.0);
         }
         ShadowWarEngine.Tick(state.ShadowWarOrInit, state, locations, 1.0);
+        RivalCultEngine.Tick(state, 1.0);
     }
 
     public static (double faith, double gold) ApplyOfflineIncome(GameState state, long elapsedMs)
