@@ -140,7 +140,7 @@
                 var affordable = GameEngine.CanAfford(activeCoven, def.FaithCost, def.GoldCost);
                 <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] transition-all duration-200 @(owned ? "border-emerald-400/20 bg-emerald-400/5" : "") @(!unlocked ? "opacity-40" : "")"
                      style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                    <div class="upgrade-icon text-3xl flex-shrink-0">@def.Icon</div>
+                    <div class="upgrade-icon text-3xl flex-shrink0">@def.Icon</div>
                     <div class="upgrade-info flex-1 flex flex-col gap-0.5">
                         <span class="upgrade-name font-display text-base text-amber-100 font-medium">@def.Name</span>
                         <span class="upgrade-effect text-xs text-violet-300">@def.EffectDescription</span>
