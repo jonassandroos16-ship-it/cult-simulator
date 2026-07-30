@@ -75,6 +75,7 @@ public static class OccultEngine
         double mapFaith = TotalMapFaithPerSec(state) * deltaSec;
         state.ActiveCoven.Faith += mapFaith; o.LifetimeFaith += mapFaith;
         double armyGain = o.Minions.Count(m => m.Role == PromotedRole.Zealot) * OccultBalance.ZealotArmyPowerPerSec * deltaSec;
+        armyGain += o.Acolytes * OccultBalance.AcolyteArmyPowerPerSec * deltaSec;
         o.ArmyPower += armyGain;
         WorldMapSystem.TickSuspicion(o, deltaSec);
         WorldMapSystem.TickMaterials(o, deltaSec);

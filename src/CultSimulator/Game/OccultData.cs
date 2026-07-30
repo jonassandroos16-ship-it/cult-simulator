@@ -11,7 +11,7 @@ public static class OccultData
         new TechDef(TechId.ExsanguinationEngine, "Exsanguination Engine", "⚙️", 10000, TechBranch.BloodFlesh, "Unlocks 15s Frenzy mode (10x sermon) via minion sacrifice", new[] { TechId.AutophagousCult }),
         new TechDef(TechId.WhispersInTheDark, "Whispers in the Dark", "🗣️", 100, TechBranch.MindCoercion, "-15% global Suspicion generation"),
         new TechDef(TechId.InquisitorsBlindfold, "Inquisitor's Blindfold", "👁️", 500, TechBranch.MindCoercion, "Infiltrators auto-suppress raids", new[] { TechId.WhispersInTheDark }),
-        new TechDef(TechId.LeyLineWeaving, "Ley Line Weaving", "📐", 2500, TechBranch.MindCoercion, "Unlocks Ley Line node connections and Great Seals", new[] { TechId.InquisitorsBlindfold }),
+        new TechDef(TechId.LeyLineWeaving, "Ley Line Weaving", "📐", 2500, TechBranch.MindCoercion, "+25% Great Seal multiplier", new[] { TechId.InquisitorsBlindfold }),
         new TechDef(TechId.MassHysteria, "Mass Hysteria", "😱", 15000, TechBranch.MindCoercion, "Tapping map regions generates Faith directly for 30s", new[] { TechId.LeyLineWeaving }),
         new TechDef(TechId.SecondSocket, "Second Socket", "🔮", 200, TechBranch.VoidAstral, "Unlocks Grimoire Slot 2"),
         new TechDef(TechId.TransmutationCrucible, "Transmutation Crucible", "⚗️", 750, TechBranch.VoidAstral, "Unlocks Cauldron crafting", new[] { TechId.SecondSocket }),
@@ -56,12 +56,12 @@ public static class OccultData
         new CauldronRecipeDef(CauldronRecipeId.FleshForge, "Flesh Forge", "🧟", new() { { MaterialKind.GraveDust, 3 }, { MaterialKind.DemonBile, 3 }, { MaterialKind.AstralMercury, 3 } }, "Forge a random Flesh artifact", true));
 
     public static readonly ImmutableArray<MapNodeDef> MapNodes = ImmutableArray.Create(
-        new MapNodeDef("old_library", "Forbidden Library", "📚", 500, 50, 0.5, 0.2, new() { { MaterialKind.AstralMercury, 1 } }),
-        new MapNodeDef("ancient_ruins", "Ancient Ruins", "🏚️", 1200, 120, 0.8, 0.4, new() { { MaterialKind.GraveDust, 2 } }),
-        new MapNodeDef("ley_intersection", "Ley Line Nexus", "⚡", 3000, 300, 1.5, 0.6, new() { { MaterialKind.AstralMercury, 2 }, { MaterialKind.DemonBile, 1 } }),
-        new MapNodeDef("blood_temple", "Blood Temple", "🩸", 6000, 600, 2.5, 1.0, new() { { MaterialKind.DemonBile, 3 } }),
-        new MapNodeDef("void_rift", "Void Rift", "🌀", 12000, 1200, 5.0, 1.5, new() { { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 3 } }),
-        new MapNodeDef("flesh_pit", "Flesh Pit", "🦠", 25000, 2500, 10.0, 2.0, new() { { MaterialKind.GraveDust, 10 }, { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 5 } }));
+        new MapNodeDef("old_library", "Forbidden Library", "📚", 150, 10, 0.5, 0.2, 41.9028, 12.4964, "Vatican Archives, Rome", new() { { MaterialKind.AstralMercury, 1 } }),
+        new MapNodeDef("ancient_ruins", "Ancient Ruins", "🏚️", 600, 40, 0.8, 0.4, 37.2233, 38.9224, "Göbekli Tepe, Turkey", new() { { MaterialKind.GraveDust, 2 } }),
+        new MapNodeDef("ley_intersection", "Ley Line Nexus", "⚡", 2000, 150, 1.5, 0.6, 27.1750, 78.0422, "Taj Mahal, Agra", new() { { MaterialKind.AstralMercury, 2 }, { MaterialKind.DemonBile, 1 } }),
+        new MapNodeDef("blood_temple", "Blood Temple", "🩸", 5000, 400, 2.5, 1.0, 45.3744, 12.3260, "Poveglia Island, Italy", new() { { MaterialKind.DemonBile, 3 } }),
+        new MapNodeDef("void_rift", "Void Rift", "🌀", 10000, 800, 5.0, 1.5, 25.0, -71.0, "Bermuda Triangle", new() { { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 3 } }),
+        new MapNodeDef("flesh_pit", "Flesh Pit", "🦠", 20000, 1500, 10.0, 2.0, -13.1631, -72.5450, "Nazca Lines, Peru", new() { { MaterialKind.GraveDust, 10 }, { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 5 } }));
 
     public static readonly ImmutableArray<PromotedRole> PromotedRoles = ImmutableArray.Create(PromotedRole.Zealot, PromotedRole.Scholar, PromotedRole.Infiltrator);
     public static readonly ImmutableArray<CouncilRole> CouncilRoles = ImmutableArray.Create(CouncilRole.Inquisitor, CouncilRole.Archon, CouncilRole.HighPriest);
