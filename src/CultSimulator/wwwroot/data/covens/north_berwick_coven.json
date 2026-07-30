@@ -10,5 +10,172 @@
   "summary": "A massive gathering accused of using high-seas weather magic to target royal shipping.",
   "lore": "Over 70 people were accused of assembling at the ruined St Andrew's Auld Kirk on the Scottish coast. Led by a respected local midwife and healer named Agnes Sampson and a schoolmaster named John Fian, the circle was accused of brewing storms by drowning cats in sea-water to sink the ship carrying King James VI and his bride, Anne of Denmark. King James became so terrified by the trial details that he personally interrogated suspects and authored Daemonologie, his famous book on hunting witches.",
   "followersRequired": 504,
-  "baseMultiplier": 3.375
+  "baseMultiplier": 3.375,
+  "events": [
+    {
+      "id": "berwick_storm_brew",
+      "title": "A Storm Over the Forth",
+      "narrative": "A great ship is seen beating up the Firth of Forth against a rising gale. Your sea-witches say they could drown it with a cat in saltwater — but it may be the King's own vessel.",
+      "choiceA": {
+        "label": "Brew the storm and sink it",
+        "description": "+200 Faith if it sinks, −8 Followers if the King's ship",
+        "random": {
+          "winChance": 0.4,
+          "winMessage": "The ship founders and sinks with all hands. Word of your power over the sea spreads across Lothian. +200 Faith.",
+          "lossMessage": "It was the King's ship, and it survived. The crown's wrath falls on the coast; eight of your number flee. −8 Followers.",
+          "lossEffects": { "followers": -8 }
+        }
+      },
+      "choiceB": {
+        "label": "Let it pass and preach calm",
+        "description": "+150 Faith",
+        "effects": { "faith": 150 }
+      }
+    },
+    {
+      "id": "berwick_haddington_rival",
+      "title": "The Haddington Storm-Callers",
+      "narrative": "The weather-witches of Haddington have been brewing tempests in copper cauldrons and selling fair winds to merchants — undercutting your coven's influence over the coast.",
+      "choiceA": {
+        "label": "Out-brew their storms",
+        "description": "+150 Faith, −50 Gold",
+        "effects": { "faith": 150, "gold": -50 }
+      },
+      "choiceB": {
+        "label": "Undercut their wind-trade",
+        "description": "+5 Followers",
+        "effects": { "followers": 5 }
+      }
+    },
+    {
+      "id": "berwick_dunbar_fog",
+      "title": "The Dunbar Sea-Witches' Fog",
+      "narrative": "The harbor hags of Dunbar have sent a thick fog to wreck ships on the rocks and loot the drowned. But the latest wreck carried a nobleman, and questions are being asked.",
+      "choiceA": {
+        "label": "Help them hide the wreck's spoils",
+        "description": "+120 Gold, −40 Faith",
+        "effects": { "gold": 120, "faith": -40 }
+      },
+      "choiceB": {
+        "label": "Warn the next ship away",
+        "description": "+90 Faith",
+        "effects": { "faith": 90 }
+      }
+    },
+    {
+      "id": "berwick_prestonpans_salt",
+      "title": "The Prestonpans Salt-Sorcerers",
+      "narrative": "The salt-pan workers of Prestonpans have been scrying in crystallized seawater and claim to have seen your coven's faces in the brine. They threaten to carry the vision to the Kirk.",
+      "choiceA": {
+        "label": "Bind their tongues with salt",
+        "description": "+120 Faith, −40 Gold",
+        "effects": { "faith": 120, "gold": -40 }
+      },
+      "choiceB": {
+        "label": "Convert them to the craft",
+        "description": "+5 Followers",
+        "effects": { "followers": 5 }
+      }
+    },
+    {
+      "id": "berwick_agnes_sampson",
+      "title": "Agnes Sampson's Interrogation",
+      "narrative": "The wise woman Agnes Sampson has been taken to Holyrood for questioning by the King himself. The coven gathers in fear — what will she say under the witch-bridle?",
+      "choiceA": {
+        "label": "Send aid to silence her",
+        "description": "+150 Faith, −60 Gold",
+        "effects": { "faith": 150, "gold": -60 }
+      },
+      "choiceB": {
+        "label": "Pray she holds her tongue",
+        "description": "+100 Faith if she resists, −6 Followers if she names names",
+        "random": {
+          "winChance": 0.45,
+          "winMessage": "Agnes says nothing of use. The King is frustrated, and the coven endures. +100 Faith.",
+          "lossMessage": "Under the bridle she names six of your number. They must run or be taken. −6 Followers.",
+          "lossEffects": { "followers": -6 }
+        }
+      }
+    },
+    {
+      "id": "berwick_king_james",
+      "title": "The King's Daemonologie",
+      "narrative": "King James has begun writing a book on hunting witches, using your coven's alleged deeds as his chief examples. Copies will spread across Scotland.",
+      "choiceA": {
+        "label": "Discredit the book with counter-lore",
+        "description": "+120 Faith, −40 Gold",
+        "effects": { "faith": 120, "gold": -40 }
+      },
+      "choiceB": {
+        "label": "Go to ground until it passes",
+        "description": "+4 Followers (quiet growth)",
+        "effects": { "followers": 4 }
+      }
+    },
+    {
+      "id": "berwick_auld_kirk",
+      "title": "The Auld Kirk Assembly",
+      "narrative": "Tonight the coven assembles at the ruined St Andrew's Auld Kirk, as they did before. But a spy is rumored among the worshippers.",
+      "choiceA": {
+        "label": "Hold the assembly and root out the spy",
+        "description": "+150 Faith if found, −5 Followers if not",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "You catch a friar taking notes and bind him to silence. The assembly swears new oaths. +150 Faith.",
+          "lossMessage": "You find no spy, but the fear itself splits the coven. Five drift away into the night. −5 Followers.",
+          "lossEffects": { "followers": -5 }
+        }
+      },
+      "choiceB": {
+        "label": "Cancel and meet in smaller circles",
+        "description": "+60 Faith",
+        "effects": { "faith": 60 }
+      }
+    },
+    {
+      "id": "berwick_cat_drowning",
+      "title": "The Drowned Cat Rite",
+      "narrative": "A great rite is proposed: drown a black cat in seawater at the kirk to raise a tempest against a fleet of warships. It is old, powerful, and terrible.",
+      "choiceA": {
+        "label": "Perform the rite",
+        "description": "+8 Followers, −100 Faith",
+        "effects": { "followers": 8, "faith": -100 }
+      },
+      "choiceB": {
+        "label": "Prophesy instead of killing",
+        "description": "+200 Faith",
+        "effects": { "faith": 200 }
+      }
+    },
+    {
+      "id": "berwick_noble_patron",
+      "title": "A Lothian Noble's Patronage",
+      "narrative": "A nobleman arrives at the kirk ruins with a heavy purse. 'My ships are becalmed. I am told your coven commands the winds. Name your price.'",
+      "choiceA": {
+        "label": "Sell him a fair wind",
+        "description": "+120 Gold",
+        "effects": { "gold": 120 }
+      },
+      "choiceB": {
+        "label": "Convert him to the craft",
+        "description": "+5 Followers, −40 Gold",
+        "effects": { "followers": 5, "gold": -40 }
+      }
+    },
+    {
+      "id": "berwick_midwife",
+      "title": "The Midwife's Apprentice",
+      "narrative": "A young woman from a fishing village seeks out the coven. 'I have the sight. I delivered a babe last moon and saw his fate in the caul. I would learn your craft.'",
+      "choiceA": {
+        "label": "Take her as an apprentice",
+        "description": "+3 Followers, −20 Faith",
+        "effects": { "followers": 3, "faith": -20 }
+      },
+      "choiceB": {
+        "label": "Take her silver for the teaching",
+        "description": "+50 Gold",
+        "effects": { "gold": 50 }
+      }
+    }
+  ]
 }
