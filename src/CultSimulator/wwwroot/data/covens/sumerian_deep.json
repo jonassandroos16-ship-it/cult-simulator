@@ -1,0 +1,233 @@
+{
+  "id": "sumerian_deep",
+  "name": "Sumerian Deep Ones",
+  "location": "Ur",
+  "country": "Iraq",
+  "countryFlag": "🇮🇶",
+  "era": "Ancient",
+  "continent": "middle_east",
+  "latitude": 30.96,
+  "longitude": 46.1,
+  "summary": "Cultists who worship beings that predate the Sumerian pantheon. Their ziggurat reaches down, not up.",
+  "lore": "Beneath the ruins of Ur, something stirs that is older than civilization. The Deep Ones serve it, and it has been waiting since before the first brick was laid. Their patience is measured in geological time.",
+  "followersRequired": 1100000,
+  "baseMultiplier": 11063.5,
+  "events": [
+    {
+      "id": "sumerian_deep_djinn_bottle",
+      "title": "The Djinn Bottle",
+      "narrative": "A merchant sells you a brass bottle that vibrates with trapped power. Something inside is very, very angry.",
+      "choiceA": {
+        "label": "Open the bottle and bind the djinn",
+        "description": "+25% Faith or -6 Followers",
+        "random": {
+          "winChance": 0.4,
+          "winMessage": "You bind the djinn to your will! Its power flows through your coven. +25% Faith.",
+          "lossMessage": "The djinn breaks free and curses your followers. Six are lost. -6 Followers.",
+          "lossEffects": {
+            "followers": -6
+          },
+          "winEffects": {
+            "faithPct": 0.25
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Keep the bottle sealed and study it",
+        "description": "+18% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.18,
+          "goldPct": -0.1
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_star_reading",
+      "title": "The Star Reading",
+      "narrative": "The Babylonian mages share a prophecy: a conjunction occurs tonight that has not happened in 4,000 years.",
+      "choiceA": {
+        "label": "Perform the conjunction rite",
+        "description": "+30% Faith, -15% Gold",
+        "effects": {
+          "faithPct": 0.3,
+          "goldPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Record the reading and sell it",
+        "description": "+22% Gold",
+        "effects": {
+          "goldPct": 0.22
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_desert_caravan",
+      "title": "The Cursed Caravan",
+      "narrative": "A caravan arrives from the deep desert. Every member is dead, but their camels still walk and their cargo is intact.",
+      "choiceA": {
+        "label": "Claim the cargo and absorb the curse",
+        "description": "+25% Gold, -15% Faith",
+        "effects": {
+          "goldPct": 0.25,
+          "faithPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Burn the caravan and purify the route",
+        "description": "+20% Faith",
+        "effects": {
+          "faithPct": 0.2
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_hashashin_envoy",
+      "title": "The Hashashin Envoy",
+      "narrative": "A masked figure arrives with a message from Alamut: 'Join us or be removed.' The dagger on the table is a hint.",
+      "choiceA": {
+        "label": "Accept the alliance",
+        "description": "+8 Followers, -20% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Refuse and prepare for war",
+        "description": "+22% Faith or -5 Followers",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "Your defiance rallies the faithful. +22% Faith.",
+          "lossMessage": "The Hashashin strike in the night. Five followers vanish. -5 Followers.",
+          "lossEffects": {
+            "followers": -5
+          },
+          "winEffects": {
+            "faithPct": 0.22
+          }
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_sacred_geometry",
+      "title": "The Sacred Geometry",
+      "narrative": "A Qabbalah master offers to teach you the true name of a concept — any concept. The price is a year of your memory.",
+      "choiceA": {
+        "label": "Accept and learn the true name",
+        "description": "+28% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.28,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Decline and preserve yourself",
+        "description": "+15% Faith",
+        "effects": {
+          "faithPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_sand_storm",
+      "title": "The Sandstorm Spirits",
+      "narrative": "A sandstorm reveals shapes moving within it — human, but not. They circle your compound and whisper in a language of wind.",
+      "choiceA": {
+        "label": "Invite them in as guests",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Ward the compound against them",
+        "description": "+22% Faith",
+        "effects": {
+          "faithPct": 0.22
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_ancient_tablet",
+      "title": "The Cuneiform Tablet",
+      "narrative": "A scholar brings a tablet inscribed in cuneiform that, when read aloud, causes the walls to bleed.",
+      "choiceA": {
+        "label": "Read the tablet and absorb its power",
+        "description": "+20% Faith, -12% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.12
+        }
+      },
+      "choiceB": {
+        "label": "Archive the tablet unread",
+        "description": "+12% Faith",
+        "effects": {
+          "faithPct": 0.12
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_moon_calculation",
+      "title": "The Moon Calculation",
+      "narrative": "The Babylonian star-readers predict an event that will occur in exactly 72 hours. The precision is terrifying.",
+      "choiceA": {
+        "label": "Prepare exactly as they instruct",
+        "description": "+25% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.25,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Ignore the prediction",
+        "description": "+15% Gold",
+        "effects": {
+          "goldPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_underground_city",
+      "title": "The Underground City",
+      "narrative": "Your scouts find a stairway descending into the dark beneath the ruins. The air coming up is warm and breathes.",
+      "choiceA": {
+        "label": "Descend and claim what lies below",
+        "description": "+8 Followers, -20% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Seal the entrance and ward it",
+        "description": "+22% Faith",
+        "effects": {
+          "faithPct": 0.22
+        }
+      }
+    },
+    {
+      "id": "sumerian_deep_eclipse_of_erebus",
+      "title": "The Eclipse of Erebus",
+      "narrative": "An unnatural eclipse darkens the sun at noon. The temperature drops thirty degrees. Something vast passes overhead.",
+      "choiceA": {
+        "label": "Channel the darkness",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Shelter and wait for the light",
+        "description": "+30% Faith",
+        "effects": {
+          "faithPct": 0.3
+        }
+      }
+    }
+  ]
+}

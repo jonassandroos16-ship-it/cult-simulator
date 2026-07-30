@@ -1,0 +1,250 @@
+{
+  "id": "takeda_ronin",
+  "name": "Takeda Ghost Ronin",
+  "location": "Kōfu",
+  "country": "Japan",
+  "countryFlag": "🇯🇵",
+  "era": "Sengoku Period",
+  "continent": "asia",
+  "latitude": 35.66,
+  "longitude": 138.57,
+  "summary": "Masterless samurai who channel the spirits of fallen warriors. Their blade-spirit technique cuts through more than flesh.",
+  "lore": "The Takeda Ghost Ronin carry the spirits of ten thousand fallen warriors within their blades. Each sword is a graveyard, each strike a release. They serve no lord but the dead, and the dead are demanding.",
+  "followersRequired": 5400000,
+  "baseMultiplier": 56009.2,
+  "events": [
+    {
+      "id": "takeda_ronin_shadow_walk",
+      "title": "The Shadow Walk",
+      "narrative": "A shinobi infiltrates your dojo at midnight, leaving a single shuriken embedded in your pillow. It is a message.",
+      "choiceA": {
+        "label": "Track the shinobi and confront them",
+        "description": "+4 Followers or -3 Followers",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "You catch the shinobi and earn their respect. Two of their clan join you. +4 Followers.",
+          "lossMessage": "The shinobi vanishes into shadow. Three followers lose faith. -3 Followers.",
+          "lossEffects": {
+            "followers": -3
+          },
+          "winEffects": {
+            "followers": 4
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Send a counter-message via your own agent",
+        "description": "+15% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.15,
+          "goldPct": -0.1
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_ronin_challenge",
+      "title": "A Ronin Demands a Duel",
+      "narrative": "A masterless samurai stands at your gate, hand on his blade. He says your coven dishonors the old ways.",
+      "choiceA": {
+        "label": "Accept the duel",
+        "description": "+30% Faith if you win, -5 Followers if you lose",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "Your blade-spirit is stronger. The ronin yields and joins your coven. +30% Faith.",
+          "lossMessage": "The ronin's technique is flawless. Five followers lose heart. -5 Followers.",
+          "lossEffects": {
+            "followers": -5
+          },
+          "winEffects": {
+            "faithPct": 0.3
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Offer him rice and a place to rest",
+        "description": "+5 Followers, -15% Gold",
+        "effects": {
+          "followers": 5,
+          "goldPct": -0.15
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_zen_master",
+      "title": "A Zen Master Visits",
+      "narrative": "An old monk arrives, asking to meditate in your garden. He says your coven chases power but misses truth.",
+      "choiceA": {
+        "label": "Meditate with him for three days",
+        "description": "+25% Faith, -8% Gold",
+        "effects": {
+          "faithPct": 0.25,
+          "goldPct": -0.08
+        }
+      },
+      "choiceB": {
+        "label": "Dismiss him as a fool",
+        "description": "+12% Faith",
+        "effects": {
+          "faithPct": 0.12
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_ninja_village",
+      "title": "A Hidden Village Revealed",
+      "narrative": "Your scouts discover a ninja village hidden in the mountain mist. They have been watching you for weeks.",
+      "choiceA": {
+        "label": "Propose an alliance",
+        "description": "+8 Followers, -20% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Demand their submission",
+        "description": "+22% Gold or -4 Followers",
+        "random": {
+          "winChance": 0.4,
+          "winMessage": "They submit rather than face your wrath. Their tribute is generous. +22% Gold.",
+          "lossMessage": "They vanish into the night, and four followers follow them. -4 Followers.",
+          "lossEffects": {
+            "followers": -4
+          },
+          "winEffects": {
+            "goldPct": 0.22
+          }
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_cursed_blade",
+      "title": "The Cursed Katana",
+      "narrative": "A traveling merchant offers a katana that hums with trapped spirits. He says it cuts through more than flesh.",
+      "choiceA": {
+        "label": "Buy and bind the blade-spirit",
+        "description": "+18% Faith, -20% Gold",
+        "effects": {
+          "faithPct": 0.18,
+          "goldPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Refuse and warn him away",
+        "description": "+10% Faith",
+        "effects": {
+          "faithPct": 0.1
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_tea_ceremony",
+      "title": "The Tea Ceremony",
+      "narrative": "A rival daimyo invites you to a tea ceremony. It is a trap — or a test. The line is razor-thin.",
+      "choiceA": {
+        "label": "Attend and demonstrate composure",
+        "description": "+20% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Send a proxy and stay safe",
+        "description": "+15% Gold",
+        "effects": {
+          "goldPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_ghost_army",
+      "title": "The Ghost Army",
+      "narrative": "On a foggy night, you hear the stamp of ten thousand phantom feet. The spirits of fallen samurai march past your walls.",
+      "choiceA": {
+        "label": "Join their march and absorb their spirit",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Ward your compound and let them pass",
+        "description": "+18% Faith",
+        "effects": {
+          "faithPct": 0.18
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_poison_garden",
+      "title": "The Poison Garden",
+      "narrative": "A monk offers seeds from a garden where every plant kills. He says the right poison is a medicine.",
+      "choiceA": {
+        "label": "Plant the garden and learn the arts",
+        "description": "+15% Faith, -5% Gold, +3 Followers",
+        "effects": {
+          "faithPct": 0.15,
+          "goldPct": -0.05,
+          "followers": 3
+        }
+      },
+      "choiceB": {
+        "label": "Burn the seeds",
+        "description": "+12% Faith",
+        "effects": {
+          "faithPct": 0.12
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_emperor_summon",
+      "title": "The Emperor's Summons",
+      "narrative": "A messenger in imperial livery arrives with a sealed scroll. The Emperor requests your presence at court.",
+      "choiceA": {
+        "label": "Attend and negotiate",
+        "description": "+25% Gold, -10% Faith",
+        "effects": {
+          "goldPct": 0.25,
+          "faithPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Ignore the summons",
+        "description": "+20% Faith, risk of -3 Followers",
+        "random": {
+          "winChance": 0.6,
+          "winMessage": "Your defiance inspires the people. +20% Faith.",
+          "lossMessage": "The Emperor's displeasure spreads doubt. -3 Followers.",
+          "lossEffects": {
+            "followers": -3
+          },
+          "winEffects": {
+            "faithPct": 0.2
+          }
+        }
+      }
+    },
+    {
+      "id": "takeda_ronin_cherry_blossom",
+      "title": "The Cherry Blossom Rite",
+      "narrative": "The cherry trees bloom across your territory. It is the season of renewal — and of dark rites performed beneath the petals.",
+      "choiceA": {
+        "label": "Perform the blossom rite",
+        "description": "+8 Followers, -15% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Meditate under the oldest tree",
+        "description": "+28% Faith",
+        "effects": {
+          "faithPct": 0.28
+        }
+      }
+    }
+  ]
+}
