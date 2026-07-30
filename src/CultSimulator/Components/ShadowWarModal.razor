@@ -1,5 +1,6 @@
 @using CultSimulator.Game
 @inject GameService Game
+@inject WorldLocationService LocationService
 @implements IDisposable
 
 @if (def != null && inst != null)
@@ -18,6 +19,14 @@
             </div>
 
             <p class="text-sm text-slate-400 mb-4">@def.Description</p>
+
+            @{ var covenCount = ShadowWarEngine.CovensInContinent(Game.State, LocationService, def.TerritoryId); var covenBonus = ShadowWarEngine.CovenContinentBonus(covenCount); }
+            @if (covenBonus > 0)
+            {
+                <div class="mb-3 p-2.5 rounded-[10px] text-xs" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(52,211,153,0.2);">
+                    <span class="text-emerald-300">🏰 Coven Support:</span> <span class="text-emerald-200">@covenCount covens in this region reduce detection and recon risk by @((int)(covenBonus * 100))%.</span>
+                </div>
+            }
 
             <div class="grid grid-cols-2 gap-2 mb-4">
                 <div class="p-2 rounded-[10px] flex items-center gap-2" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
@@ -127,6 +136,13 @@
                     Locked. Control prerequisite institutions to unlock.
                 </div>
             }
+
+            @if (!string.IsNullOrEmpty(lastMessage))
+            {
+                <div class="mt-3 p-3 rounded-[10px] text-sm @(lastMessageSuccess ? "text-emerald-300" : "text-rose-300")" style="background: @(lastMessageSuccess ? "rgba(16,185,129,0.1)" : "rgba(127,29,29,0.15)"); border: 1px solid @(lastMessageSuccess ? "rgba(52,211,153,0.2)" : "rgba(239,68,68,0.2)");">
+                    @lastMessage
+                </div>
+            }
         </div>
     </div>
 }
@@ -139,6 +155,7 @@
     private int waveSize = 3;
     private int defenderCount = 3;
     private string? lastMessage;
+    private bool lastMessageSuccess;
 
     private ShadowWarState sw => Game.ShadowWar;
     private InstitutionDef? def => ShadowWarData.Institution(InstitutionId);
@@ -161,6 +178,7 @@
     {
         var r = Game.StartRecon(InstitutionId, reconCount);
         lastMessage = r.message;
+        lastMessageSuccess = r.success;
         if (r.success) Close();
     }
 
@@ -168,18 +186,21 @@
     {
         var r = Game.SendInfiltrationWave(InstitutionId, waveSize);
         lastMessage = r.message;
+        lastMessageSuccess = r.success;
     }
 
     private void DoWithdraw()
     {
         var r = Game.WithdrawAgents(InstitutionId);
         lastMessage = r.message;
+        lastMessageSuccess = r.success;
     }
 
     private void DoDefend()
     {
         var r = Game.AssignDefenders(InstitutionId, defenderCount);
         lastMessage = r.message;
+        lastMessageSuccess = r.success;
     }
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;

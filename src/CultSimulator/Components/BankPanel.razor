@@ -81,7 +81,7 @@
             {
                 var continent = continentGroup.Key;
                 var theme = ContinentThemes.For(continent);
-                var allConverted = continentGroup.All(c => c.Converted);
+                var allConverted = IsContinentComplete(continent);
                 <div class="continent-group">
                     <div class="flex items-center gap-2 mb-2">
                         <span class="text-lg">@theme.Icon</span>
@@ -205,6 +205,9 @@
                 .ToList();
         }
     }
+
+    private bool IsContinentComplete(string continent) =>
+        CovenProgress.IsContinentComplete(Game.State, Locations.Locations, continent);
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
 
