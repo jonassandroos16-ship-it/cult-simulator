@@ -10,5 +10,177 @@
   "summary": "An agrarian spirit-guild who believed they were chosen at birth to battle malevolent sorcerers in the astral plane.",
   "lore": "The Benandanti were born with a caul (amniotic sac) over their heads—a sign they possessed innate spiritual powers. Four times a year, during the Ember Days, their souls were said to leave their sleeping bodies in the forms of small animals (cats, hares, or butterflies). They flew to distant spiritual battlefields to clash with the Malandanti (evil witches). The Benandanti fought with bundles of fennel, while the bad witches wielded sorghum brooms. If the Good Walkers won, the harvest was saved; if they lost, famine followed.",
   "followersRequired": 225,
-  "baseMultiplier": 1.5
+  "baseMultiplier": 1.5,
+  "events": [
+    {
+      "id": "friuli_ember_battle",
+      "title": "The Ember Days Battle",
+      "narrative": "The Ember Days fall. Tonight your souls must leave your bodies and fly to the astral battlefield to clash with the Malandanti for the fate of the harvest.",
+      "choiceA": {
+        "label": "March out with fennel bundles",
+        "description": "+150 Faith if you win, −6 Followers if you lose",
+        "random": {
+          "winChance": 0.55,
+          "winMessage": "The Malandanti break before your fennel. The harvest is saved, and word of the victory spreads. +150 Faith.",
+          "lossMessage": "The Malandanti's sorghum brooms scatter your walkers. Six souls do not return. −6 Followers.",
+          "lossEffects": { "followers": -6 }
+        }
+      },
+      "choiceB": {
+        "label": "Send only the elders and guard the young",
+        "description": "+60 Faith",
+        "effects": { "faith": 60 }
+      }
+    },
+    {
+      "id": "friuli_malandanti_raid",
+      "title": "The Malandanti Raid the Granaries",
+      "narrative": "In the night, the Malandanti stole into the granaries of Udine and carried off the seed grain. The villagers wake to empty stores and frightened whispers.",
+      "choiceA": {
+        "label": "Pursue them in spirit-form",
+        "description": "+120 Faith, −40 Gold",
+        "effects": { "faith": 120, "gold": -40 }
+      },
+      "choiceB": {
+        "label": "Replenish the grain from your own stores",
+        "description": "+5 Followers, −60 Gold",
+        "effects": { "followers": 5, "gold": -60 }
+      }
+    },
+    {
+      "id": "friuli_udine_rival",
+      "title": "The Udine Night-Walkers Challenge You",
+      "narrative": "The Night-Walkers of Udine claim the Ember battlefield is theirs by right of birth. They demand your walkers stand down or face them in the astral square.",
+      "choiceA": {
+        "label": "Accept the challenge and fly out tonight",
+        "description": "+150 Faith if you win, −5 Followers if you lose",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "You outflank the Udine walkers in the astral dusk. They yield the field and three of their number join you. +150 Faith.",
+          "lossMessage": "The Udine walkers are stronger than rumor said. Five of your own are lost in the astral dark. −5 Followers.",
+          "lossEffects": { "followers": -5 }
+        }
+      },
+      "choiceB": {
+        "label": "Ignore them and preach unity",
+        "description": "+4 Followers",
+        "effects": { "followers": 4 }
+      }
+    },
+    {
+      "id": "friuli_caul_child",
+      "title": "A Child Born with the Caul",
+      "narrative": "A farmwife gives birth to a son with the caul still over his face — the sign of the Benandanti. The whole village takes it as an omen and looks to you.",
+      "choiceA": {
+        "label": "Claim the child for the order",
+        "description": "+8 Followers, −100 Faith",
+        "effects": { "followers": 8, "faith": -100 }
+      },
+      "choiceB": {
+        "label": "Prophesy greatness over him",
+        "description": "+200 Faith",
+        "effects": { "faith": 200 }
+      }
+    },
+    {
+      "id": "friuli_gorizia_pass",
+      "title": "The Fennel-Bearers of Gorizia",
+      "narrative": "The borderland healers of Gorizia send word: Malandanti have been seen crossing the mountain passes with bundles of sorghum, heading for the lowland villages.",
+      "choiceA": {
+        "label": "Ride to reinforce the pass",
+        "description": "+90 Faith, −30 Gold",
+        "effects": { "faith": 90, "gold": -30 }
+      },
+      "choiceB": {
+        "label": "Warn the lowland villages to hide their grain",
+        "description": "+4 Followers",
+        "effects": { "followers": 4 }
+      }
+    },
+    {
+      "id": "friuli_trieste_storm",
+      "title": "The Caul-Born of Trieste",
+      "narrative": "The sea-witches of Trieste claim a storm is coming that only the caul-born can read. They offer to share the omen — for a price.",
+      "choiceA": {
+        "label": "Pay them and hear the omen",
+        "description": "+100 Faith, −80 Gold",
+        "effects": { "faith": 100, "gold": -80 }
+      },
+      "choiceB": {
+        "label": "Read the storm yourself",
+        "description": "+120 Faith if right, −4 Followers if wrong",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "Your reading proves true. The fleet is saved, and the caul-born of Trieste concede your power. +120 Faith.",
+          "lossMessage": "You misread the storm. Four boats are lost, and four families leave your order. −4 Followers.",
+          "lossEffects": { "followers": -4 }
+        }
+      }
+    },
+    {
+      "id": "friuli_inquisitor",
+      "title": "The Inquisitor from Rome",
+      "narrative": "A Church inquisitor arrives in Friuli, asking about 'those born with the caul who fly at night.' He is gentle in manner but relentless in questioning.",
+      "choiceA": {
+        "label": "Deny everything and hide the caul-children",
+        "description": "+60 Faith, −40 Gold",
+        "effects": { "faith": 60, "gold": -40 }
+      },
+      "choiceB": {
+        "label": "Convince him you are a force for good",
+        "description": "+100 Faith if he believes, −5 Followers if not",
+        "random": {
+          "winChance": 0.45,
+          "winMessage": "You speak of battling witches for the harvest. The inquisitor writes that you are misguided but not evil, and leaves. +100 Faith.",
+          "lossMessage": "He is not convinced. Five of your walkers are named in his report and must flee. −5 Followers.",
+          "lossEffects": { "followers": -5 }
+        }
+      }
+    },
+    {
+      "id": "friuli_hare_form",
+      "title": "The Hare That Would Not Change Back",
+      "narrative": "One of your walkers flew out as a hare and has not returned to his body by dawn. His wife weeps at his bedside; his breath stills.",
+      "choiceA": {
+        "label": "Fly out to find his wandering soul",
+        "description": "+150 Faith, −50 Gold",
+        "effects": { "faith": 150, "gold": -50 }
+      },
+      "choiceB": {
+        "label": "Declare him a martyr of the order",
+        "description": "+5 Followers",
+        "effects": { "followers": 5 }
+      }
+    },
+    {
+      "id": "friuli_noble_patron",
+      "title": "A Friulian Noble's Patronage",
+      "narrative": "A noblewoman from the foothills arrives with a heavy chest. 'My harvests have failed three years running. The priests cannot help me. Perhaps you can.'",
+      "choiceA": {
+        "label": "Accept her donation and bless her fields",
+        "description": "+120 Gold",
+        "effects": { "gold": 120 }
+      },
+      "choiceB": {
+        "label": "Convert her to the order",
+        "description": "+5 Followers, −40 Gold",
+        "effects": { "followers": 5, "gold": -40 }
+      }
+    },
+    {
+      "id": "friuli_famine_omen",
+      "title": "The Famine Omen",
+      "narrative": "The walkers return from the Ember battle pale and shaken. They say the Malandanti won this round, and the grain will fail before autumn.",
+      "choiceA": {
+        "label": "Ration the stores and preach endurance",
+        "description": "+200 Faith",
+        "effects": { "faith": 200 }
+      },
+      "choiceB": {
+        "label": "Raid the Malandanti's hidden granaries",
+        "description": "+8 Followers, −100 Faith",
+        "effects": { "followers": 8, "faith": -100 }
+      }
+    }
+  ]
 }
