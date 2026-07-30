@@ -432,13 +432,13 @@ public class CultGameTests
     public void LocalCultEngine_ConvertGivesRewardAndRemovesFromMap()
     {
         var s = NewState();
-        s.HomeCoven.Followers = 10;
+        s.HomeCoven.Followers = 100;
         LocalCultEngine.SpawnOne(s, "skanor");
         Assert.Single(s.ActiveLocalCults);
         var cultId = s.ActiveLocalCults[0].CultId;
         LocalCultEngine.Convert(s, cultId, LocalCultReward.Followers);
         Assert.Empty(s.ActiveLocalCults);
-        Assert.True(s.HomeCoven.Followers >= 10);
+        Assert.True(s.HomeCoven.Followers >= 100);
     }
 
     [Fact]
