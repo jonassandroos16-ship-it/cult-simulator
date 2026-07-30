@@ -229,6 +229,39 @@ public class GameService
     public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; NotifyChanged(); }
     public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
     public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
+
+    // ── Shadow War ──
+    public ShadowWarState ShadowWar => _state.ShadowWarOrInit;
+    public bool ShadowWarVictory => ShadowWar.VictoryAchieved;
+
+    public (bool success, string message) StartRecon(string institutionId, int agentCount)
+    {
+        var r = ShadowWarEngine.StartRecon(ShadowWar, _state, institutionId, agentCount);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) SendInfiltrationWave(string institutionId, int waveSize)
+    {
+        var r = ShadowWarEngine.SendInfiltrationWave(ShadowWar, _state, institutionId, waveSize);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) WithdrawAgents(string institutionId)
+    {
+        var r = ShadowWarEngine.WithdrawAgents(ShadowWar, institutionId);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) AssignDefenders(string institutionId, int count)
+    {
+        var r = ShadowWarEngine.AssignDefenders(ShadowWar, institutionId, count);
+        NotifyChanged();
+        return r;
+    }
+
     public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; PendingLocalCultId = null; SpawnedLocalCultId = null; await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
