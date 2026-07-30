@@ -121,6 +121,7 @@ public class GameService
 
     public double Preach() { var gained = GameEngine.Preach(_state); NotifyChanged(); return gained; }
     public void Recruit() { GameEngine.Recruit(_state.ActiveCoven); NotifyChanged(); }
+    public void RecruitMultiple(int max) { GameEngine.RecruitMultiple(_state.ActiveCoven, max); NotifyChanged(); }
     public void BuyBuilding(BuildingType type) { GameEngine.BuyBuilding(_state.ActiveCoven, type); NotifyChanged(); }
     public void BuyBank() { GameEngine.BuyBank(_state.ActiveCoven); NotifyChanged(); }
     public void BuyUpgrade(UpgradeId id) { GameEngine.BuyUpgrade(_state.ActiveCoven, id); NotifyChanged(); }

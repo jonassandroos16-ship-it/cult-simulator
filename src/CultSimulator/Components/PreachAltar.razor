@@ -36,6 +36,25 @@
         <span class="recruit-text">Recruit Follower</span>
         <span class="recruit-cost text-amber-400 font-semibold">@NumberFormat.Fmt(GameEngine.RecruitCostFor(Game.State)) ✨</span>
     </button>
+    <div class="recruit-batch-buttons flex items-center gap-1.5">
+        @foreach (var batch in new[] { (label: "1x", count: 1), (label: "5x", count: 5), (label: "10x", count: 10) })
+        {
+            <button class="recruit-batch-btn px-3 py-1.5 rounded-full font-body text-xs font-semibold cursor-pointer transition-all duration-200
+                          disabled:opacity-30 disabled:cursor-not-allowed"
+                    style="background: rgba(245,158,11,0.08); border: 1px solid var(--panel-border); color: var(--gold-pale);"
+                    disabled="@(activeCoven.Faith < BatchCost(batch.count))"
+                    @onclick="() => OnBatchRecruit(batch.count)">
+                @batch.label
+            </button>
+        }
+        <button class="recruit-batch-btn px-3 py-1.5 rounded-full font-body text-xs font-semibold cursor-pointer transition-all duration-200
+                      disabled:opacity-30 disabled:cursor-not-allowed"
+                style="background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);"
+                disabled="@(!GameEngine.CanRecruit(Game.State))"
+                @onclick="() => OnBatchRecruit(-1)">
+            Max
+        </button>
+    </div>
     <div class="p-3 rounded-[14px] text-xs text-slate-400 leading-relaxed max-w-md" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
         Click the altar to Preach and earn Faith. The faster you click, the brighter the altar glows. Use Faith to recruit followers, build constructions, and unlock upgrades. As your cult grows, visit the <strong class="text-violet-300">Sanctum</strong> to hire Acolytes and promote disciples, the <strong class="text-violet-300">Codex</strong> to research technologies, and the <strong class="text-violet-300">Ley Lines</strong> tab to conquer map nodes for materials and passive income.
     </div>
@@ -54,6 +73,7 @@
     private int _clickStreak;
 
     private double glowIntensity => Math.Min(_glowIntensity, 1.0);
+    private CovenState activeCoven => Game.State.ActiveCoven;
     private double glowSize => 10 + glowIntensity * 50;
     private double glowOpacity => 0.15 + glowIntensity * 0.5;
     private string glowColor => glowIntensity > 0.7 ? "rgba(245,158,11,0.8)" : "rgba(167,139,250,0.4)";
@@ -117,6 +137,28 @@
     private async Task OnRecruitClick()
     {
         Game.Recruit();
+        await OnRecruit.InvokeAsync();
+    }
+
+    private int BatchCost(int count)
+    {
+        int total = 0;
+        var tempFollowers = activeCoven.Followers;
+        var tempFaith = activeCoven.Faith;
+        for (int i = 0; i < count; i++)
+        {
+            var cost = GameEngine.RecruitCostFor(new CovenState { Followers = tempFollowers });
+            if (tempFaith < cost) break;
+            total += cost;
+            tempFaith -= cost;
+            tempFollowers++;
+        }
+        return total;
+    }
+
+    private async Task OnBatchRecruit(int count)
+    {
+        Game.RecruitMultiple(count);
         await OnRecruit.InvokeAsync();
     }
 

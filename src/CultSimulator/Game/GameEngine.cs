@@ -136,14 +136,27 @@ public static class GameEngine
 
     public static RankDef RankFor(int followers) { RankDef? current = null; foreach (var r in GameData.Ranks) if (followers >= r.MinFollowers) current = r; return current!; }
     public static RankDef? NextRank(int followers) { foreach (var r in GameData.Ranks) if (r.MinFollowers > followers) return r; return null; }
-    public static double RankProgress(CovenState s) { var c = RankFor(s.Followers); var n = NextRank(s.Followers); return n == null ? 1.0 : (double)(s.Followers - c.MinFollowers) / (n.MinFollowers - c.MinFollowers); }
+    public static double RankProgress(CovenState s) { var c = RankFor(s.Followers); var n = NextRank(s.Followers); if (n == null) return 1.0; double range = n.MinFollowers - c.MinFollowers; if (range <= 0) return 1.0; return Math.Clamp((double)(s.Followers - c.MinFollowers) / range, 0.0, 1.0); }
 
     public static RankDef RankFor(GameState s) => RankFor(CovenProgress.TotalFollowers(s));
     public static RankDef? NextRank(GameState s) => NextRank(CovenProgress.TotalFollowers(s));
-    public static double RankProgress(GameState s) { int total = CovenProgress.TotalFollowers(s); var c = RankFor(total); var n = NextRank(total); return n == null ? 1.0 : (double)(total - c.MinFollowers) / (n.MinFollowers - c.MinFollowers); }
+    public static double RankProgress(GameState s) { int total = CovenProgress.TotalFollowers(s); var c = RankFor(total); var n = NextRank(total); if (n == null) return 1.0; double range = n.MinFollowers - c.MinFollowers; if (range <= 0) return 1.0; return Math.Clamp((double)(total - c.MinFollowers) / range, 0.0, 1.0); }
 
     public static double Preach(CovenState s) { s.PreachCount++; var gained = PreachMultiplier(s); s.Faith += gained; return gained; }
     public static void Recruit(CovenState s) { if (!CanRecruit(s)) return; s.Faith -= RecruitCostFor(s); s.Followers++; }
+    public static int RecruitMultiple(CovenState s, int max)
+    {
+        if (max == 0) return 0;
+        int recruited = 0;
+        int limit = max < 0 ? int.MaxValue : max;
+        while (recruited < limit && CanRecruit(s))
+        {
+            s.Faith -= RecruitCostFor(s);
+            s.Followers++;
+            recruited++;
+        }
+        return recruited;
+    }
     public static void BuyBuilding(CovenState s, BuildingType type) { var def = GameData.Buildings.First(b => b.Type == type); int owned = s.Buildings.GetValueOrDefault(type); int cost = BuildingCost(def, owned); if (def.CostResource == ResourceKind.Faith) { if (s.Faith < cost) return; s.Faith -= cost; } else { if (s.Gold < cost) return; s.Gold -= cost; } s.Buildings[type] = owned + 1; }
     public static void BuyBank(CovenState s) { int owned = s.Buildings.GetValueOrDefault(BuildingType.Bank); int cost = BankBuildingCost(owned); if (s.Gold < cost) return; s.Gold -= cost; s.Buildings[BuildingType.Bank] = owned + 1; }
     public static void BuyUpgrade(CovenState s, UpgradeId id) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; s.Upgrades.Add(id); }
@@ -160,6 +173,7 @@ public static class GameEngine
     public static (double faith, double gold) TickIncome(GameState s) => TickIncome(s.ActiveCoven);
     public static double Preach(GameState s) { s.ActiveCoven.PreachCount++; var gained = PreachMultiplier(s); s.ActiveCoven.Faith += gained; return gained; }
     public static void Recruit(GameState s) => Recruit(s.ActiveCoven);
+    public static int RecruitMultiple(GameState s, int max) => RecruitMultiple(s.ActiveCoven, max);
     public static void BuyBuilding(GameState s, BuildingType type) => BuyBuilding(s.ActiveCoven, type);
     public static void BuyBank(GameState s) => BuyBank(s.ActiveCoven);
     public static void BuyUpgrade(GameState s, UpgradeId id) => BuyUpgrade(s.ActiveCoven, id);
