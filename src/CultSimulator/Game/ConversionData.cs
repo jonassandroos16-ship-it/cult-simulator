@@ -23,11 +23,11 @@ public static class ConversionData
     public static ConversionDef? Find(string covenId) =>
         All.FirstOrDefault(c => c.CovenId == covenId);
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     // La Recta Provincia — Chile, Chiloé Archipelago
     // Theme: Shadowy underground legal system, the Imbunche beast,
     //        secret grimoires, protection rackets, underground cave.
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef LaRectaProvincia => new(
         "la_recta_provincia",
         "The Shadow Tribunal of Chiloé",
@@ -124,11 +124,11 @@ public static class ConversionData
                 0.25, 0.4),
         });
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     // The Benandanti — Italy, Friuli
     // Theme: Spirit battles on the astral plane, born-with-caul,
     //        Ember Days, fennel vs sorghum, harvest protection.
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef Benandanti => new(
         "benandanti",
         "The Battle of the Ember Days",
@@ -227,11 +227,11 @@ public static class ConversionData
                 0.25, 0.5),
         });
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     // The Malkin Tower Coven — England, Lancashire, 1612
     // Theme: Pendle witch trials, rival families, cunning folk,
     //        Old Demdike, Roger Nowell the magistrate, the law.
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef MalkinTower => new(
         "malkin_tower_coven",
         "The Pendle Power Struggle",
@@ -321,11 +321,11 @@ public static class ConversionData
                 0.25, 0.5),
         });
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     // The North Berwick Coven — Scotland, 1590
     // Theme: Storm magic, sinking royal ships, King James VI,
     //        Agnes Sampson, the Auld Kirk, Daemonologie.
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef NorthBerwick => new(
         "north_berwick_coven",
         "The Storm Over the Forth",
@@ -415,11 +415,11 @@ public static class ConversionData
                 0.25, 0.45),
         });
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     // The Circle of La Cabotina — Italy, Triora, Liguria, 1587
     // Theme: Famine, shape-shifting, cavernous rock formation,
     //        mountain village, crop manipulation, the "Salem of Italy."
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef LaCabotina => new(
         "la_cabotina",
         "The Famine of Triora",
@@ -516,11 +516,11 @@ public static class ConversionData
                 0.25, 0.5),
         });
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     // The Ixchel Priestesses — Mexico, Cozumel, Maya
     // Theme: Goddess of medicine, midwifery, weaving, the moon,
     //        botanical healing, lunar rituals, syncretic brujería.
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef IxchelPriestesses => new(
         "ixchel_priestesses",
         "The Moon over Cozumel",
@@ -619,11 +619,11 @@ public static class ConversionData
                 0.25, 0.4),
         });
 
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     // The New Forest Coven — England, Hampshire, 1930s–40s
     // Theme: Modern Wiccan revival, Gerald Gardner, Old Dorothy,
     //        Operation Cone of Power, stopping Hitler psychically.
-    // ─────────────────────────────────────────────────────────────
+    // ─────────────────────────────────────────────────────────────────────────
     private static ConversionDef NewForest => new(
         "new_forest_coven",
         "The Cone of Power",
