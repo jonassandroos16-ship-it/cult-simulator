@@ -30,7 +30,7 @@ public static class OccultEngine
     public static bool BuySermonPower(GameState state) { int cost = SermonPowerUpgradeCost(state.Occult); if (state.ActiveCoven.Faith < cost) return false; state.ActiveCoven.Faith -= cost; state.Occult.SermonPowerLevel++; return true; }
 
     public static int AcolyteHireCost(GameState state) => (int)Math.Ceiling(OccultBalance.AcolyteCostBase * Math.Pow(OccultBalance.AcolyteCostGrowth, state.Occult.Acolytes));
-    public static bool CanHireAcolyte(GameState state) => state.ActiveCoven.Faith >= AcolyteHireCost(state) && state.Occult.Acolytes < CultistHierarchy.AcolyteCap(state.Occult);
+    public static bool CanHireAcolyte(GameState state) => state.ActiveCoven.Faith >= AcolyteHireCost(state) && state.Occult.Acolytes < CultistHierarchy.AcolyteCap(state.Occult, state.ActiveCoven);
     public static bool HireAcolyte(GameState state) { if (!CanHireAcolyte(state)) return false; state.ActiveCoven.Faith -= AcolyteHireCost(state); state.Occult.Acolytes++; return true; }
 
     public static double AcolyteFaithPerSec(GameState state) => AcolyteFaithPerSec(state.Occult, GrandSacrifice.GlobalProductionMult(state));
@@ -48,8 +48,6 @@ public static class OccultEngine
     public static double TotalFaithPerSec(GameState state)
     {
         var o = state.Occult;
-        // AcolyteFaithPerSec already includes GrandSacrifice.GlobalProductionMult
-        // via its internal globalMult parameter — don't multiply again.
         double total = AcolyteFaithPerSec(state);
         total *= WorldMapSystem.GreatSealMultiplier(o);
         return total;
@@ -85,7 +83,7 @@ public static class OccultEngine
         if (o.DarkVigilTimer > 0) o.DarkVigilTimer = Math.Max(0, o.DarkVigilTimer - deltaSec);
         if (o.WhisperChoirTimer > 0) o.WhisperChoirTimer = Math.Max(0, o.WhisperChoirTimer - deltaSec);
         if (o.CovenBlessingTimer > 0) o.CovenBlessingTimer = Math.Max(0, o.CovenBlessingTimer - deltaSec);
-        if (TechTree.HasTech(o, TechId.AutophagousCult)) { int cap = CultistHierarchy.AcolyteCap(o); if (o.Acolytes > cap) { int excess = o.Acolytes - cap; o.Acolytes = cap; state.ActiveCoven.Faith += excess * OccultBalance.SacrificeSermonMult * 0.5; } }
+        if (TechTree.HasTech(o, TechId.AutophagousCult)) { int cap = CultistHierarchy.AcolyteCap(o, state.ActiveCoven); if (o.Acolytes > cap) { int excess = o.Acolytes - cap; o.Acolytes = cap; state.ActiveCoven.Faith += excess * OccultBalance.SacrificeSermonMult * 0.5; } }
         if (WorldMapSystem.IsRaidTriggered(o) && !TechTree.HasTech(o, TechId.InquisitorsBlindfold)) WorldMapSystem.ApplyRaid(o);
     }
 
