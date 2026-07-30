@@ -10,7 +10,7 @@ public static class GrandSacrifice
         return Math.Floor(baseFavor * ContinentMultiplier(state) * TechTree.EldritchFavorContinentMult(o));
     }
 
-    public static double ContinentMultiplier(GameState state) => 1.0 + WorldMapSystem.ConqueredNodeCount(state.Occult) * 0.1;
+    public static double ContinentMultiplier(GameState state) => 1.0 + WorldMapSystem.ConqueredNodeCount(state) * 0.1;
     public static bool CanSacrifice(GameState state) => CalculateFavor(state) >= 1;
 
     public static double PerformSacrifice(GameState state)
