@@ -1,0 +1,250 @@
+{
+  "id": "guarani_shadows",
+  "name": "Guaraní Shadow Council",
+  "location": "Asunción",
+  "country": "Paraguay",
+  "countryFlag": "🇵🇾",
+  "era": "Present Day",
+  "continent": "south_america",
+  "latitude": -25.26,
+  "longitude": -57.58,
+  "summary": "An ancient council that has guided the Guaraní people from the shadows for centuries. Their word is law in the spiritual world.",
+  "lore": "The Guaraní Shadow Council predates the colonizers by a thousand years. They speak the first language of the land, and the land listens. To challenge them is to challenge the earth of South America itself.",
+  "followersRequired": 30000,
+  "baseMultiplier": 287.8,
+  "events": [
+    {
+      "id": "guarani_shadows_fog_archipelago",
+      "title": "The Fog of Chiloé",
+      "narrative": "A supernatural fog rolls in from the Pacific, thicker than any natural mist. Your followers can barely see their hands.",
+      "choiceA": {
+        "label": "Channel the fog's power",
+        "description": "+22% Faith",
+        "effects": {
+          "faithPct": 0.22
+        }
+      },
+      "choiceB": {
+        "label": "Light signal fires to guide the lost",
+        "description": "+5 Followers, -8% Gold",
+        "effects": {
+          "followers": 5,
+          "goldPct": -0.08
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_jungle_spirits",
+      "title": "The Jungle Speaks",
+      "narrative": "The rainforest around your territory begins to whisper at night. The spirits of the trees are testing your resolve.",
+      "choiceA": {
+        "label": "Listen and learn their language",
+        "description": "+25% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.25,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Assert dominance over the spirits",
+        "description": "+15% Faith or -4 Followers",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "The spirits submit to your will. +15% Faith.",
+          "lossMessage": "The jungle rejects your arrogance. Four followers are lost in the night. -4 Followers.",
+          "lossEffects": {
+            "followers": -4
+          },
+          "winEffects": {
+            "faithPct": 0.15
+          }
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_ancient_temple",
+      "title": "The Lost Temple",
+      "narrative": "Scouts discover an overgrown temple deep in the jungle. The carvings on its walls still glow faintly.",
+      "choiceA": {
+        "label": "Study the carvings and absorb their power",
+        "description": "+20% Faith, -12% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.12
+        }
+      },
+      "choiceB": {
+        "label": "Loot the temple's gold artifacts",
+        "description": "+25% Gold",
+        "effects": {
+          "goldPct": 0.25
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_river_spirits",
+      "title": "The River Turns Red",
+      "narrative": "The great river that feeds your territory turns blood-red for three days. The fish die. The people panic.",
+      "choiceA": {
+        "label": "Perform the purification rite",
+        "description": "+28% Faith",
+        "effects": {
+          "faithPct": 0.28
+        }
+      },
+      "choiceB": {
+        "label": "Harvest the red water for potions",
+        "description": "+18% Gold, -10% Faith",
+        "effects": {
+          "goldPct": 0.18,
+          "faithPct": -0.1
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_shaman_challenge",
+      "title": "The Rival Shaman",
+      "narrative": "A powerful shaman from a neighboring tribe challenges your spiritual authority before a council of elders.",
+      "choiceA": {
+        "label": "Accept the spiritual duel",
+        "description": "+30% Faith if you win, -5 Followers if you lose",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "Your magic overwhelms the shaman. The council bows to you. +30% Faith.",
+          "lossMessage": "The shaman's ancient craft is stronger. Five followers defect. -5 Followers.",
+          "lossEffects": {
+            "followers": -5
+          },
+          "winEffects": {
+            "faithPct": 0.3
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Offer an alliance instead",
+        "description": "+8 Followers, -15% Gold",
+        "effects": {
+          "followers": 8,
+          "goldPct": -0.15
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_jaguar_spirit",
+      "title": "The Jaguar Spirit",
+      "narrative": "A massive black jaguar appears at the edge of your territory. It sits and watches with intelligent eyes for three nights.",
+      "choiceA": {
+        "label": "Approach and offer a pact",
+        "description": "+10 Followers, -20% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Hunt it for its power",
+        "description": "+25% Faith or -6 Followers",
+        "random": {
+          "winChance": 0.35,
+          "winMessage": "You bind the jaguar's spirit! Its power courses through your coven. +25% Faith.",
+          "lossMessage": "The jaguar spirit is too powerful. Six followers are mauled. -6 Followers.",
+          "lossEffects": {
+            "followers": -6
+          },
+          "winEffects": {
+            "faithPct": 0.25
+          }
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_flood_season",
+      "title": "The Flood Season",
+      "narrative": "The seasonal floods rise higher than any in living memory. Your lowland shrines are threatened.",
+      "choiceA": {
+        "label": "Perform the water-command rite",
+        "description": "+22% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.22,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Relocate to higher ground",
+        "description": "+5 Followers, -15% Gold",
+        "effects": {
+          "followers": 5,
+          "goldPct": -0.15
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_cursed_idol",
+      "title": "The Cursed Idol",
+      "narrative": "A farmer plows up a golden idol with obsidian eyes. Everyone who touches it begins to dream of drowning.",
+      "choiceA": {
+        "label": "Bind the idol's spirit to your coven",
+        "description": "+18% Faith, -15% Gold",
+        "effects": {
+          "faithPct": 0.18,
+          "goldPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Bury it deep and ward the site",
+        "description": "+12% Faith",
+        "effects": {
+          "faithPct": 0.12
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_ancestor_council",
+      "title": "The Ancestor Council",
+      "narrative": "The spirits of a thousand generations gather in your dreams, demanding to know why you disturb their rest.",
+      "choiceA": {
+        "label": "Plead your case and offer tribute",
+        "description": "+20% Faith, -12% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.12
+        }
+      },
+      "choiceB": {
+        "label": "Assert your right by power",
+        "description": "+15% Faith or -5 Followers",
+        "random": {
+          "winChance": 0.45,
+          "winMessage": "The ancestors acknowledge your strength. +15% Faith.",
+          "lossMessage": "The ancestors curse your arrogance. Five followers sicken. -5 Followers.",
+          "lossEffects": {
+            "followers": -5
+          },
+          "winEffects": {
+            "faithPct": 0.15
+          }
+        }
+      }
+    },
+    {
+      "id": "guarani_shadows_eclipse_rite",
+      "title": "The Solar Eclipse",
+      "narrative": "A total eclipse darkens your territory. The old texts say this is the moment of greatest power.",
+      "choiceA": {
+        "label": "Perform the eclipse rite",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Meditate in the darkness",
+        "description": "+30% Faith",
+        "effects": {
+          "faithPct": 0.3
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,234 @@
+{
+  "id": "dreamtime_elders",
+  "name": "Dreamtime Elders",
+  "location": "Uluru",
+  "country": "Australia",
+  "countryFlag": "🇦🇺",
+  "era": "Pre-Colonial",
+  "continent": "oceania",
+  "latitude": -25.34,
+  "longitude": 131.03,
+  "summary": "Aboriginal elders who walk the Dreamtime — the reality beneath reality. Their magic is the oldest on earth.",
+  "lore": "The Dreamtime Elders do not cast spells; they rewrite the songlines that hold the world together. Uluru is their anchor, the navel of the world. Their magic predates every other tradition by tens of thousands of years.",
+  "followersRequired": 27000000,
+  "baseMultiplier": 283546.5,
+  "events": [
+    {
+      "id": "dreamtime_elders_dreamtime_walk",
+      "title": "The Dreamtime Walk",
+      "narrative": "An elder invites you to walk the Dreamtime — the reality beneath reality. The journey takes three days but no time at all.",
+      "choiceA": {
+        "label": "Walk the Dreamtime and return changed",
+        "description": "+28% Faith, -12% Gold",
+        "effects": {
+          "faithPct": 0.28,
+          "goldPct": -0.12
+        }
+      },
+      "choiceB": {
+        "label": "Refuse and stay in the waking world",
+        "description": "+15% Faith",
+        "effects": {
+          "faithPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_ocean_spirits",
+      "title": "The Ocean Spirits",
+      "narrative": "The sea around your territory begins to glow with bioluminescent patterns that form words in a language no human speaks.",
+      "choiceA": {
+        "label": "Read the words and respond",
+        "description": "+25% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.25,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Ignore the sea's message",
+        "description": "+15% Gold",
+        "effects": {
+          "goldPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_volcano_spirit",
+      "title": "The Volcano Spirit",
+      "narrative": "The dormant volcano on your island begins to smoke. The elders say the fire-spirit within is waking.",
+      "choiceA": {
+        "label": "Commune with the fire-spirit",
+        "description": "+20% Faith, -15% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Evacuate the island",
+        "description": "+8 Followers, -20% Gold",
+        "effects": {
+          "followers": 8,
+          "goldPct": -0.2
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_wayfinder_test",
+      "title": "The Wayfinder's Test",
+      "narrative": "A master wayfinder challenges you to navigate to a distant island using only the stars and the spirits.",
+      "choiceA": {
+        "label": "Accept the test",
+        "description": "+10 Followers or -4 Followers",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "You find the island and the wayfinder acknowledges you. +10 Followers.",
+          "lossMessage": "You are lost at sea for days. Four followers lose hope. -4 Followers.",
+          "lossEffects": {
+            "followers": -4
+          },
+          "winEffects": {
+            "followers": 10
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Decline and offer tribute instead",
+        "description": "+15% Gold, -8% Faith",
+        "effects": {
+          "goldPct": 0.15,
+          "faithPct": -0.08
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_taniwha",
+      "title": "The Taniwha",
+      "narrative": "A water-spirit from the deep river that feeds your territory surfaces and demands a sacrifice. It is old and hungry.",
+      "choiceA": {
+        "label": "Offer it a portion of your power",
+        "description": "+20% Faith, -15% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Fight the taniwha",
+        "description": "+25% Faith or -6 Followers",
+        "random": {
+          "winChance": 0.4,
+          "winMessage": "You drive the taniwha back into the deep! +25% Faith.",
+          "lossMessage": "The taniwha drags six followers into the river. -6 Followers.",
+          "lossEffects": {
+            "followers": -6
+          },
+          "winEffects": {
+            "faithPct": 0.25
+          }
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_songline",
+      "title": "The Broken Songline",
+      "narrative": "An ancient songline that crosses your territory has been disrupted. The land itself is sick because of it.",
+      "choiceA": {
+        "label": "Sing the songline whole again",
+        "description": "+28% Faith",
+        "effects": {
+          "faithPct": 0.28
+        }
+      },
+      "choiceB": {
+        "label": "Redirect the songline around your territory",
+        "description": "+18% Gold, -10% Faith",
+        "effects": {
+          "goldPct": 0.18,
+          "faithPct": -0.1
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_deep_one",
+      "title": "The Deep One Rises",
+      "narrative": "Something vast surfaces in the lagoon at midnight. It is not a whale. It is not a squid. It is something that should not be named.",
+      "choiceA": {
+        "label": "Commune with the deep one",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Ward the lagoon and drive it back",
+        "description": "+22% Faith",
+        "effects": {
+          "faithPct": 0.22
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_star_path",
+      "title": "The Star Path",
+      "narrative": "The wayfinders report that the star paths have shifted. A new route has opened to a place no chart records.",
+      "choiceA": {
+        "label": "Follow the new star path",
+        "description": "+8 Followers, -20% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Record the path and sell the knowledge",
+        "description": "+22% Gold",
+        "effects": {
+          "goldPct": 0.22
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_mask_spirit",
+      "title": "The Mask Spirit",
+      "narrative": "A carved mask in your possession begins to speak at night, claiming to be the spirit of a chief dead for a thousand years.",
+      "choiceA": {
+        "label": "Wear the mask and channel the chief",
+        "description": "+20% Faith, -12% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.12
+        }
+      },
+      "choiceB": {
+        "label": "Bury the mask with proper rites",
+        "description": "+15% Faith",
+        "effects": {
+          "faithPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "dreamtime_elders_final_eclipse",
+      "title": "The Final Eclipse",
+      "narrative": "The sun darkens for the last time. When it returns, the world will be different — or it will not return at all.",
+      "choiceA": {
+        "label": "Perform the final rite",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Guard the light and preserve it",
+        "description": "+30% Faith",
+        "effects": {
+          "faithPct": 0.3
+        }
+      }
+    }
+  ]
+}
