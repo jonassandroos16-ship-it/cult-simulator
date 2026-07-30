@@ -64,6 +64,19 @@ public static class GameEngine
         return (faith, gold);
     }
 
+    /// <summary>
+    /// The single source of truth for total per-second income across the
+    /// entire cult: all converted covens (followers + buildings) plus all
+    /// occult sources (acolytes, map nodes, scholars, infiltrators).
+    /// Use this everywhere a per-second rate is shown to the player.
+    /// </summary>
+    public static (double faith, double gold) TotalIncomePerSec(GameState state)
+    {
+        var (faith, gold) = TotalTickIncome(state);
+        faith += OccultEngine.TotalFaithPerSec(state) + OccultEngine.TotalMapFaithPerSec(state);
+        return (faith, gold);
+    }
+
     public static double IdleCapSeconds(CovenState s)
     {
         int bankLevel = s.Buildings.GetValueOrDefault(BuildingType.Bank);
@@ -96,7 +109,6 @@ public static class GameEngine
         if (elapsedSec <= 0) return (0, 0);
         double totalFaith = 0, totalGold = 0;
 
-        // Per-coven follower/building income (applies to all converted covens)
         foreach (var coven in state.Covens)
         {
             if (!coven.TakenOver) continue;
@@ -108,8 +120,6 @@ public static class GameEngine
             totalFaith += f; totalGold += g;
         }
 
-        // Occult income (acolytes, map nodes, scholars) — all goes to the
-        // active coven. Uses the same idle cap as the active coven's bank.
         double occultCap = IdleCapSeconds(state.ActiveCoven);
         double occultEff = Math.Min(elapsedSec, occultCap);
         double occultFaith = (OccultEngine.TotalFaithPerSec(state) + OccultEngine.TotalMapFaithPerSec(state)) * occultEff;

@@ -166,7 +166,7 @@
 
 @code {
     private CovenState activeCoven => Game.State.ActiveCoven;
-    private (double faith, double gold) totalIncome => GameEngine.TotalTickIncome(Game.State);
+    private (double faith, double gold) totalIncome => GameEngine.TotalIncomePerSec(Game.State);
     private int bankOwned => activeCoven.Buildings.GetValueOrDefault(BuildingType.Bank);
     private int bankCost => GameEngine.BankBuildingCost(bankOwned);
     private bool bankMaxed => bankOwned >= GameBalance.BankCapHours.Length;
