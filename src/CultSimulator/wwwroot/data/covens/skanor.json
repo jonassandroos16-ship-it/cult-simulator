@@ -18,13 +18,13 @@
       "narrative": "The herring vanish from the Öresund overnight. Skanör's fishers gather at the shore, muttering that the old sea-spirits have been offended. They look to you for an answer.",
       "choiceA": {
         "label": "Bless the nets at dawn",
-        "description": "+40 Faith, −15 Gold",
-        "effects": { "faith": 40, "gold": -15 }
+        "description": "+15% Faith, −8% Gold",
+        "effects": { "faithPct": 0.15, "goldPct": -0.08 }
       },
       "choiceB": {
         "label": "Demand a tithe for intercession",
-        "description": "+60 Gold, −10 Faith",
-        "effects": { "gold": 60, "faith": -10 }
+        "description": "+20% Gold, −5% Faith",
+        "effects": { "goldPct": 0.20, "faithPct": -0.05 }
       }
     },
     {
@@ -33,13 +33,13 @@
       "narrative": "On a moonless night, pale lights drift across the water from the Danish shore. The elders swear they are the souls of drowned medieval merchants, still seeking harbor.",
       "choiceA": {
         "label": "Sing them to rest",
-        "description": "+80 Faith",
-        "effects": { "faith": 80 }
+        "description": "+20% Faith",
+        "effects": { "faithPct": 0.20 }
       },
       "choiceB": {
         "label": "Loot the wrecks they reveal",
-        "description": "+90 Gold",
-        "effects": { "gold": 90 }
+        "description": "+20% Gold",
+        "effects": { "goldPct": 0.20 }
       }
     },
     {
@@ -48,8 +48,8 @@
       "narrative": "Word reaches Skanör that the renegade scholars of Lund are preaching against your order from the cathedral steps, calling your rites 'fishing-village superstition.'",
       "choiceA": {
         "label": "Outshine their sermon with a rite on the beach",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+25% Faith, −10% Gold",
+        "effects": { "faithPct": 0.25, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Send converts to quietly grow in Lund",
@@ -63,8 +63,8 @@
       "narrative": "Your coven's chalk sigils keep appearing, scraped off and replaced with the Malmö circle's chaos-rune. Someone is poaching your territory across the bridge.",
       "choiceA": {
         "label": "Ward the sigils with salt and bone",
-        "description": "+60 Faith, −20 Gold",
-        "effects": { "faith": 60, "gold": -20 }
+        "description": "+15% Faith, −10% Gold",
+        "effects": { "faithPct": 0.15, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Confront them in their basement club",
@@ -83,13 +83,13 @@
       "narrative": "Fishers from Falsterbo report that the seals have stopped answering their old calls. They believe the seal-spirits have taken offense and beg your coven to intercede.",
       "choiceA": {
         "label": "Perform the old reconciliation rite",
-        "description": "+70 Faith, +2 Followers",
-        "effects": { "faith": 70, "followers": 2 }
+        "description": "+18% Faith, +2 Followers",
+        "effects": { "faithPct": 0.18, "followers": 2 }
       },
       "choiceB": {
         "label": "Charge the fishers for the rite",
-        "description": "+75 Gold",
-        "effects": { "gold": 75 }
+        "description": "+18% Gold",
+        "effects": { "goldPct": 0.18 }
       }
     },
     {
@@ -98,18 +98,18 @@
       "narrative": "An old woman who salts fish by the jetty claims to dream true. She says a storm will sink three boats unless your coven acts. The fishers are divided on whether she's a prophet or a fraud.",
       "choiceA": {
         "label": "Heed her warning and bless the fleet",
-        "description": "+100 Faith if true, −4 Followers if false",
+        "description": "+25% Faith if true, −4 Followers if false",
         "random": {
           "winChance": 0.6,
-          "winMessage": "The storm comes as she foretold. The blessed boats ride it out; the unblessed sink. Word of your power spreads. +100 Faith.",
+          "winMessage": "The storm comes as she foretold. The blessed boats ride it out; the unblessed sink. Word of your power spreads. +25% Faith.",
           "lossMessage": "The sky stays clear. The fishers mock your wasted rite, and four followers drift away. −4 Followers.",
           "lossEffects": { "followers": -4 }
         }
       },
       "choiceB": {
         "label": "Ignore her and preach confidence",
-        "description": "+50 Faith",
-        "effects": { "faith": 50 }
+        "description": "+12% Faith",
+        "effects": { "faithPct": 0.12 }
       }
     },
     {
@@ -118,18 +118,18 @@
       "narrative": "The parish priest notices your gatherings and denounces you from the pulpit, calling your order 'a return to heathen darkness.' The congregation is restless.",
       "choiceA": {
         "label": "Debate him publicly in the square",
-        "description": "+120 Faith if you win, −5 Followers if you lose",
+        "description": "+25% Faith if you win, −5 Followers if you lose",
         "random": {
           "winChance": 0.5,
-          "winMessage": "You dismantle his arguments before the crowd. The faithful cheer, and the priest retreats in silence. +120 Faith.",
+          "winMessage": "You dismantle his arguments before the crowd. The faithful cheer, and the priest retreats in silence. +25% Faith.",
           "lossMessage": "His words cut deep. Doubt spreads, and five followers drift away. −5 Followers.",
           "lossEffects": { "followers": -5 }
         }
       },
       "choiceB": {
         "label": "Perform a quiet miracle at the harbor",
-        "description": "+70 Faith, −30 Gold",
-        "effects": { "faith": 70, "gold": -30 }
+        "description": "+18% Faith, −12% Gold",
+        "effects": { "faithPct": 0.18, "goldPct": -0.12 }
       }
     },
     {
@@ -138,13 +138,13 @@
       "narrative": "A trader from across the Baltic lands at the old harbor with a chest of amber and a hunger for belonging. 'I have sailed far seeking something real,' he says.",
       "choiceA": {
         "label": "Welcome him into the fold",
-        "description": "+3 Followers, −20 Faith",
-        "effects": { "followers": 3, "faith": -20 }
+        "description": "+3 Followers, −8% Faith",
+        "effects": { "followers": 3, "faithPct": -0.08 }
       },
       "choiceB": {
         "label": "Take his amber and send him off",
-        "description": "+120 Gold",
-        "effects": { "gold": 120 }
+        "description": "+22% Gold",
+        "effects": { "goldPct": 0.22 }
       }
     },
     {
@@ -153,13 +153,13 @@
       "narrative": "The winter solstice falls over the village. The longest night. Your followers gather around a bonfire on the frozen beach, hungry for a sign.",
       "choiceA": {
         "label": "Perform the fire rite",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −20% Faith",
+        "effects": { "followers": 8, "faithPct": -0.20 }
       },
       "choiceB": {
         "label": "Prophesy the returning sun",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+28% Faith",
+        "effects": { "faithPct": 0.28 }
       }
     },
     {
@@ -168,13 +168,13 @@
       "narrative": "A young fisher is pulled from the freezing water, barely alive. He babbles of a city of lights beneath the waves and a voice that offered him a bargain. He asks your coven what it means.",
       "choiceA": {
         "label": "Interpret it as a calling",
-        "description": "+5 Followers, −40 Faith",
-        "effects": { "followers": 5, "faith": -40 }
+        "description": "+5 Followers, −12% Faith",
+        "effects": { "followers": 5, "faithPct": -0.12 }
       },
       "choiceB": {
         "label": "Sell the interpretation to his family",
-        "description": "+80 Gold",
-        "effects": { "gold": 80 }
+        "description": "+18% Gold",
+        "effects": { "goldPct": 0.18 }
       }
     }
   ]
