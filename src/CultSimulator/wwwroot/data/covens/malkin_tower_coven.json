@@ -18,18 +18,18 @@
       "narrative": "It is Good Friday. The families gather at Malkin Tower for the feast — but this year, Roger Nowell's men are said to be watching the roads.",
       "choiceA": {
         "label": "Hold the gathering anyway",
-        "description": "+150 Faith if undiscovered, −6 Followers if raided",
+        "description": "+25% Faith if undiscovered, −6 Followers if raided",
         "random": {
           "winChance": 0.5,
-          "winMessage": "The gathering passes undisturbed. The families leave strengthened and loyal. +150 Faith.",
+          "winMessage": "The gathering passes undisturbed. The families leave strengthened and loyal. +25% Faith.",
           "lossMessage": "Nowell's men raid the tower. Six of your number are taken in chains. −6 Followers.",
           "lossEffects": { "followers": -6 }
         }
       },
       "choiceB": {
         "label": "Scatter the gathering and meet in secret",
-        "description": "+60 Faith",
-        "effects": { "faith": 60 }
+        "description": "+12% Faith",
+        "effects": { "faithPct": 0.12 }
       }
     },
     {
@@ -38,8 +38,8 @@
       "narrative": "The cunning-folk of Burnley have been selling charms at your market stalls and hexing any who refuse them. They claim the Pendle slopes are theirs now.",
       "choiceA": {
         "label": "Outshine them with a public rite on the hill",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+25% Faith, −12% Gold",
+        "effects": { "faithPct": 0.25, "goldPct": -0.12 }
       },
       "choiceB": {
         "label": "Undercut their charm trade",
@@ -53,8 +53,8 @@
       "narrative": "Word comes from Colne: the hedge-witches there have bound a new familiar — a great black dog that frightens cattle and children alike. They dare you to match them.",
       "choiceA": {
         "label": "Bind your own familiar in answer",
-        "description": "+120 Faith, −40 Gold",
-        "effects": { "faith": 120, "gold": -40 }
+        "description": "+22% Faith, −10% Gold",
+        "effects": { "faithPct": 0.22, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Ignore them and grow quietly",
@@ -68,18 +68,18 @@
       "narrative": "The castle-town alchemists of Clitheroe send a sealed letter: they have refined a lead-to-gold process and will share it — for a contribution to their work.",
       "choiceA": {
         "label": "Fund their work",
-        "description": "+150 Gold if it succeeds, −60 Gold if it fails",
+        "description": "+25% Gold if it succeeds, −12% Gold if it fails",
         "random": {
           "winChance": 0.5,
-          "winMessage": "The transmutation holds. You receive a share of true gold. +150 Gold.",
-          "lossMessage": "The process collapses in smoke and lead. You lose your investment. −60 Gold.",
-          "lossEffects": { "gold": -60 }
+          "winMessage": "The transmutation holds. You receive a share of true gold. +25% Gold.",
+          "lossMessage": "The process collapses in smoke and lead. You lose your investment. −12% Gold.",
+          "lossEffects": { "goldPct": -0.12 }
         }
       },
       "choiceB": {
         "label": "Steal their formula by cunning",
-        "description": "+80 Gold",
-        "effects": { "gold": 80 }
+        "description": "+18% Gold",
+        "effects": { "goldPct": 0.18 }
       }
     },
     {
@@ -88,13 +88,13 @@
       "narrative": "Old Demdike wakes from a fever-dream, wild-eyed. She swears she saw Lancaster Castle in flames and your matriarchs walking free. The coven buzzes with hope.",
       "choiceA": {
         "label": "Prophesy the vision to the coven",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+28% Faith",
+        "effects": { "faithPct": 0.28 }
       },
       "choiceB": {
         "label": "Act on it and plan a liberation",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −20% Faith",
+        "effects": { "followers": 8, "faithPct": -0.20 }
       }
     },
     {
@@ -103,18 +103,18 @@
       "narrative": "A young woman in the coven is seen slipping notes to a stranger in Colne. You suspect she carries words to Roger Nowell, the magistrate.",
       "choiceA": {
         "label": "Confront her before the coven",
-        "description": "+100 Faith if loyal, −5 Followers if she flees",
+        "description": "+20% Faith if loyal, −5 Followers if she flees",
         "random": {
           "winChance": 0.55,
-          "winMessage": "She breaks down and confesses. The coven binds her to silence, and your standing rises. +100 Faith.",
+          "winMessage": "She breaks down and confesses. The coven binds her to silence, and your standing rises. +20% Faith.",
           "lossMessage": "She flees in the night to Nowell, carrying names. Five followers must scatter. −5 Followers.",
           "lossEffects": { "followers": -5 }
         }
       },
       "choiceB": {
         "label": "Feed her false information",
-        "description": "+90 Faith",
-        "effects": { "faith": 90 }
+        "description": "+18% Faith",
+        "effects": { "faithPct": 0.18 }
       }
     },
     {
@@ -123,13 +123,13 @@
       "narrative": "A huge black dog is seen on the moor at dusk, eyes like embers. The villagers say it is a familiar gone rogue, killing sheep and stalking the lonely roads.",
       "choiceA": {
         "label": "Bind it back into service",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −20% Faith",
+        "effects": { "followers": 8, "faithPct": -0.20 }
       },
       "choiceB": {
         "label": "Banish it from the moor",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+25% Faith, −12% Gold",
+        "effects": { "faithPct": 0.25, "goldPct": -0.12 }
       }
     },
     {
@@ -148,8 +148,8 @@
       },
       "choiceB": {
         "label": "Preach patience instead",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+28% Faith",
+        "effects": { "faithPct": 0.28 }
       }
     },
     {
@@ -158,13 +158,13 @@
       "narrative": "Your cunning-folk have cornered the charm trade at Colne market. Cures, hexes, and love-charms sell faster than you can make them. Coin flows in.",
       "choiceA": {
         "label": "Reinvest the profits in the coven",
-        "description": "+5 Followers, −40 Gold",
-        "effects": { "followers": 5, "gold": -40 }
+        "description": "+5 Followers, −10% Gold",
+        "effects": { "followers": 5, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Pocket the profits",
-        "description": "+120 Gold",
-        "effects": { "gold": 120 }
+        "description": "+22% Gold",
+        "effects": { "goldPct": 0.22 }
       }
     },
     {
@@ -173,13 +173,13 @@
       "narrative": "A gaunt man with a satchel of herbs arrives at Malkin Tower, soaked from the moor rain. 'I have walked from York. I can heal any ailment but my own loneliness. I seek a people.'",
       "choiceA": {
         "label": "Welcome him into the fold",
-        "description": "+3 Followers, −20 Faith",
-        "effects": { "followers": 3, "faith": -20 }
+        "description": "+3 Followers, −8% Faith",
+        "effects": { "followers": 3, "faithPct": -0.08 }
       },
       "choiceB": {
         "label": "Buy his herbs and send him on",
-        "description": "+50 Gold",
-        "effects": { "gold": 50 }
+        "description": "+12% Gold",
+        "effects": { "goldPct": 0.12 }
       }
     }
   ]
