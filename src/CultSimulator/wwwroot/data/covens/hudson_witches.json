@@ -1,0 +1,225 @@
+{
+  "id": "hudson_witches",
+  "name": "Hudson Witches",
+  "location": "Hudson Valley, New York",
+  "country": "United States",
+  "countryFlag": "🇺🇸",
+  "era": "Present Day",
+  "continent": "north_america",
+  "latitude": 41.7,
+  "longitude": -73.92,
+  "summary": "An old-money coven in the Hudson Valley whose estates predate the Revolution. Their power is generational and patient.",
+  "lore": "The Hudson Valley covens trace their lineage to the Dutch colonists who brought old world magic to the new. Their estates hide cellars older than the nation, and the things in those cellars are patient.",
+  "followersRequired": 2700,
+  "baseMultiplier": 25.3,
+  "events": [
+    {
+      "id": "hudson_witches_tourist_wave",
+      "title": "The Tourist Wave",
+      "narrative": "Witch tourism season brings a flood of visitors to Salem. Some are curious; some are searching; some are dangerous.",
+      "choiceA": {
+        "label": "Convert the seekers",
+        "description": "+6 Followers, -10% Faith",
+        "effects": {
+          "followers": 6,
+          "faithPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Sell them overpriced charms",
+        "description": "+22% Gold",
+        "effects": {
+          "goldPct": 0.22
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_dark_web",
+      "title": "The Dark Web",
+      "narrative": "A contact on the dark web offers to sell you a grimoire scanned from a restricted Vatican archive.",
+      "choiceA": {
+        "label": "Buy the digital grimoire",
+        "description": "+20% Faith, -15% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Report the seller to maintain cover",
+        "description": "+10% Faith",
+        "effects": {
+          "faithPct": 0.1
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_investor_pitch",
+      "title": "The Investor Pitch",
+      "narrative": "A venture capitalist offers funding for your 'wellness brand' — a front for the coven. She wants 20% and a seat on the board.",
+      "choiceA": {
+        "label": "Take the money and maintain control",
+        "description": "+25% Gold, -10% Faith",
+        "effects": {
+          "goldPct": 0.25,
+          "faithPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Convert her instead",
+        "description": "+5 Followers, -8% Gold",
+        "effects": {
+          "followers": 5,
+          "goldPct": -0.08
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_ghost_hunters",
+      "title": "The Ghost Hunters",
+      "narrative": "A reality TV crew arrives to film 'paranormal activity' in your territory. They have real equipment and no fear.",
+      "choiceA": {
+        "label": "Let them film and subtly feed them scares",
+        "description": "+18% Gold",
+        "effects": {
+          "goldPct": 0.18
+        }
+      },
+      "choiceB": {
+        "label": "Ward the area and scare them off",
+        "description": "+15% Faith",
+        "effects": {
+          "faithPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_fbi_investigation",
+      "title": "The FBI Investigation",
+      "narrative": "An agent starts asking questions about your organization. She is smart, persistent, and dangerously close to the truth.",
+      "choiceA": {
+        "label": "Feed her a convincing cover story",
+        "description": "+12% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.12,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Use magic to redirect her attention",
+        "description": "+20% Faith or -4 Followers",
+        "random": {
+          "winChance": 0.55,
+          "winMessage": "Your ward works. She loses interest and moves on. +20% Faith.",
+          "lossMessage": "She senses the magic and redoubles her efforts. Four followers panic and leave. -4 Followers.",
+          "lossEffects": {
+            "followers": -4
+          },
+          "winEffects": {
+            "faithPct": 0.2
+          }
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_hurricane",
+      "title": "The Hurricane",
+      "narrative": "A massive storm bears down on your territory. Your followers look to you for protection.",
+      "choiceA": {
+        "label": "Perform a warding rite",
+        "description": "+25% Faith, -12% Gold",
+        "effects": {
+          "faithPct": 0.25,
+          "goldPct": -0.12
+        }
+      },
+      "choiceB": {
+        "label": "Evacuate and save resources",
+        "description": "+15% Gold",
+        "effects": {
+          "goldPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_crypto_coven",
+      "title": "The Crypto Coven",
+      "narrative": "A group of crypto-wealthy occultists offers to fund your coven with cryptocurrency — if you perform a ritual to bless their tokens.",
+      "choiceA": {
+        "label": "Bless their tokens",
+        "description": "+30% Gold, -15% Faith",
+        "effects": {
+          "goldPct": 0.3,
+          "faithPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Refuse and keep your integrity",
+        "description": "+18% Faith",
+        "effects": {
+          "faithPct": 0.18
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_old_house",
+      "title": "The Old House",
+      "narrative": "A member discovers a 200-year-old house on their property with a sealed cellar. Something is breathing inside.",
+      "choiceA": {
+        "label": "Break the seal and claim what's within",
+        "description": "+8 Followers, -20% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Ward the house and leave it sealed",
+        "description": "+22% Faith",
+        "effects": {
+          "faithPct": 0.22
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_social_media",
+      "title": "The Viral Video",
+      "narrative": "A follower posts a video of your ritual that goes viral. Millions of views overnight — and not all viewers are human.",
+      "choiceA": {
+        "label": "Lean into the publicity",
+        "description": "+10 Followers, -15% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Scrub the video and go dark",
+        "description": "+15% Faith",
+        "effects": {
+          "faithPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "hudson_witches_winter_blackout",
+      "title": "The Winter Blackout",
+      "narrative": "A massive blackout plunges your territory into darkness for three days. Your followers huddle in candlelight.",
+      "choiceA": {
+        "label": "Perform the darkness rite",
+        "description": "+28% Faith",
+        "effects": {
+          "faithPct": 0.28
+        }
+      },
+      "choiceB": {
+        "label": "Organize mutual aid and build loyalty",
+        "description": "+6 Followers, -10% Gold",
+        "effects": {
+          "followers": 6,
+          "goldPct": -0.1
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,241 @@
+{
+  "id": "hedeby_vikings",
+  "name": "Hedeby Raiders",
+  "location": "Hedeby",
+  "country": "Denmark",
+  "countryFlag": "🇩🇰",
+  "era": "Viking Age",
+  "continent": "europe",
+  "latitude": 54.5,
+  "longitude": 9.56,
+  "summary": "A thriving Viking trading port on the Schlei fjord. The raiders here have grown rich on plunder and dark bargains.",
+  "lore": "Hedeby's longships carried more than amber and fur. The raiders who gather here have seen things beyond the horizon — things that follow them home. Their coven is built on fear and tribute.",
+  "followersRequired": 80,
+  "baseMultiplier": 2.25,
+  "events": [
+    {
+      "id": "hedeby_vikings_herring_omens",
+      "title": "The Herring Run Fails",
+      "narrative": "The herring vanish from the Öresund overnight. Fishers gather at the shore, muttering that the old sea-spirits have been offended.",
+      "choiceA": {
+        "label": "Bless the nets at dawn",
+        "description": "+15% Faith, -8% Gold",
+        "effects": {
+          "faithPct": 0.15,
+          "goldPct": -0.08
+        }
+      },
+      "choiceB": {
+        "label": "Demand a tithe for intercession",
+        "description": "+20% Gold, -5% Faith",
+        "effects": {
+          "goldPct": 0.2,
+          "faithPct": -0.05
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_runestone_omen",
+      "title": "A Runestone Weeps Blood",
+      "narrative": "An ancient runestone near your village begins to weep red sap. The elders say it is a warning from the old gods.",
+      "choiceA": {
+        "label": "Read the runes and heed the warning",
+        "description": "+25% Faith",
+        "effects": {
+          "faithPct": 0.25
+        }
+      },
+      "choiceB": {
+        "label": "Chip the stone for amulets to sell",
+        "description": "+20% Gold",
+        "effects": {
+          "goldPct": 0.2
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_frost_giant",
+      "title": "A Frost Giant Stirs",
+      "narrative": "The earth trembles and a vast shape moves in the blizzard. The skalds say a frost giant walks again.",
+      "choiceA": {
+        "label": "Challenge it with your warband",
+        "description": "+8 Followers or -5 Followers",
+        "random": {
+          "winChance": 0.4,
+          "winMessage": "Your warband drives the giant back into the ice! +8 Followers.",
+          "lossMessage": "The giant scatters your warriors. -5 Followers.",
+          "lossEffects": {
+            "followers": -5
+          },
+          "winEffects": {
+            "followers": 8
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Offer it tribute to pass",
+        "description": "-15% Gold, +10% Faith",
+        "effects": {
+          "goldPct": -0.15,
+          "faithPct": 0.1
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_valkyrie_vision",
+      "title": "A Valkyrie Appears",
+      "narrative": "A winged woman lands on the cliff above your village, her armor gleaming. She studies your followers with cold eyes.",
+      "choiceA": {
+        "label": "Ask her to bless your warriors",
+        "description": "+20% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Offer her a seat at your fire",
+        "description": "+5 Followers",
+        "effects": {
+          "followers": 5
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_longship_raiders",
+      "title": "Longship Raiders Approach",
+      "narrative": "A dragon-prowed longship appears on the horizon. They are raiders — or perhaps recruits.",
+      "choiceA": {
+        "label": "Raid them first",
+        "description": "+25% Gold or -4 Followers",
+        "random": {
+          "winChance": 0.55,
+          "winMessage": "You strike before they land! Their silver is yours. +25% Gold.",
+          "lossMessage": "They were ready. Your raid fails and followers scatter. -4 Followers.",
+          "lossEffects": {
+            "followers": -4
+          },
+          "winEffects": {
+            "goldPct": 0.25
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Parley and offer them a place",
+        "description": "+6 Followers, -12% Faith",
+        "effects": {
+          "followers": 6,
+          "faithPct": -0.12
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_winter_solstice",
+      "title": "The Long Night",
+      "narrative": "The winter solstice falls over your village. The longest night. Your followers gather around a bonfire on the frozen beach.",
+      "choiceA": {
+        "label": "Perform the fire rite",
+        "description": "+8 Followers, -20% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Prophesy the returning sun",
+        "description": "+28% Faith",
+        "effects": {
+          "faithPct": 0.28
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_berserker_challenge",
+      "title": "A Berserker Demands Trial",
+      "narrative": "A massive berserker arrives, challenging your authority. His eyes are already turning white with the bear-spirit.",
+      "choiceA": {
+        "label": "Fight him in single combat",
+        "description": "+30% Faith if you win, -6 Followers if you lose",
+        "random": {
+          "winChance": 0.45,
+          "winMessage": "You strike the berserker down! The crowd roars your name. +30% Faith.",
+          "lossMessage": "The berserker's fury is too great. Six followers leave in disgust. -6 Followers.",
+          "lossEffects": {
+            "followers": -6
+          },
+          "winEffects": {
+            "faithPct": 0.3
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Offer him a place as your champion",
+        "description": "+4 Followers, -15% Gold",
+        "effects": {
+          "followers": 4,
+          "goldPct": -0.15
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_seidr_witch",
+      "title": "A Seiðr Witch Arrives",
+      "narrative": "An old woman with one eye arrives at your village, claiming to walk between worlds. She offers to teach your coven the old ways.",
+      "choiceA": {
+        "label": "Accept her teaching",
+        "description": "+18% Faith, -5% Gold",
+        "effects": {
+          "faithPct": 0.18,
+          "goldPct": -0.05
+        }
+      },
+      "choiceB": {
+        "label": "Turn her away and keep your ways pure",
+        "description": "+10% Faith",
+        "effects": {
+          "faithPct": 0.1
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_odin_raven",
+      "title": "Odin's Raven Watches",
+      "narrative": "A great raven perches on the roof of your hall for three days. It does not eat, drink, or sleep. It only watches.",
+      "choiceA": {
+        "label": "Interpret it as Odin's blessing",
+        "description": "+22% Faith",
+        "effects": {
+          "faithPct": 0.22
+        }
+      },
+      "choiceB": {
+        "label": "Capture it and use its feathers for charms",
+        "description": "+18% Gold, -8% Faith",
+        "effects": {
+          "goldPct": 0.18,
+          "faithPct": -0.08
+        }
+      }
+    },
+    {
+      "id": "hedeby_vikings_drowning_vision",
+      "title": "A Drowning in the Sound",
+      "narrative": "A young fisher is pulled from the freezing water, barely alive. He babbles of a city of lights beneath the waves.",
+      "choiceA": {
+        "label": "Interpret it as a calling",
+        "description": "+5 Followers, -12% Faith",
+        "effects": {
+          "followers": 5,
+          "faithPct": -0.12
+        }
+      },
+      "choiceB": {
+        "label": "Sell the interpretation to his family",
+        "description": "+18% Gold",
+        "effects": {
+          "goldPct": 0.18
+        }
+      }
+    }
+  ]
+}
