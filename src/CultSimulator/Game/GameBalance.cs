@@ -3,8 +3,8 @@ namespace CultSimulator.Game;
 public static class GameBalance
 {
     public const int RecruitCost = 10;
-    public const string SaveKey = "cult_simulator_save_v1";
-    public const string BackupSaveKey = "cult_simulator_save_v1_backup";
+    public const string SaveKey = "cult_simulator_save_v2";
+    public const string BackupSaveKey = "cult_simulator_save_v2_backup";
 
     public const double FollowerFaithPerSec = 0.05;
     public const double FollowerGoldPerSec = 0.02;
@@ -35,4 +35,8 @@ public static class GameBalance
 
     public const int LocalCultSpawnIntervalSeconds = 3600;
     public const int LocalCultMaxActive = 3;
+
+    public const int CovensPerContinent = 5;
+    public const int TotalContinents = 7;
+    public const int TotalCovens = 35;
 }

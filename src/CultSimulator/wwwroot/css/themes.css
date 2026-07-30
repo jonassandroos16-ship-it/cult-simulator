@@ -1,0 +1,66 @@
+/* ── Continent Theme System ──
+   Applied via a class on the game-container based on the active coven's continent.
+   Each theme overrides CSS variables for altar colors, accents, and panel borders. */
+
+/* Viking (Europe) — cold blues, steel, frost */
+.theme-viking {
+    --altar-core: #1e3a5f; --altar-mid: #0c1e3d; --altar-edge: #050f1f;
+    --violet: #60a5fa; --violet-deep: #2563eb; --violet-text: #bfdbfe; --violet-void: #1e3a5f;
+    --panel-border: rgba(96, 165, 250, 0.15); --active-border: rgba(96, 165, 250, 0.3);
+    --gold-pale: #dbeafe; --gold-soft: #bfdbfe;
+    --void-top: #1e3a5f; --void-mid: #0c1e3d; --void-deep: #050f1f;
+}
+
+/* Modern Occult (North America) — classic purple/amber */
+.theme-occult {
+    --altar-core: #4c1d95; --altar-mid: #1e1b4b; --altar-edge: #0f0a24;
+    --violet: #a78bfa; --violet-deep: #7c3aed; --violet-text: #ddd6fe; --violet-void: #2e1065;
+    --panel-border: rgba(139, 92, 246, 0.15); --active-border: rgba(245, 158, 11, 0.3);
+    --gold-pale: #fef3c7; --gold-soft: #fde68a;
+    --void-top: #2e1065; --void-mid: #0f0a24; --void-deep: #050308;
+}
+
+/* Jungle (South America) — deep greens */
+.theme-jungle {
+    --altar-core: #14532d; --altar-mid: #052e16; --altar-edge: #021c10;
+    --violet: #4ade80; --violet-deep: #16a34a; --violet-text: #bbf7d0; --violet-void: #14532d;
+    --panel-border: rgba(74, 222, 128, 0.15); --active-border: rgba(74, 222, 128, 0.3);
+    --gold-pale: #dcfce7; --gold-soft: #bbf7d0;
+    --void-top: #14532d; --void-mid: #052e16; --void-deep: #021c10;
+}
+
+/* Ninja/Samurai (Asia) — blood red, steel */
+.theme-ninja {
+    --altar-core: #7f1d1d; --altar-mid: #450a0a; --altar-edge: #1a0505;
+    --violet: #f87171; --violet-deep: #dc2626; --violet-text: #fecaca; --violet-void: #7f1d1d;
+    --panel-border: rgba(248, 113, 113, 0.15); --active-border: rgba(248, 113, 113, 0.3);
+    --gold-pale: #fee2e2; --gold-soft: #fecaca;
+    --void-top: #7f1d1d; --void-mid: #450a0a; --void-deep: #1a0505;
+}
+
+/* Ocean (Oceania) — deep teal, surf */
+.theme-ocean {
+    --altar-core: #0c4a6e; --altar-mid: #082f49; --altar-edge: #031926;
+    --violet: #38bdf8; --violet-deep: #0ea5e9; --violet-text: #bae6fd; --violet-void: #0c4a6e;
+    --panel-border: rgba(56, 189, 248, 0.15); --active-border: rgba(56, 189, 248, 0.3);
+    --gold-pale: #e0f2fe; --gold-soft: #bae6fd;
+    --void-top: #0c4a6e; --void-mid: #082f49; --void-deep: #031926;
+}
+
+/* Savanna (Africa) — earth tones, gold */
+.theme-savanna {
+    --altar-core: #78350f; --altar-mid: #451a03; --altar-edge: #1c0a02;
+    --violet: #fbbf24; --violet-deep: #d97706; --violet-text: #fde68a; --violet-void: #78350f;
+    --panel-border: rgba(251, 191, 36, 0.15); --active-border: rgba(251, 191, 36, 0.3);
+    --gold-pale: #fef3c7; --gold-soft: #fde68a;
+    --void-top: #78350f; --void-mid: #451a03; --void-deep: #1c0a02;
+}
+
+/* Desert (Middle East) — sand, bronze */
+.theme-desert {
+    --altar-core: #713f12; --altar-mid: #422006; --altar-edge: #1a1003;
+    --violet: #f59e0b; --violet-deep: #b45309; --violet-text: #fde68a; --violet-void: #713f12;
+    --panel-border: rgba(245, 158, 11, 0.15); --active-border: rgba(245, 158, 11, 0.3);
+    --gold-pale: #fef3c7; --gold-soft: #fde68a;
+    --void-top: #713f12; --void-mid: #422006; --void-deep: #1a1003;
+}
