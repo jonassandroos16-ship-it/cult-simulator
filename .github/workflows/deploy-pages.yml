@@ -3,7 +3,6 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-  workflow_dispatch:
 
 permissions:
   contents: read
@@ -11,57 +10,30 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
+      - uses: actions/setup-node@v4
         with:
-          dotnet-version: '8.0.x'
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
         with:
-          node-version: '20'
+          path: dist
 
-      - name: Install Tailwind CSS
-        run: npm install
-
-      - name: Build Tailwind CSS
-        run: npm run build:css
-
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Publish Blazor WASM
-        run: dotnet publish src/CultSimulator/CultSimulator.csproj -c Release -o release --no-restore
-
-      - name: Fix base href for GitHub Pages subpath
-        run: sed -i 's|<base href="/" />|<base href="/cult-simulator/" />|g' release/wwwroot/index.html
-
-      - name: Disable Jekyll processing
-        run: touch release/wwwroot/.nojekyll
-
-      - name: Add 404.html for SPA routing
-        run: cp release/wwwroot/index.html release/wwwroot/404.html
-
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: release/wwwroot
-
-      - name: Deploy to GitHub Pages
-        id: deployment
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
         uses: actions/deploy-pages@v4
