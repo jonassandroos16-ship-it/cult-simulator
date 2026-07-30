@@ -32,6 +32,11 @@ public class GameService
     public string? PendingLocalCultId { get; private set; }
     public bool LocalCultRewardPending => PendingLocalCultId != null;
 
+    public string? SpawnedLocalCultId { get; private set; }
+    public bool LocalCultSpawnPending => SpawnedLocalCultId != null;
+    public LocalCultDef? SpawnedLocalCultDef =>
+        SpawnedLocalCultId == null ? null : LocalCultData.Find(SpawnedLocalCultId);
+
     public GameService(IJSRuntime js, WorldLocationService locations) { _js = js; _locations = locations; _state = GameEngine.InitialState(); }
 
     public async Task InitAsync()
@@ -84,16 +89,38 @@ public class GameService
         if (ConversionEngine.IsActive(_state)) return;
         if (_state.ActiveCoven.Followers < GameBalance.EventMinFollowers) return;
         if (Random.Shared.NextDouble() > GameBalance.EventTriggerChance) return;
-        ActiveEvent = GameData.Events[Random.Shared.Next(GameData.Events.Length)];
+
+        // Prefer the active coven's local-flavored events when available;
+        // fall back to the shared generic pool so the game still works for
+        // covens whose JSON hasn't been populated yet.
+        var loc = _locations.Find(_state.ActiveCovenId);
+        if (loc != null && loc.Events != null && loc.Events.Count > 0)
+        {
+            var def = loc.Events[Random.Shared.Next(loc.Events.Count)];
+            ActiveEvent = def.ToEventDef();
+        }
+        else
+        {
+            ActiveEvent = GameData.Events[Random.Shared.Next(GameData.Events.Length)];
+        }
         _eventPending = true; NotifyChanged();
     }
 
     private void TrySpawnLocalCult()
     {
         if (ConversionEngine.IsActive(_state)) return;
+        var before = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId).Count;
         LocalCultEngine.SpawnOne(_state, _state.ActiveCovenId);
+        var after = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId);
+        if (after.Count > before)
+        {
+            var spawned = after[^1];
+            SpawnedLocalCultId = spawned.CultId;
+        }
         NotifyChanged();
     }
+
+    public void DismissLocalCultSpawn() { SpawnedLocalCultId = null; NotifyChanged(); }
 
     public double Preach() { var gained = GameEngine.Preach(_state); NotifyChanged(); return gained; }
     public void Recruit() { GameEngine.Recruit(_state.ActiveCoven); NotifyChanged(); }
@@ -202,7 +229,7 @@ public class GameService
     public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; NotifyChanged(); }
     public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
     public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; PendingLocalCultId = null; await SaveAsync(); NotifyChanged(); }
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; PendingLocalCultId = null; SpawnedLocalCultId = null; await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
     {

@@ -140,7 +140,7 @@ public class CultGameTests
     // --- Coven conversion tests ---
 
     private static WorldLocationDef Loc(string id, int req) =>
-        new WorldLocationDef(id, id, "", "", "", "", 0, 0, "", "", req, 1.0);
+        new WorldLocationDef(id, id, "", "", "", "", 0, 0, "", "", req, 1.0, new List<CovenEventData>());
 
     private static ImmutableArray<WorldLocationDef> Locations(params WorldLocationDef[] locs) =>
         ImmutableArray.Create(locs);
