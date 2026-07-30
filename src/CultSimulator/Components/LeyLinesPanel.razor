@@ -1,0 +1,251 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+<div class="panel glass-panel rounded-[20px] p-5">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="panel-title">Corrupted Ley Lines</h2>
+        <button class="ley-line-shortcut-btn" @onclick="OnViewMap">
+            <span>🗺️</span> View on Map
+        </button>
+    </div>
+
+    @if (_stanceMessage != null)
+    {
+        <div class="mb-3 p-2.5 rounded-[12px] text-sm @(_stanceMessageIsVeil ? "text-violet-300" : "text-amber-300") stance-flash" style="background: rgba(15,10,36,0.7); border: 1px solid @(_stanceMessageIsVeil ? "rgba(167,139,250,0.3)" : "rgba(245,158,11,0.3)");">
+            @_stanceMessage
+        </div>
+    }
+
+    @if (conqueredCount == 0)
+    {
+        <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <p class="text-violet-300">Claim your first ley line node to start generating passive Faith and harvesting occult Materials.</p>
+            <p class="text-slate-400 text-xs mt-2">Each node costs Faith and Army Power. Your Acolytes generate Army Power passively — promote Zealots in the Sanctum for more. Use the map view to see nodes at their real-world locations.</p>
+        </div>
+    }
+    else
+    {
+        <div class="flex flex-col gap-3 mb-4">
+            <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <div class="flex items-center gap-2"><span class="text-xl">⚔️</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Army Power</span></div>
+                <span class="font-display text-lg font-semibold text-amber-100">@NumberFormat.Fmt(occult.ArmyPower)</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid @(suspicionColor);">
+                <div class="flex items-center gap-2"><span class="text-xl">👁️</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Suspicion</span></div>
+                <span class="font-display text-lg font-semibold @(suspicionHigh ? "text-rose-400" : "text-amber-100")">@Math.Floor(occult.Suspicion)%</span>
+            </div>
+            <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
+                <div class="h-full rounded-full transition-all duration-500" style="width: @(occult.Suspicion)%; background: @(suspicionHigh ? "var(--danger)" : "var(--gold-warm)");"></div>
+            </div>
+            @if (occult.Suspicion >= 60)
+            {
+                <p class="text-[0.7rem] text-rose-400">Suspicion is rising! At @(OccultBalance.SuspicionRaidThreshold)% an Inquisitor raid will strike — you will lose Acolytes and possibly a disciple. Set nodes to Veil or unlock the Inquisitor's Blindfold tech to defend.</p>
+            }
+        </div>
+    }
+
+    @if (conqueredCount >= 2)
+    {
+        <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(167,139,250,0.2);">
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-amber-400">Great Seals: @greatSealCount</span>
+                <span class="text-xs text-emerald-400">×@WorldMapSystem.GreatSealMultiplier(occult).ToString("F2") production</span>
+            </div>
+            <p class="text-[0.7rem] text-slate-400 mt-1.5">Connect 3 Ley Lines that form a triangle between 3 nodes to create a Great Seal. Each seal boosts all Faith production. Use the map view to draw connections visually.</p>
+        </div>
+    }
+
+    @if (conqueredCount > 0)
+    {
+        <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <span class="text-xs font-display tracking-[0.15em] uppercase text-violet-300">Materials Harvested</span>
+            <div class="flex gap-3 flex-wrap mt-2">
+                @foreach (var mat in Enum.GetValues<MaterialKind>())
+                {
+                    <div class="flex items-baseline gap-1.5 px-3 py-1.5 rounded-full" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                        <span class="text-sm">@MaterialIcon(mat)</span>
+                        <span class="font-display text-sm text-amber-100">@occult.Materials.GetValueOrDefault(mat)</span>
+                        <span class="text-[0.65rem] text-slate-400">@MaterialName(mat)</span>
+                    </div>
+                }
+            </div>
+            <p class="text-[0.7rem] text-slate-400 mt-2">Materials are harvested passively from conquered nodes set to Harvest stance. Use them in the Grimoire tab's Forbidden Cauldron to brew elixirs and forge artifacts.</p>
+        </div>
+    }
+
+    <div class="flex flex-col gap-2.5">
+        @foreach (var nodeDef in OccultData.NodesForActiveCoven(Game.State))
+        {
+            var nodeState = WorldMapSystem.GetNode(occult, nodeDef.Id);
+            var conquered = nodeState != null && nodeState.Conquered;
+            var canConquer = WorldMapSystem.CanConquer(Game.State, nodeDef);
+            <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] @(conquered ? "border-emerald-400/20 bg-emerald-400/5" : "")" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <div class="text-3xl flex-shrink-0">@nodeDef.Icon</div>
+                <div class="flex-1 flex flex-col gap-0.5">
+                    <span class="font-display text-base text-amber-100 font-medium">@nodeDef.Name</span>
+                    <span class="text-[0.65rem] text-slate-500">📍 @nodeDef.LocationName</span>
+                    @if (conquered)
+                    {
+                        <span class="text-xs text-emerald-400">+@NumberFormat.Fmt(nodeDef.FaithPerSec) ✨/s · @nodeDef.SuspicionPerSec%/s suspicion</span>
+                        @if (nodeDef.Materials != null)
+                        {
+                            <span class="text-[0.7rem] text-violet-300">Drops: @foreach (var (mat, amt) in nodeDef.Materials) { <span class="mr-1.5">@MaterialIcon(mat) @MaterialName(mat)</span> }</span>
+                        }
+                        <div class="flex gap-1.5 mt-1">
+                            <button class="px-2.5 py-1 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState!.Stance == NodeStance.Harvest ? "text-amber-400 border border-amber-400/30 bg-amber-400/5" : "text-slate-400 border border-slate-600/20")" @onclick="() => SetStance(nodeDef.Id, NodeStance.Harvest, nodeDef.Name)">Harvest</button>
+                            <button class="px-2.5 py-1 rounded-full text-[0.65rem] font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(nodeState.Stance == NodeStance.Veil ? "text-violet-400 border border-violet-400/30 bg-violet-400/5" : "text-slate-400 border border-slate-600/20")" @onclick="() => SetStance(nodeDef.Id, NodeStance.Veil, nodeDef.Name)">Veil</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <span class="text-xs text-violet-300">Faith: +@NumberFormat.Fmt(nodeDef.FaithPerSec)/s</span>
+                        <span class="text-[0.7rem] text-slate-400">Cost: @NumberFormat.Fmt(nodeDef.FaithCost) ✨ + @NumberFormat.Fmt(nodeDef.ArmyPowerRequired) ⚔️</span>
+                        @if (nodeDef.Materials != null)
+                        {
+                            <span class="text-[0.7rem] text-slate-500">Materials: @foreach (var (mat, amt) in nodeDef.Materials) { <span class="mr-1.5">@MaterialIcon(mat) @MaterialName(mat)</span> }</span>
+                        }
+                    }
+                </div>
+                <div class="flex-shrink-0">
+                    @if (conquered)
+                    {
+                        <span class="learned-badge text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-emerald-400 px-3 py-1.5 border border-emerald-400/30 rounded-full">Conquered</span>
+                    }
+                    else
+                    {
+                        <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed" style="background: linear-gradient(135deg, #dc2626, #991b1b); border: none; color: #fef3c7;" disabled="@(!canConquer)" @onclick="() => Game.ConquerNode(nodeDef.Id)">Claim</button>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (conqueredCount >= 2)
+{
+    <div class="panel glass-panel rounded-[20px] p-5 mt-6">
+        <h2 class="panel-title">Ley Line Connections</h2>
+        <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <p class="text-violet-300">Connect two conquered nodes to form a Ley Line. When three Ley Lines form a triangle between three nodes, a Great Seal is created — boosting all Faith production.</p>
+            <p class="text-slate-400 text-xs mt-2">Select a node below, then select another conquered node to connect them. Each pair can only be connected once. You currently have @occult.LeyLines.Count connection(s). For a visual experience, use the <button class="text-amber-400 underline" @onclick="OnViewMap">map view</button>.</p>
+        </div>
+
+        @if (selectingFrom)
+        {
+            <div class="mb-3 p-3 rounded-[14px] border border-amber-500/30" style="background: rgba(15,10,36,0.5);">
+                <span class="text-xs text-amber-400">@(selectedNodeId != null ? $"Now choose a second conquered node to connect with {NodeName(selectedNodeId)}." : "Choose a conquered node to start connecting.")</span>
+                <button class="ml-2 text-xs text-slate-400 underline" @onclick="CancelSelection">Cancel</button>
+            </div>
+        }
+
+        <div class="flex flex-col gap-2">
+            @foreach (var nodeDef in OccultData.NodesForActiveCoven(Game.State))
+            {
+                var nodeState = WorldMapSystem.GetNode(occult, nodeDef.Id);
+                if (nodeState == null || !nodeState.Conquered) continue;
+                var isSelected = selectedNodeId == nodeDef.Id;
+                var connectedTo = occult.LeyLines.Where(l => l.Contains(nodeDef.Id)).ToList();
+                <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] @(isSelected ? "border-amber-500/40 bg-amber-500/5" : "")" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                    <div class="text-2xl flex-shrink-0">@nodeDef.Icon</div>
+                    <div class="flex-1 flex flex-col gap-0.5">
+                        <span class="font-display text-sm text-amber-100 font-medium">@nodeDef.Name</span>
+                        @if (connectedTo.Count > 0)
+                        {
+                            <span class="text-[0.7rem] text-emerald-400">Connected to: @string.Join(", ", connectedTo.Select(l => NodeName(l.First(n => n != nodeDef.Id))))</span>
+                        }
+                        else
+                        {
+                            <span class="text-[0.7rem] text-slate-400">No connections yet</span>
+                        }
+                    </div>
+                    <button class="px-3 py-1.5 rounded-full text-xs font-display tracking-[0.1em] uppercase cursor-pointer transition-all duration-200 @(isSelected ? "text-amber-400 border border-amber-400/40 bg-amber-400/10" : "text-violet-300 border border-violet-500/20")" @onclick="() => SelectNode(nodeDef.Id)">
+                        @(isSelected ? "Selected" : "Connect")
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback OnViewMap { get; set; }
+
+    private OccultState occult => Game.State.Occult;
+    private bool suspicionHigh => occult.Suspicion >= OccultBalance.SuspicionRaidThreshold;
+    private string suspicionColor => suspicionHigh ? "rgba(251,113,133,0.3)" : "var(--panel-border)";
+    private int conqueredCount => WorldMapSystem.ConqueredNodeCount(Game.State);
+    private int greatSealCount => WorldMapSystem.GreatSealCount(occult);
+
+    private bool selectingFrom = false;
+    private string? selectedNodeId = null;
+    private string? _stanceMessage;
+    private bool _stanceMessageIsVeil;
+    private int _stanceMessageId;
+
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => Game.OnChange -= StateChanged;
+
+    private void SetStance(string nodeId, NodeStance stance, string nodeName)
+    {
+        var prev = WorldMapSystem.GetNode(occult, nodeId)?.Stance;
+        Game.SetNodeStance(nodeId, stance);
+        if (prev == stance) return;
+        _stanceMessageIsVeil = stance == NodeStance.Veil;
+        _stanceMessage = stance == NodeStance.Veil
+            ? $"{nodeName} shrouded in the Veil — faith and suspicion generation halted."
+            : $"{nodeName} harvesting — faith and materials flowing once more.";
+        _ = FlashStanceMessage();
+    }
+
+    private async Task FlashStanceMessage()
+    {
+        var id = ++_stanceMessageId;
+        await Task.Delay(3000);
+        if (_stanceMessageId == id) { _stanceMessage = null; await InvokeAsync(StateHasChanged); }
+    }
+
+    private void SelectNode(string id)
+    {
+        if (!selectingFrom)
+        {
+            selectingFrom = true;
+            selectedNodeId = id;
+        }
+        else if (selectedNodeId == id)
+        {
+            CancelSelection();
+        }
+        else if (selectedNodeId != null)
+        {
+            Game.ConnectLeyLine(selectedNodeId, id);
+            selectingFrom = false;
+            selectedNodeId = null;
+        }
+    }
+
+    private void CancelSelection()
+    {
+        selectingFrom = false;
+        selectedNodeId = null;
+    }
+
+    private string NodeName(string id) => OccultData.MapNode(id)?.Name ?? id;
+
+    private static string MaterialIcon(MaterialKind mat) => mat switch
+    {
+        MaterialKind.GraveDust => "💀",
+        MaterialKind.DemonBile => "🧪",
+        MaterialKind.AstralMercury => "⚗️",
+        _ => "?"
+    };
+
+    private static string MaterialName(MaterialKind mat) => mat switch
+    {
+        MaterialKind.GraveDust => "Grave Dust",
+        MaterialKind.DemonBile => "Demon Bile",
+        MaterialKind.AstralMercury => "Astral Mercury",
+        _ => "?"
+    };
+}
