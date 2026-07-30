@@ -24,6 +24,7 @@ public static class GameEngine
     public static double FaithMultiplier(CovenState s)
     {
         double mult = 1.0 + s.Buildings.GetValueOrDefault(BuildingType.Monolith) * GameBalance.MonolithFaithBonus;
+        mult += s.Buildings.GetValueOrDefault(BuildingType.Observatory) * GameBalance.ObservatoryFaithBonus;
         if (s.HasUpgrade(UpgradeId.Visions)) mult *= 2.0;
         if (s.HasUpgrade(UpgradeId.Ascendance)) mult *= 1.5;
         return mult;
@@ -32,6 +33,7 @@ public static class GameEngine
     public static double GoldMultiplier(CovenState s)
     {
         double mult = 1.0 + s.Buildings.GetValueOrDefault(BuildingType.Treasury) * GameBalance.TreasuryGoldBonus;
+        mult += s.Buildings.GetValueOrDefault(BuildingType.Reliquary) * GameBalance.ReliquaryGoldBonus;
         if (s.HasUpgrade(UpgradeId.Relics)) mult *= 2.0;
         if (s.HasUpgrade(UpgradeId.Ascendance)) mult *= 1.5;
         return mult;
@@ -64,12 +66,6 @@ public static class GameEngine
         return (faith, gold);
     }
 
-    /// <summary>
-    /// The single source of truth for total per-second income across the
-    /// entire cult: all converted covens (followers + buildings) plus all
-    /// occult sources (acolytes, map nodes, scholars, infiltrators).
-    /// Use this everywhere a per-second rate is shown to the player.
-    /// </summary>
     public static (double faith, double gold) TotalIncomePerSec(GameState state)
     {
         var (faith, gold) = TotalTickIncome(state);

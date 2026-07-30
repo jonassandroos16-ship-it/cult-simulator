@@ -6,6 +6,7 @@ public static class WorldMapSystem
     public static bool IsConquered(OccultState o, string nodeId) => GetNode(o, nodeId)?.Conquered ?? false;
 
     public static bool CanConquer(GameState state, MapNodeDef def) =>
+        def.CovenId == state.ActiveCovenId &&
         !IsConquered(state.Occult, def.Id) && state.ActiveCoven.Faith >= def.FaithCost && state.Occult.ArmyPower >= def.ArmyPowerRequired;
 
     public static bool Conquer(GameState state, MapNodeDef def)
@@ -69,7 +70,12 @@ public static class WorldMapSystem
     }
 
     public static double GreatSealMultiplier(OccultState o) { int seals = GreatSealCount(o); return seals == 0 ? 1.0 : 1.0 + seals * (Grimoire.GreatSealMult(o) - 1.0); }
-    public static int ConqueredNodeCount(OccultState o) => o.MapNodes.Count(n => n.Conquered);
+
+    public static int ConqueredNodeCount(GameState state)
+    {
+        var covenNodes = OccultData.NodesForActiveCoven(state);
+        return state.Occult.MapNodes.Count(n => n.Conquered && covenNodes.Any(cn => cn.Id == n.NodeId));
+    }
 
     public static void TickMaterials(OccultState o, double deltaSec)
     {

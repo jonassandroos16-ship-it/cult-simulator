@@ -5,9 +5,11 @@ public static class CultistHierarchy
     private static readonly string[] MinionNames = { "Vael", "Morgrith", "Sszark", "Nyx", "Dolgrim", "Cael", "Vesh", "Kraix", "Umbra", "Tholos", "Zeph", "Grel", "Ishara", "Pyrros", "Mallek", "Sevren", "Ourobor", "Nethis", "Kaelthas", "Dravos" };
     private static readonly string[] CouncilNames = { "Grand Harrower", "Eye of the Abyss", "Mouth of the Void", "Hand of Ruin", "Voice of the Deep", "Keeper of Seals" };
 
-    public static int AcolyteCap(OccultState o)
+    public static int AcolyteCap(OccultState o, CovenState? activeCoven = null)
     {
         int cap = OccultBalance.AcolyteCapBase;
+        if (activeCoven != null)
+            cap += activeCoven.Buildings.GetValueOrDefault(BuildingType.Undercroft) * (int)GameBalance.UndercroftAcolyteBonus;
         foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") cap += 50; }
         foreach (var m in o.Minions) if (m.Trait?.Id == "fleshspeaker") cap += 50;
         foreach (var c in o.HighCouncil) if (c.Trait?.Id == "fleshspeaker") cap += 50;

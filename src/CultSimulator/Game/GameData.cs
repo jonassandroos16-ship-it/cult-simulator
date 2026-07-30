@@ -9,7 +9,10 @@ public static class GameData
         new BuildingDef(BuildingType.Cathedral, "Cathedral", "⛪", 80, ResourceKind.Gold, 1.18, "+0.2 Gold/s"),
         new BuildingDef(BuildingType.Monolith, "Monolith", "🗿", 300, ResourceKind.Faith, 1.20, "+8% Faith generation"),
         new BuildingDef(BuildingType.Treasury, "Treasury", "💰", 500, ResourceKind.Gold, 1.20, "+8% Gold generation"),
-        new BuildingDef(BuildingType.Bank, "Bank", "🏦", 200, ResourceKind.Gold, 1.25, "Increases idle income cap"));
+        new BuildingDef(BuildingType.Bank, "Bank", "🏦", 200, ResourceKind.Gold, 1.25, "Increases idle income cap"),
+        new BuildingDef(BuildingType.Observatory, "Observatory", "🔭", 800, ResourceKind.Gold, 1.22, "+6% Faith generation"),
+        new BuildingDef(BuildingType.Reliquary, "Reliquary", "📿", 1500, ResourceKind.Gold, 1.24, "+6% Gold generation"),
+        new BuildingDef(BuildingType.Undercroft, "Undercroft", "⚰️", 3000, ResourceKind.Gold, 1.28, "+2 Acolyte cap per level"));
 
     public static readonly ImmutableArray<UpgradeDef> Upgrades = ImmutableArray.Create(
         new UpgradeDef(UpgradeId.Hymnal, "Sacred Hymnal", "📜", 120, 0, "Preaching yields 2× Faith", 0),
@@ -31,7 +34,10 @@ public static class GameData
         BuildingType.Shrine,
         BuildingType.Cathedral,
         BuildingType.Monolith,
-        BuildingType.Treasury);
+        BuildingType.Treasury,
+        BuildingType.Observatory,
+        BuildingType.Reliquary,
+        BuildingType.Undercroft);
 
     public static readonly Dictionary<string, Dictionary<BuildingType, string>> CovenBuildingNames = new()
     {
@@ -40,56 +46,80 @@ public static class GameData
             { BuildingType.Shrine, "Seidr Altar" },
             { BuildingType.Cathedral, "Hof" },
             { BuildingType.Monolith, "Runestone" },
-            { BuildingType.Treasury, "Silver Hoard" }
+            { BuildingType.Treasury, "Silver Hoard" },
+            { BuildingType.Observatory, "Star Watch" },
+            { BuildingType.Reliquary, "Bone Reliquary" },
+            { BuildingType.Undercroft, "Frost Crypt" }
         },
         ["la_recta_provincia"] = new()
         {
             { BuildingType.Shrine, "Capilla" },
             { BuildingType.Cathedral, "Catedral" },
             { BuildingType.Monolith, "Piedra de Sacrificio" },
-            { BuildingType.Treasury, "Cofre del Santo Oficio" }
+            { BuildingType.Treasury, "Cofre del Santo Oficio" },
+            { BuildingType.Observatory, "Observatorio Austral" },
+            { BuildingType.Reliquary, "Relicario Patagón" },
+            { BuildingType.Undercroft, "Bóveda de Chiloé" }
         },
         ["benandanti"] = new()
         {
             { BuildingType.Shrine, "Stria Altar" },
             { BuildingType.Cathedral, "Chiesa Rovinata" },
             { BuildingType.Monolith, "Pietra Lunare" },
-            { BuildingType.Treasury, "Forziere delle Streghe" }
+            { BuildingType.Treasury, "Forziere delle Streghe" },
+            { BuildingType.Observatory, "Osservatorio Lunare" },
+            { BuildingType.Reliquary, "Reliquiario Friulano" },
+            { BuildingType.Undercroft, "Cripta dei Benandanti" }
         },
         ["malkin_tower_coven"] = new()
         {
             { BuildingType.Shrine, "Witch's Altar" },
             { BuildingType.Cathedral, "Tower Keep" },
             { BuildingType.Monolith, "Standing Stone" },
-            { BuildingType.Treasury, "Lancashire Chest" }
+            { BuildingType.Treasury, "Lancashire Chest" },
+            { BuildingType.Observatory, "Tower Observatory" },
+            { BuildingType.Reliquary, "Pendle Reliquary" },
+            { BuildingType.Undercroft, "Malkin Cellar" }
         },
         ["north_berwick_coven"] = new()
         {
             { BuildingType.Shrine, "Kirk Altar" },
             { BuildingType.Cathedral, "Auld Kirk" },
             { BuildingType.Monolith, "Heid Stane" },
-            { BuildingType.Treasury, "Scottish Coffer" }
+            { BuildingType.Treasury, "Scottish Coffer" },
+            { BuildingType.Observatory, "North Berwick Watch" },
+            { BuildingType.Reliquary, "Lothian Reliquary" },
+            { BuildingType.Undercroft, "Berwick Vaults" }
         },
         ["la_cabotina"] = new()
         {
             { BuildingType.Shrine, "Autel Cabotin" },
             { BuildingType.Cathedral, "Chapelle Profane" },
             { BuildingType.Monolith, "Menhir Occulte" },
-            { BuildingType.Treasury, "Coffre Marseillais" }
+            { BuildingType.Treasury, "Coffre Marseillais" },
+            { BuildingType.Observatory, "Observatoire Ligurien" },
+            { BuildingType.Reliquary, "Reliquaire de Triora" },
+            { BuildingType.Undercroft, "Caveau Cabotin" }
         },
         ["ixchel_priestesses"] = new()
         {
             { BuildingType.Shrine, "Isla Altar" },
             { BuildingType.Cathedral, "Piramide" },
             { BuildingType.Monolith, "Estela" },
-            { BuildingType.Treasury, "Cofre Maya" }
+            { BuildingType.Treasury, "Cofre Maya" },
+            { BuildingType.Observatory, "Observatorio de Ixchel" },
+            { BuildingType.Reliquary, "Reliquario Maya" },
+            { BuildingType.Undercroft, "Cenote Sagrado" }
         },
         ["new_forest_coven"] = new()
         {
             { BuildingType.Shrine, "Forest Shrine" },
             { BuildingType.Cathedral, "Grove Cathedral" },
             { BuildingType.Monolith, "Omen Stone" },
-            { BuildingType.Treasury, "Wessex Strongbox" }
+            { BuildingType.Treasury, "Wessex Strongbox" },
+            { BuildingType.Observatory, "New Forest Watch" },
+            { BuildingType.Reliquary, "Hampshire Reliquary" },
+            { BuildingType.Undercroft, "Barrow Crypt" }
         }
     };
 
