@@ -1,4 +1,5 @@
 using System.Collections.Immutable;
+using System.Net.Http;
 using CultSimulator.Game;
 
 namespace CultSimulator.Tests;
@@ -95,7 +96,7 @@ public class CultGameTests
         var s = NewState();
         s.HomeCoven.Followers = 10;
         s.HomeCoven.Buildings[BuildingType.Shrine] = 2;
-        GameEngine.TickAllCovens(s);
+        GameEngine.TickAllCovens(s, new WorldLocationService(new HttpClient()));
         Assert.True(s.HomeCoven.Faith > 0);
     }
 

@@ -81,9 +81,40 @@ public static class ShadowWarEngine
     public static double FaithMultiplierBonus(ShadowWarState sw) =>
         ControlledInstitutions(sw).Where(i => i.Type == InstitutionType.Finance).Sum(i => i.RewardValue);
 
-    // ── Actions ──
+    // ── Coven bonuses ──
 
-    public static (bool success, string message) StartRecon(ShadowWarState sw, GameState state, string institutionId, int agentCount)
+    /// <summary>
+    /// Counts converted covens in the same continent as a shadow war territory.
+    /// More covens = easier infiltration of that region.
+    /// </summary>
+    public static int CovensInContinent(GameState state, WorldLocationService locations, string territoryId)
+    {
+        var continentMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["europe"] = "europe",
+            ["north_america"] = "north america",
+            ["south_america"] = "south america",
+            ["asia"] = "asia",
+            ["oceania"] = "oceania",
+            ["africa"] = "africa",
+            ["middle_east"] = "middle east"
+        };
+        if (!continentMap.TryGetValue(territoryId, out var continent)) return 0;
+        return state.Covens.Count(c => c.Converted &&
+            string.Equals(locations.Find(c.Id)?.Continent, continent, StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// Returns an infiltration ease multiplier (0–1 subtracted from base detection rate and recon risk)
+    /// based on how many converted covens the player has in a territory's continent.
+    /// Each coven reduces difficulty by 5%, up to 40%.
+    /// </summary>
+    public static double CovenContinentBonus(int covenCount) =>
+        Math.Min(0.40, covenCount * 0.05);
+
+
+
+    public static (bool success, string message) StartRecon(ShadowWarState sw, GameState state, WorldLocationService locations, string institutionId, int agentCount)
     {
         var inst = sw.GetInstitution(institutionId);
         var def = ShadowWarData.Institution(institutionId);
@@ -92,8 +123,9 @@ public static class ShadowWarEngine
         if (agentCount < 1 || agentCount > 3) return (false, "Send 1-3 agents for recon.");
         if (sw.AvailableAgents < agentCount) return (false, "Not enough available agents.");
 
-        // Recon risk: chance to lose agents
-        var risk = def.ReconRisk * ReconRiskMultiplier(sw);
+        var covenCount = CovensInContinent(state, locations, def.TerritoryId);
+        var covenBonus = CovenContinentBonus(covenCount);
+        var risk = def.ReconRisk * ReconRiskMultiplier(sw) * (1.0 - covenBonus);
         if (Random.Shared.NextDouble() < risk)
         {
             sw.TotalAgents -= agentCount;
@@ -105,10 +137,10 @@ public static class ShadowWarEngine
         inst.Status = InstitutionStatus.Recon;
         inst.AssignedAgents = agentCount;
         inst.ReconProgress = 0;
-        return (true, $"Recon team of {agentCount} deployed to {def.Name}.");
+        return (true, $"Recon team of {agentCount} deployed to {def.Name}.{(covenBonus > 0 ? $" Coven support ({covenCount} covens): -{(int)(covenBonus * 100)}% recon risk." : "")}");
     }
 
-    public static (bool success, string message) SendInfiltrationWave(ShadowWarState sw, GameState state, string institutionId, int waveSize)
+    public static (bool success, string message) SendInfiltrationWave(ShadowWarState sw, GameState state, WorldLocationService locations, string institutionId, int waveSize)
     {
         var inst = sw.GetInstitution(institutionId);
         var def = ShadowWarData.Institution(institutionId);
@@ -121,7 +153,9 @@ public static class ShadowWarEngine
         sw.TotalAgents -= waveSize;
         inst.AssignedAgents += waveSize;
         inst.Status = InstitutionStatus.Infiltrating;
-        return (true, $"Wave of {waveSize} agents sent to {def.Name}.");
+        var covenCount = CovensInContinent(state, locations, def.TerritoryId);
+        var covenBonus = CovenContinentBonus(covenCount);
+        return (true, $"Wave of {waveSize} agents sent to {def.Name}.{(covenBonus > 0 ? $" Coven support ({covenCount} covens): -{(int)(covenBonus * 100)}% detection rate." : "")}");
     }
 
     public static (bool success, string message) WithdrawAgents(ShadowWarState sw, string institutionId)
@@ -155,12 +189,14 @@ public static class ShadowWarEngine
 
     // ── Tick ──
 
-    public static void Tick(ShadowWarState sw, GameState state, double deltaSec)
+    public static void Tick(ShadowWarState sw, GameState state, WorldLocationService locations, double deltaSec)
     {
         if (sw.VictoryAchieved) return;
 
         sw.TotalAgents += AgentProductionPerSec(sw, state) * deltaSec;
-        sw.Heat = Math.Max(0, sw.Heat - SuspicionDecay(sw) * deltaSec);
+        // Passive heat decay: always 0.3/s as a floor, plus bonuses from controlled Police institutions
+        var totalDecay = 0.3 + SuspicionDecay(sw);
+        sw.Heat = Math.Max(0, sw.Heat - totalDecay * deltaSec);
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
@@ -168,7 +204,7 @@ public static class ShadowWarEngine
         {
             var inst = sw.GetInstitution(def.Id);
             if (inst == null) continue;
-            ProcessInstitution(sw, inst, def, state, deltaSec, now);
+            ProcessInstitution(sw, inst, def, state, locations, deltaSec, now);
         }
 
         UpdateLocks(sw);
@@ -183,7 +219,7 @@ public static class ShadowWarEngine
         sw.TotalControlled = ControlledInstitutions(sw).Count;
     }
 
-    private static void ProcessInstitution(ShadowWarState sw, InstitutionState inst, InstitutionDef def, GameState state, double deltaSec, long now)
+    private static void ProcessInstitution(ShadowWarState sw, InstitutionState inst, InstitutionDef def, GameState state, WorldLocationService locations, double deltaSec, long now)
     {
         switch (inst.Status)
         {
@@ -204,7 +240,10 @@ public static class ShadowWarEngine
                 inst.DefenseRemaining = Math.Max(0, inst.DefenseRemaining - damage);
                 inst.ControlProgress = ((def.Defense - inst.DefenseRemaining) / def.Defense) * 100;
 
-                double detectionGain = def.DetectionRate * inst.AssignedAgents * deltaSec * DetectionMultiplier(sw);
+                // Coven continent bonus reduces detection rate
+                var covenCount = CovensInContinent(state, locations, def.TerritoryId);
+                var covenBonus = CovenContinentBonus(covenCount);
+                double detectionGain = def.DetectionRate * inst.AssignedAgents * deltaSec * DetectionMultiplier(sw) * (1.0 - covenBonus);
                 inst.Detection = Math.Min(100, inst.Detection + detectionGain);
 
                 if (inst.Detection >= 100)
