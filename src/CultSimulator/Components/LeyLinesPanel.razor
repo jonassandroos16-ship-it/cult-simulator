@@ -75,7 +75,7 @@
     }
 
     <div class="flex flex-col gap-2.5">
-        @foreach (var nodeDef in OccultData.MapNodes)
+        @foreach (var nodeDef in OccultData.NodesForActiveCoven(Game.State))
         {
             var nodeState = WorldMapSystem.GetNode(occult, nodeDef.Id);
             var conquered = nodeState != null && nodeState.Conquered;
@@ -140,7 +140,7 @@
         }
 
         <div class="flex flex-col gap-2">
-            @foreach (var nodeDef in OccultData.MapNodes)
+            @foreach (var nodeDef in OccultData.NodesForActiveCoven(Game.State))
             {
                 var nodeState = WorldMapSystem.GetNode(occult, nodeDef.Id);
                 if (nodeState == null || !nodeState.Conquered) continue;
@@ -174,7 +174,7 @@
     private OccultState occult => Game.State.Occult;
     private bool suspicionHigh => occult.Suspicion >= OccultBalance.SuspicionRaidThreshold;
     private string suspicionColor => suspicionHigh ? "rgba(251,113,133,0.3)" : "var(--panel-border)";
-    private int conqueredCount => WorldMapSystem.ConqueredNodeCount(occult);
+    private int conqueredCount => WorldMapSystem.ConqueredNodeCount(Game.State);
     private int greatSealCount => WorldMapSystem.GreatSealCount(occult);
 
     private bool selectingFrom = false;
