@@ -22,4 +22,6 @@ public record MapNodeDef(
     string Id, string Name, string Icon,
     int FaithCost, double ArmyPowerRequired,
     double FaithPerSec, double SuspicionPerSec,
+    double Latitude, double Longitude,
+    string LocationName,
     Dictionary<MaterialKind, int>? Materials = null);

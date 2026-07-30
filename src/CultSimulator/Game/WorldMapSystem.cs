@@ -51,7 +51,7 @@ public static class WorldMapSystem
     }
 
     public static bool CanConnectLeyLine(OccultState o, string nodeA, string nodeB) =>
-        TechTree.HasTech(o, TechId.LeyLineWeaving) && IsConquered(o, nodeA) && IsConquered(o, nodeB);
+        IsConquered(o, nodeA) && IsConquered(o, nodeB) && nodeA != nodeB;
 
     public static bool ConnectLeyLine(OccultState o, string nodeA, string nodeB)
     {

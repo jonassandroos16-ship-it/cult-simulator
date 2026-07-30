@@ -50,10 +50,10 @@ else
         }
         else if (activeTab == "codex") { <CodexPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "grimoire") { <GrimoirePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "leylines") { <LeyLinesPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "leylines") { <LeyLinesPanel OnViewMap="SwitchToLeyLineMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "ascension") { <GrandSacrificePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "bank") { <BankPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "map") { <WorldMap /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
     </div>
     <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><RankUpModal />
 }
@@ -61,10 +61,12 @@ else
 @code {
     private bool initialized = false;
     private string activeTab = "preach";
+    private string mapInitialMode = "world";
     protected override async Task OnInitializedAsync() { await Game.InitAsync(); Game.OnChange += StateChanged; Game.StartTimers(); initialized = true; }
     protected override async Task OnAfterRenderAsync(bool firstRender) { if (firstRender) { try { await JS.InvokeVoidAsync("setupAutoSave", DotNetObjectReference.Create(this)); } catch { } } }
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
     private void SwitchTab(string tab) => activeTab = tab;
+    private void SwitchToLeyLineMap() { mapInitialMode = "leylines"; activeTab = "map"; }
     private void StoryDismissed() { }
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
