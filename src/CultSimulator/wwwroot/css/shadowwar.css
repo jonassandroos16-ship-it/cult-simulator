@@ -1,0 +1,127 @@
+/* ── Shadow War Panel ── */
+
+.shadow-war-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 0.75rem;
+}
+
+.shadow-war-territory {
+    background: rgba(15, 10, 36, 0.5);
+    border: 1px solid var(--panel-border);
+    border-radius: 14px;
+    padding: 0.75rem;
+}
+
+.shadow-war-territory.controlled {
+    border-color: rgba(52, 211, 153, 0.3);
+}
+
+.shadow-war-inst-card {
+    text-align: left;
+    padding: 0.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(68, 64, 60, 0.4);
+    background: rgba(28, 25, 23, 0.4);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.shadow-war-inst-card:hover:not(:disabled) {
+    transform: scale(1.02);
+}
+
+.shadow-war-inst-card:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.shadow-war-inst-card.controlled {
+    border-color: rgba(52, 211, 153, 0.4);
+    background: rgba(6, 78, 59, 0.2);
+}
+
+.shadow-war-inst-card.investigated {
+    border-color: rgba(251, 146, 60, 0.4);
+    background: rgba(67, 20, 7, 0.2);
+}
+
+.shadow-war-inst-card.alerted {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(67, 20, 20, 0.2);
+}
+
+.shadow-war-inst-card.infiltrating {
+    border-color: rgba(245, 158, 11, 0.4);
+    background: rgba(67, 20, 7, 0.2);
+}
+
+.shadow-war-inst-card.recon {
+    border-color: rgba(59, 130, 246, 0.4);
+    background: rgba(30, 58, 138, 0.2);
+}
+
+.shadow-war-progress-bar {
+    height: 4px;
+    border-radius: 9999px;
+    background: rgba(30, 30, 30, 0.8);
+    overflow: hidden;
+    margin-top: 4px;
+}
+
+.shadow-war-progress-bar > div {
+    height: 100%;
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+/* ── Victory Screen ── */
+
+.victory-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(8px);
+}
+
+.victory-content {
+    position: relative;
+    max-width: 32rem;
+    text-align: center;
+}
+
+.victory-glow {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: 9999px;
+    filter: blur(48px);
+    background: rgba(251, 191, 36, 0.1);
+    animation: altar-pulse 3s ease-in-out infinite;
+}
+
+.victory-stat {
+    padding: 1rem;
+    border-radius: 14px;
+    background: rgba(120, 53, 15, 0.15);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.victory-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fcd34d;
+    font-family: 'Cinzel', Georgia, serif;
+}
+
+.victory-stat-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #94a3b8;
+}
