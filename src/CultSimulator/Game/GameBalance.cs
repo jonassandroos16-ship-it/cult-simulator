@@ -21,7 +21,7 @@ public static class GameBalance
     public const int RecruitBaseCost = 10;
     public const double RecruitCostGrowth = 1.08;
 
-    public const int EventIntervalSeconds = 30;
+    public const int EventIntervalSeconds = 60;
     public const double EventTriggerChance = 0.5;
     public const int EventMinFollowers = 5;
 

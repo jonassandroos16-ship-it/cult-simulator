@@ -1,0 +1,42 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+@if (Game.LocalCultSpawnPending && Game.SpawnedLocalCultDef != null)
+{
+    var cult = Game.SpawnedLocalCultDef;
+
+    <div class="event-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 animate-fade-in"
+         style="background: rgba(5,3,8,0.88); backdrop-filter: blur(8px);">
+        <div class="event-modal relative rounded-3xl p-6 sm:p-10 max-w-md w-full overflow-hidden animate-modal-rise"
+             style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(220,38,38,0.35);">
+
+            <div class="event-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
+                 style="background: radial-gradient(circle at center, rgba(220,38,38,0.14) 0%, transparent 60%);"></div>
+
+            <div class="relative text-center">
+                <div class="text-3xl mb-3">🗡️</div>
+                <h2 class="font-display text-sm font-semibold tracking-[0.3em] uppercase text-rose-300 mb-2">A Rival Cult Appears</h2>
+                <h3 class="font-display text-xl font-bold text-amber-100 tracking-[0.08em] mb-4">@cult.Name</h3>
+                <p class="text-sm leading-7 text-violet-200 mb-6 px-2">@cult.Description</p>
+
+                <p class="text-[0.7rem] tracking-[0.2em] uppercase text-violet-400 mb-4">A new threat stirs near your coven</p>
+
+                <button class="event-choice w-full p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-center hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                        @onclick="Dismiss">
+                    <span class="choice-label font-display text-base text-amber-100 font-medium">Acknowledge</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void Dismiss() => Game.DismissLocalCultSpawn();
+
+    public void Dispose() => Game.OnChange -= StateChanged;
+}

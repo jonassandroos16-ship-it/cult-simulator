@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Collections.Immutable;
 
 namespace CultSimulator.Game;
@@ -18,4 +19,5 @@ public record WorldLocationDef(
     string Summary,
     string Lore,
     int FollowersRequired,
-    double BaseMultiplier);
+    double BaseMultiplier,
+    List<CovenEventData> Events);
