@@ -47,6 +47,16 @@ public class GameState
     /// </summary>
     public List<LocalCultInstance> ActiveLocalCults { get; set; } = new();
 
+    /// <summary>
+    /// Shadow War end-game state. Global infiltration of real-world
+    /// institutions. Null for saves created before the Shadow War update;
+    /// lazily initialized on first access.
+    /// </summary>
+    public ShadowWarState? ShadowWar { get; set; }
+
+    [JsonIgnore]
+    public ShadowWarState ShadowWarOrInit => ShadowWar ??= ShadowWarEngine.CreateInitialState();
+
     [JsonIgnore]
     public string? ActiveEventId { get; set; }
 

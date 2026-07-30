@@ -98,6 +98,19 @@ public static class SaveLoad
         }
         state.Conversion ??= null;
         state.ActiveLocalCults ??= new List<LocalCultInstance>();
+        state.ShadowWar ??= ShadowWarEngine.CreateInitialState();
+        state.ShadowWar.Institutions ??= new List<InstitutionState>();
+        // Ensure all institutions exist (for saves from before Shadow War)
+        foreach (var def in ShadowWarData.Institutions)
+            if (state.ShadowWar.GetInstitution(def.Id) == null)
+                state.ShadowWar.Institutions.Add(new InstitutionState
+                {
+                    Id = def.Id,
+                    Status = def.Prerequisites == null || def.Prerequisites.Length == 0
+                        ? InstitutionStatus.Unlocked
+                        : InstitutionStatus.Locked,
+                    DefenseRemaining = def.Defense
+                });
     }
 
     public static string SaveGame(GameState s) => JsonSerializer.Serialize(s, JsonOptions);

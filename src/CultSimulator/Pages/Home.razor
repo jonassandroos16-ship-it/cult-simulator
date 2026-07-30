@@ -31,6 +31,7 @@ else
             <button class="bookmark-tab @(activeTab == "leylines" ? "active" : "")" @onclick='() => SwitchTab("leylines")'><span class="bookmark-tab-icon">⚡</span><span class="bookmark-tab-label">Ley Lines</span></button>
             <button class="bookmark-tab @(activeTab == "ascension" ? "active" : "")" @onclick='() => SwitchTab("ascension")'><span class="bookmark-tab-icon">🌟</span><span class="bookmark-tab-label">Ascension</span></button>
             <button class="bookmark-tab @(activeTab == "bank" ? "active" : "")" @onclick='() => SwitchTab("bank")'><span class="bookmark-tab-icon">🏦</span><span class="bookmark-tab-label">Bank</span></button>
+            <button class="bookmark-tab @(activeTab == "shadowwar" ? "active" : "")" @onclick='() => SwitchTab("shadowwar")'><span class="bookmark-tab-icon">🌑</span><span class="bookmark-tab-label">Shadow War</span></button>
         </div>
         @if (activeTab == "preach")
         {
@@ -53,9 +54,10 @@ else
         else if (activeTab == "leylines") { <LeyLinesPanel OnViewMap="SwitchToLeyLineMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "ascension") { <GrandSacrificePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "bank") { <BankPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "shadowwar") { <ShadowWarPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
     </div>
-    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><RankUpModal />
+    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><RankUpModal /><VictoryScreen />
 }
 
 @code {
