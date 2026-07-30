@@ -24,4 +24,5 @@ public record MapNodeDef(
     double FaithPerSec, double SuspicionPerSec,
     double Latitude, double Longitude,
     string LocationName,
-    Dictionary<MaterialKind, int>? Materials = null);
+    Dictionary<MaterialKind, int>? Materials = null,
+    string CovenId = "global");

@@ -12,6 +12,9 @@ public static class GameBalance
     public const double CathedralGoldPerSec = 0.2;
     public const double MonolithFaithBonus = 0.08;
     public const double TreasuryGoldBonus = 0.08;
+    public const double ObservatoryFaithBonus = 0.06;
+    public const double ReliquaryGoldBonus = 0.06;
+    public const double UndercroftAcolyteBonus = 2;
 
     public const double PreachFollowerScaling = 0.004;
 

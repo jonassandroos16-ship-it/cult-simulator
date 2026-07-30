@@ -56,12 +56,46 @@ public static class OccultData
         new CauldronRecipeDef(CauldronRecipeId.FleshForge, "Flesh Forge", "🧟", new() { { MaterialKind.GraveDust, 3 }, { MaterialKind.DemonBile, 3 }, { MaterialKind.AstralMercury, 3 } }, "Forge a random Flesh artifact", true));
 
     public static readonly ImmutableArray<MapNodeDef> MapNodes = ImmutableArray.Create(
-        new MapNodeDef("old_library", "Forbidden Library", "📚", 150, 10, 0.5, 0.2, 41.9028, 12.4964, "Vatican Archives, Rome", new() { { MaterialKind.AstralMercury, 1 } }),
-        new MapNodeDef("ancient_ruins", "Ancient Ruins", "🏚️", 600, 40, 0.8, 0.4, 37.2233, 38.9224, "Göbekli Tepe, Turkey", new() { { MaterialKind.GraveDust, 2 } }),
-        new MapNodeDef("ley_intersection", "Ley Line Nexus", "⚡", 2000, 150, 1.5, 0.6, 27.1750, 78.0422, "Taj Mahal, Agra", new() { { MaterialKind.AstralMercury, 2 }, { MaterialKind.DemonBile, 1 } }),
-        new MapNodeDef("blood_temple", "Blood Temple", "🩸", 5000, 400, 2.5, 1.0, 45.3744, 12.3260, "Poveglia Island, Italy", new() { { MaterialKind.DemonBile, 3 } }),
-        new MapNodeDef("void_rift", "Void Rift", "🌀", 10000, 800, 5.0, 1.5, 25.0, -71.0, "Bermuda Triangle", new() { { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 3 } }),
-        new MapNodeDef("flesh_pit", "Flesh Pit", "🦠", 20000, 1500, 10.0, 2.0, -13.1631, -72.5450, "Nazca Lines, Peru", new() { { MaterialKind.GraveDust, 10 }, { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 5 } }));
+        // Skanör (Skåne, Sweden) — 55.41, 12.88
+        new MapNodeDef("skanor_runestone", "Viking Runestone", "🪨", 150, 10, 0.5, 0.2, 55.63, 13.07, "Stora Köpinge, Skåne", new() { { MaterialKind.AstralMercury, 1 } }, "skanor"),
+        new MapNodeDef("skanor_bog", "Ageröd Bog Sacrifice", "🕳️", 500, 30, 0.8, 0.3, 56.01, 12.74, "Ageröd Mosse, Skåne", new() { { MaterialKind.GraveDust, 2 } }, "skanor"),
+        new MapNodeDef("skanor_mound", "Kivik Royal Mound", "⛰️", 1500, 100, 1.5, 0.5, 55.31, 14.23, "Kivik Grave Mound, Skåne", new() { { MaterialKind.AstralMercury, 2 }, { MaterialKind.GraveDust, 1 } }, "skanor"),
+
+        // La Recta Provincia (Chiloé, Chile) — -42.5, -73.8
+        new MapNodeDef("chiloe_cave", "Warlock's Cave of Chiloé", "🦇", 200, 15, 0.5, 0.2, -42.18, -73.90, "Huiliche Cave, Chiloé", new() { { MaterialKind.GraveDust, 1 } }, "la_recta_provincia"),
+        new MapNodeDef("chiloe_forest", "Ancient Alder Grove", "🌲", 600, 40, 0.8, 0.3, -42.65, -73.85, "Tepual Forest, Chiloé", new() { { MaterialKind.AstralMercury, 2 } }, "la_recta_provincia"),
+        new MapNodeDef("chiloe_island", "Isla de las Almas", "👻", 1800, 120, 1.5, 0.5, -43.10, -73.50, "Isla Chaullín, Chiloé", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.AstralMercury, 1 } }, "la_recta_provincia"),
+
+        // Benandanti (Friuli, Italy) — 46.05, 13.0
+        new MapNodeDef("friuli_oak", "Sacred Oak of the Benandanti", "🌳", 180, 12, 0.5, 0.2, 46.07, 13.10, "Cividale del Friuli", new() { { MaterialKind.AstralMercury, 1 } }, "benandanti"),
+        new MapNodeDef("friuli_crossroads", "Crossroads of the Night Battles", "⚔️", 550, 35, 0.8, 0.3, 46.20, 12.90, "Gemona del Friuli", new() { { MaterialKind.GraveDust, 2 } }, "benandanti"),
+        new MapNodeDef("friuli_church", "Rovine della Chiesa Stregata", "⛪", 1600, 110, 1.5, 0.5, 45.90, 13.20, "Aquileia Basilica Ruins", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "benandanti"),
+
+        // Malkin Tower Coven (Lancashire, England) — 53.87, -2.31
+        new MapNodeDef("malkin_tower", "Malkin Tower Ruins", "🗼", 150, 10, 0.5, 0.2, 53.87, -2.31, "Malkin Tower, Lancashire", new() { { MaterialKind.GraveDust, 1 } }, "malkin_tower_coven"),
+        new MapNodeDef("pendle_hill", "Pendle Hill Summit", "🏔️", 500, 35, 0.8, 0.3, 53.87, -2.30, "Pendle Hill, Lancashire", new() { { MaterialKind.AstralMercury, 2 } }, "malkin_tower_coven"),
+        new MapNodeDef("lancaster_court", "Lancaster Assizes Dungeon", "⛓️", 1700, 120, 1.5, 0.5, 54.05, -2.80, "Lancaster Castle Dungeon", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "malkin_tower_coven"),
+
+        // North Berwick Coven (East Lothian, Scotland) — 56.0, -2.72
+        new MapNodeDef("berwick_kirk", "St. Andrew's Auld Kirk", "⛪", 160, 12, 0.5, 0.2, 56.05, -2.72, "North Berwick Kirk", new() { { MaterialKind.GraveDust, 1 } }, "north_berwick_coven"),
+        new MapNodeDef("berwick_hill", "Berwick Law Hillfort", "⛰️", 550, 38, 0.8, 0.3, 56.04, -2.69, "North Berwick Law", new() { { MaterialKind.AstralMercury, 2 } }, "north_berwick_coven"),
+        new MapNodeDef("berwick_cove", "Cove of the Storm Witches", "🌊", 1650, 115, 1.5, 0.5, 56.00, -2.75, "Milsey Bay, North Berwick", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.AstralMercury, 1 } }, "north_berwick_coven"),
+
+        // La Cabotina (Triora, Liguria, Italy) — 43.98, 7.7
+        new MapNodeDef("triora_cabotina", "La Cabotina Witch House", "🏚️", 150, 10, 0.5, 0.2, 43.98, 7.71, "Triora, Liguria", new() { { MaterialKind.GraveDust, 1 } }, "la_cabotina"),
+        new MapNodeDef("triora_megalith", "Argenten Megalith Stone", "🗿", 550, 35, 0.8, 0.3, 44.02, 7.65, "Argenten Valley, Liguria", new() { { MaterialKind.AstralMercury, 2 } }, "la_cabotina"),
+        new MapNodeDef("triora_gorge", "Gorge of the accused", "⛰️", 1700, 120, 1.5, 0.5, 43.95, 7.75, "Argentina River Gorge", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "la_cabotina"),
+
+        // Ixchel Priestesses (Cozumel/Yucatán, Mexico) — 20.5, -86.95
+        new MapNodeDef("cozumel_cenote", "Sacred Cenote of Ixchel", "💧", 200, 15, 0.5, 0.2, 20.50, -86.95, "San Gervasio Cenote, Cozumel", new() { { MaterialKind.AstralMercury, 1 } }, "ixchel_priestesses"),
+        new MapNodeDef("yucatan_pyramid", "Moon Pyramid of Ixchel", "🏛️", 600, 40, 0.8, 0.3, 20.68, -88.57, "Chichen Itza Outskirts", new() { { MaterialKind.GraveDust, 2 } }, "ixchel_priestesses"),
+        new MapNodeDef("yucatan_temple", "Tulum Cliffside Temple", "🛕", 1800, 130, 1.5, 0.5, 20.21, -87.46, "Tulum Ruins, Quintana Roo", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.AstralMercury, 1 } }, "ixchel_priestesses"),
+
+        // New Forest Coven (Hampshire, England) — 50.85, -1.6
+        new MapNodeDef("newforest_altar", "Bronze Age Sacrificial Altar", "🗿", 150, 10, 0.5, 0.2, 50.85, -1.60, "New Forest Bronze Altar", new() { { MaterialKind.GraveDust, 1 } }, "new_forest_coven"),
+        new MapNodeDef("newforest_standing", "Stonestanding Circle", "🪨", 550, 35, 0.8, 0.3, 50.88, -1.55, "New Forest Standing Stones", new() { { MaterialKind.AstralMercury, 2 } }, "new_forest_coven"),
+        new MapNodeDef("newforest_barrows", "Dark Barrow Burial Mounds", "⚰️", 1700, 120, 1.5, 0.5, 50.82, -1.65, "New Forest Barrows", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "new_forest_coven")
+    );
 
     public static readonly ImmutableArray<PromotedRole> PromotedRoles = ImmutableArray.Create(PromotedRole.Zealot, PromotedRole.Scholar, PromotedRole.Infiltrator);
     public static readonly ImmutableArray<CouncilRole> CouncilRoles = ImmutableArray.Create(CouncilRole.Inquisitor, CouncilRole.Archon, CouncilRole.HighPriest);
@@ -71,4 +105,10 @@ public static class OccultData
     public static MinionTraitDef? Trait(string id) => Traits.FirstOrDefault(t => t.Id == id);
     public static CauldronRecipeDef Recipe(CauldronRecipeId id) => Recipes.First(r => r.Id == id);
     public static MapNodeDef? MapNode(string id) => MapNodes.FirstOrDefault(n => n.Id == id);
+
+    public static IReadOnlyList<MapNodeDef> NodesForCoven(string covenId) =>
+        MapNodes.Where(n => n.CovenId == covenId).ToList();
+
+    public static IReadOnlyList<MapNodeDef> NodesForActiveCoven(GameState state) =>
+        NodesForCoven(state.ActiveCovenId);
 }
