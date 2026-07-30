@@ -17,20 +17,16 @@
         </div>
     }
 
-    @if (conqueredCount == 0)
-    {
-        <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <p class="text-violet-300">Claim your first ley line node to start generating passive Faith and harvesting occult Materials.</p>
-            <p class="text-slate-400 text-xs mt-2">Each node costs Faith and Army Power. Your Acolytes generate Army Power passively — promote Zealots in the Sanctum for more. Use the map view to see nodes at their real-world locations.</p>
-        </div>
-    }
-    else
-    {
-        <div class="flex flex-col gap-3 mb-4">
-            <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                <div class="flex items-center gap-2"><span class="text-xl">⚔️</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Army Power</span></div>
+    <div class="flex flex-col gap-3 mb-4">
+        <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <div class="flex items-center gap-2"><span class="text-xl">⚔️</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Army Power</span></div>
+            <div class="flex flex-col items-end gap-0.5">
                 <span class="font-display text-lg font-semibold text-amber-100">@NumberFormat.Fmt(occult.ArmyPower)</span>
+                <span class="text-[0.65rem] text-slate-400">+@(armyPowerPerSec.ToString("F1"))/s</span>
             </div>
+        </div>
+        @if (conqueredCount > 0)
+        {
             <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid @(suspicionColor);">
                 <div class="flex items-center gap-2"><span class="text-xl">👁️</span><span class="text-sm text-violet-300 tracking-[0.1em] uppercase">Suspicion</span></div>
                 <span class="font-display text-lg font-semibold @(suspicionHigh ? "text-rose-400" : "text-amber-100")">@Math.Floor(occult.Suspicion)%</span>
@@ -42,6 +38,14 @@
             {
                 <p class="text-[0.7rem] text-rose-400">Suspicion is rising! At @(OccultBalance.SuspicionRaidThreshold)% an Inquisitor raid will strike — you will lose Acolytes and possibly a disciple. Set nodes to Veil or unlock the Inquisitor's Blindfold tech to defend.</p>
             }
+        }
+    </div>
+
+    @if (conqueredCount == 0)
+    {
+        <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            <p class="text-violet-300">Claim your first ley line node to start generating passive Faith and harvesting occult Materials.</p>
+            <p class="text-slate-400 text-xs mt-2">Each node costs Faith and Army Power. Your Acolytes generate Army Power passively — promote Zealots in the Sanctum for more. Use the map view to see nodes at their real-world locations.</p>
         </div>
     }
 
@@ -172,6 +176,9 @@
     [Parameter] public EventCallback OnViewMap { get; set; }
 
     private OccultState occult => Game.State.Occult;
+    private double armyPowerPerSec =>
+        occult.Minions.Count(m => m.Role == PromotedRole.Zealot) * OccultBalance.ZealotArmyPowerPerSec
+        + occult.Acolytes * OccultBalance.AcolyteArmyPowerPerSec;
     private bool suspicionHigh => occult.Suspicion >= OccultBalance.SuspicionRaidThreshold;
     private string suspicionColor => suspicionHigh ? "rgba(251,113,133,0.3)" : "var(--panel-border)";
     private int conqueredCount => WorldMapSystem.ConqueredNodeCount(Game.State);
