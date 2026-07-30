@@ -18,18 +18,18 @@
       "narrative": "The harvest has failed again, and the villagers of Triora are whispering that the Cabotina circle is to blame. A mob gathers at the rock formation with torches.",
       "choiceA": {
         "label": "Face the mob and speak calm",
-        "description": "+150 Faith if they disperse, −6 Followers if they don't",
+        "description": "+20% Faith if they disperse, −6 Followers if they don't",
         "random": {
           "winChance": 0.5,
-          "winMessage": "Your words turn the mob's fear to awe. They lower their torches and drift home. +150 Faith.",
+          "winMessage": "Your words turn the mob's fear to awe. They lower their torches and drift home. +20% Faith.",
           "lossMessage": "The mob will not be calmed. Six of your circle are named and must flee into the mountains. −6 Followers.",
           "lossEffects": { "followers": -6 }
         }
       },
       "choiceB": {
         "label": "Slip away and meet in the high pastures",
-        "description": "+60 Faith",
-        "effects": { "faith": 60 }
+        "description": "+10% Faith",
+        "effects": { "faithPct": 0.10 }
       }
     },
     {
@@ -38,8 +38,8 @@
       "narrative": "The herbalists of Sanremo have been growing poisonous plants among their flowers and selling subtle deaths to the Riviera nobility. They encroach on your circle's domain of secret craft.",
       "choiceA": {
         "label": "Out-potion them with alpine lore",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Undercut their trade in Triora",
@@ -53,15 +53,15 @@
       "narrative": "The olive-grove witches of Imperia have read the future in oil-on-water and claim a great reckoning is coming for your circle. They offer to share the reading — for a price.",
       "choiceA": {
         "label": "Pay them and hear the omen",
-        "description": "+100 Faith, −80 Gold",
-        "effects": { "faith": 100, "gold": -80 }
+        "description": "+15% Faith, −15% Gold",
+        "effects": { "faithPct": 0.15, "goldPct": -0.15 }
       },
       "choiceB": {
         "label": "Read the oil yourself",
-        "description": "+120 Faith if right, −4 Followers if wrong",
+        "description": "+20% Faith if right, −4 Followers if wrong",
         "random": {
           "winChance": 0.5,
-          "winMessage": "Your reading proves true. The reckoning is averted, and the Imperia witches concede your power. +120 Faith.",
+          "winMessage": "Your reading proves true. The reckoning is averted, and the Imperia witches concede your power. +20% Faith.",
           "lossMessage": "You misread the oil. The reckoning falls, and four of your circle are lost. −4 Followers.",
           "lossEffects": { "followers": -4 }
         }
@@ -73,8 +73,8 @@
       "narrative": "The mountain-village shifters of Taggia have become wolves and are raiding the lowland flocks under the full moon. The shepherds blame your circle by association.",
       "choiceA": {
         "label": "Bind them back to human form",
-        "description": "+120 Faith, −40 Gold",
-        "effects": { "faith": 120, "gold": -40 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Let them run and grow your flock",
@@ -88,18 +88,18 @@
       "narrative": "Tonight the moon is right for the old rite at the Cabotina rock formation. But the local magistrate has posted a watcher on the path.",
       "choiceA": {
         "label": "Hold the rite and evade the watcher",
-        "description": "+200 Faith if unseen, −5 Followers if caught",
+        "description": "+25% Faith if unseen, −5 Followers if caught",
         "random": {
           "winChance": 0.5,
-          "winMessage": "You slip past the watcher and complete the rite under the moon. The circle is renewed. +200 Faith.",
+          "winMessage": "You slip past the watcher and complete the rite under the moon. The circle is renewed. +25% Faith.",
           "lossMessage": "The watcher raises the alarm. Five of your number are named and must flee. −5 Followers.",
           "lossEffects": { "followers": -5 }
         }
       },
       "choiceB": {
         "label": "Postpone and meet in the caves",
-        "description": "+90 Faith",
-        "effects": { "faith": 90 }
+        "description": "+15% Faith",
+        "effects": { "faithPct": 0.15 }
       }
     },
     {
@@ -108,15 +108,15 @@
       "narrative": "An inquisitor arrives from Genoa with a list of names gathered during the famine trials. He is patient, methodical, and well-guarded.",
       "choiceA": {
         "label": "Deny all and hide the circle's tools",
-        "description": "+60 Faith, −40 Gold",
-        "effects": { "faith": 60, "gold": -40 }
+        "description": "+10% Faith, −10% Gold",
+        "effects": { "faithPct": 0.10, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Turn the village's fear against him",
-        "description": "+100 Faith if it works, −6 Followers if it fails",
+        "description": "+15% Faith if it works, −6 Followers if it fails",
         "random": {
           "winChance": 0.45,
-          "winMessage": "The villagers refuse to testify. The inquisitor leaves empty-handed. +100 Faith.",
+          "winMessage": "The villagers refuse to testify. The inquisitor leaves empty-handed. +15% Faith.",
           "lossMessage": "He extracts testimony by fear. Six of your circle are named and taken. −6 Followers.",
           "lossEffects": { "followers": -6 }
         }
@@ -128,8 +128,8 @@
       "narrative": "One of your circle shifted to wolf-form three nights ago and has not come back. Her body lies cold in the cave; her spirit roams the high forests.",
       "choiceA": {
         "label": "Seek her spirit in the wolf-dream",
-        "description": "+150 Faith, −50 Gold",
-        "effects": { "faith": 150, "gold": -50 }
+        "description": "+20% Faith, −10% Gold",
+        "effects": { "faithPct": 0.20, "goldPct": -0.10 }
       },
       "choiceB": {
         "label": "Declare her a martyr of the circle",
@@ -143,13 +143,13 @@
       "narrative": "A noblewoman from the coast arrives at Triora with a heavy chest of silver. 'My rival at court has cursed my house. The priests are useless. I am told your circle knows the old ways.'",
       "choiceA": {
         "label": "Accept her silver and lift the curse",
-        "description": "+120 Gold",
-        "effects": { "gold": 120 }
+        "description": "+20% Gold",
+        "effects": { "goldPct": 0.20 }
       },
       "choiceB": {
         "label": "Convert her to the circle",
-        "description": "+5 Followers, −40 Gold",
-        "effects": { "followers": 5, "gold": -40 }
+        "description": "+5 Followers, −10% Gold",
+        "effects": { "followers": 5, "goldPct": -0.10 }
       }
     },
     {
@@ -158,13 +158,13 @@
       "narrative": "Your circle's hidden garden of poisonous plants has bloomed earlier than expected. The apothecary warns that the scent alone could sicken the village.",
       "choiceA": {
         "label": "Harvest the bloom for potions",
-        "description": "+8 Followers, −100 Faith",
-        "effects": { "followers": 8, "faith": -100 }
+        "description": "+8 Followers, −15% Faith",
+        "effects": { "followers": 8, "faithPct": -0.15 }
       },
       "choiceB": {
         "label": "Burn the bloom and prophesy safety",
-        "description": "+200 Faith",
-        "effects": { "faith": 200 }
+        "description": "+25% Faith",
+        "effects": { "faithPct": 0.25 }
       }
     },
     {
@@ -173,13 +173,13 @@
       "narrative": "A gaunt woman with a satchel of alpine herbs arrives at the Cabotina rock. 'I have walked from the French border. I know every poison and cure between here and Nice. I seek a circle.'",
       "choiceA": {
         "label": "Welcome her into the circle",
-        "description": "+3 Followers, −20 Faith",
-        "effects": { "followers": 3, "faith": -20 }
+        "description": "+3 Followers, −5% Faith",
+        "effects": { "followers": 3, "faithPct": -0.05 }
       },
       "choiceB": {
         "label": "Trade for her herbs",
-        "description": "+50 Gold",
-        "effects": { "gold": 50 }
+        "description": "+10% Gold",
+        "effects": { "goldPct": 0.10 }
       }
     }
   ]
