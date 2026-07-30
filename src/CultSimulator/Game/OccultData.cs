@@ -32,7 +32,7 @@ public static class OccultData
         new ArtifactDef("mind_tongue", "Whispering Tongue", "👅", ArtifactSuit.Mind, "-15% Inquisitor raid chance"),
         new ArtifactDef("mind_crown", "Crown of Madness", "👑", ArtifactSuit.Mind, "+30% Great Seal multiplier"),
         new ArtifactDef("flesh_golem", "Flesh Golem", "🧟", ArtifactSuit.Flesh, "+50 Acolyte cap"),
-        new ArtifactDef("flesh_graft", "Sinew Graft", "🫀", ArtifactSuit.Flesh, "+15% all production"),
+        new ArtifactDef("flesh_graft", "Sinew Graft", "🩠", ArtifactSuit.Flesh, "+15% all production"),
         new ArtifactDef("flesh_seed", "Seed of Flesh", "🌱", ArtifactSuit.Flesh, "+5% global multiplier per socketed artifact"));
 
     public static readonly ImmutableArray<MinionTraitDef> Traits = ImmutableArray.Create(
@@ -49,7 +49,7 @@ public static class OccultData
         new CauldronRecipeDef(CauldronRecipeId.CrimsonElixir, "Crimson Elixir", "🧪", new() { { MaterialKind.GraveDust, 3 } }, "+100% sermon power for 60s", false),
         new CauldronRecipeDef(CauldronRecipeId.VoidTincture, "Void Tincture", "💧", new() { { MaterialKind.DemonBile, 3 } }, "+50% Faith generation for 60s", false),
         new CauldronRecipeDef(CauldronRecipeId.MindPhiltre, "Mind Philtre", "🧠", new() { { MaterialKind.AstralMercury, 3 } }, "-50% Suspicion for 60s", false),
-        new CauldronRecipeDef(CauldronRecipeId.FleshBrew, "Flesh Brew", "🫕", new() { { MaterialKind.GraveDust, 1 }, { MaterialKind.DemonBile, 1 }, { MaterialKind.AstralMercury, 1 } }, "+100 Acolytes instantly", false),
+        new CauldronRecipeDef(CauldronRecipeId.FleshBrew, "Flesh Brew", "🥕", new() { { MaterialKind.GraveDust, 1 }, { MaterialKind.DemonBile, 1 }, { MaterialKind.AstralMercury, 1 } }, "+100 Acolytes instantly", false),
         new CauldronRecipeDef(CauldronRecipeId.BloodForge, "Blood Forge", "🍷", new() { { MaterialKind.GraveDust, 5 }, { MaterialKind.DemonBile, 2 } }, "Forge a random Blood artifact", true),
         new CauldronRecipeDef(CauldronRecipeId.VoidForge, "Void Forge", "🔮", new() { { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 2 } }, "Forge a random Void artifact", true),
         new CauldronRecipeDef(CauldronRecipeId.MindForge, "Mind Forge", "👁️", new() { { MaterialKind.AstralMercury, 5 }, { MaterialKind.GraveDust, 2 } }, "Forge a random Mind artifact", true),
@@ -58,7 +58,7 @@ public static class OccultData
     public static readonly ImmutableArray<MapNodeDef> MapNodes = ImmutableArray.Create(
         // Skanör (Skåne, Sweden) — 55.41, 12.88
         new MapNodeDef("skanor_runestone", "Viking Runestone", "🪨", 150, 10, 0.5, 0.2, 55.63, 13.07, "Stora Köpinge, Skåne", new() { { MaterialKind.AstralMercury, 1 } }, "skanor"),
-        new MapNodeDef("skanor_bog", "Ageröd Bog Sacrifice", "🕳️", 500, 30, 0.8, 0.3, 56.01, 12.74, "Ageröd Mosse, Skåne", new() { { MaterialKind.GraveDust, 2 } }, "skanor"),
+        new MapNodeDef("skanor_bog", "Ageröd Bog Sacrifice", "🔦", 500, 30, 0.8, 0.3, 56.01, 12.74, "Ageröd Mosse, Skåne", new() { { MaterialKind.GraveDust, 2 } }, "skanor"),
         new MapNodeDef("skanor_mound", "Kivik Royal Mound", "⛰️", 1500, 100, 1.5, 0.5, 55.31, 14.23, "Kivik Grave Mound, Skåne", new() { { MaterialKind.AstralMercury, 2 }, { MaterialKind.GraveDust, 1 } }, "skanor"),
 
         // La Recta Provincia (Chiloé, Chile) — -42.5, -73.8
@@ -72,7 +72,7 @@ public static class OccultData
         new MapNodeDef("friuli_church", "Rovine della Chiesa Stregata", "⛪", 1600, 110, 1.5, 0.5, 45.90, 13.20, "Aquileia Basilica Ruins", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "benandanti"),
 
         // Malkin Tower Coven (Lancashire, England) — 53.87, -2.31
-        new MapNodeDef("malkin_tower", "Malkin Tower Ruins", "🗼", 150, 10, 0.5, 0.2, 53.87, -2.31, "Malkin Tower, Lancashire", new() { { MaterialKind.GraveDust, 1 } }, "malkin_tower_coven"),
+        new MapNodeDef("malkin_tower", "Malkin Tower Ruins", "🏚️", 150, 10, 0.5, 0.2, 53.87, -2.31, "Malkin Tower, Lancashire", new() { { MaterialKind.GraveDust, 1 } }, "malkin_tower_coven"),
         new MapNodeDef("pendle_hill", "Pendle Hill Summit", "🏔️", 500, 35, 0.8, 0.3, 53.87, -2.30, "Pendle Hill, Lancashire", new() { { MaterialKind.AstralMercury, 2 } }, "malkin_tower_coven"),
         new MapNodeDef("lancaster_court", "Lancaster Assizes Dungeon", "⛓️", 1700, 120, 1.5, 0.5, 54.05, -2.80, "Lancaster Castle Dungeon", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "malkin_tower_coven"),
 
@@ -88,7 +88,7 @@ public static class OccultData
 
         // Ixchel Priestesses (Cozumel/Yucatán, Mexico) — 20.5, -86.95
         new MapNodeDef("cozumel_cenote", "Sacred Cenote of Ixchel", "💧", 200, 15, 0.5, 0.2, 20.50, -86.95, "San Gervasio Cenote, Cozumel", new() { { MaterialKind.AstralMercury, 1 } }, "ixchel_priestesses"),
-        new MapNodeDef("yucatan_pyramid", "Moon Pyramid of Ixchel", "🏛️", 600, 40, 0.8, 0.3, 20.68, -88.57, "Chichen Itza Outskirts", new() { { MaterialKind.GraveDust, 2 } }, "ixchel_priestesses"),
+        new MapNodeDef("yucatan_pyramid", "Moon Pyramid of Ixchel", "🏜️", 600, 40, 0.8, 0.3, 20.68, -88.57, "Chichen Itza Outskirts", new() { { MaterialKind.GraveDust, 2 } }, "ixchel_priestesses"),
         new MapNodeDef("yucatan_temple", "Tulum Cliffside Temple", "🛕", 1800, 130, 1.5, 0.5, 20.21, -87.46, "Tulum Ruins, Quintana Roo", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.AstralMercury, 1 } }, "ixchel_priestesses"),
 
         // New Forest Coven (Hampshire, England) — 50.85, -1.6
