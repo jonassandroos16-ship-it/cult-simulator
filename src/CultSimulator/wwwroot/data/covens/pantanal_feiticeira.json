@@ -1,20 +1,20 @@
 {
-  "id": "la_recta_provincia",
-  "name": "Recta Provincia",
-  "location": "Chiloé Archipelago",
-  "country": "Chile",
-  "countryFlag": "🇨🇱",
-  "era": "Colonial Era",
+  "id": "pantanal_feiticeira",
+  "name": "Pantanal Feiticeira",
+  "location": "Cuiabá",
+  "country": "Brazil",
+  "countryFlag": "🇧🇷",
+  "era": "Present Day",
   "continent": "south_america",
-  "latitude": -42.5,
-  "longitude": -73.95,
-  "summary": "A secret society of warlocks on the foggy Chiloé archipelago. Their magic draws on the cold Patagonian sea.",
-  "lore": "The Recta Provincia ruled Chiloé for centuries through fear and the dark craft. Their warlocks could transform, curse, and kill with a word. The archipelago's isolation kept their secrets safe — until now.",
-  "followersRequired": 6000,
-  "baseMultiplier": 56.9,
+  "latitude": -15.6,
+  "longitude": -56.1,
+  "summary": "Swamp witches of the Pantanal wetlands who command the floods and the creatures within them.",
+  "lore": "The Pantanal floods and recedes with the seasons, and the Feiticeira move with it. Their magic is wet, primal, and patient as the river itself. The caimans answer to them.",
+  "followersRequired": 20000,
+  "baseMultiplier": 191.9,
   "events": [
     {
-      "id": "la_recta_provincia_fog_archipelago",
+      "id": "pantanal_feiticeira_fog_archipelago",
       "title": "The Fog of Chiloé",
       "narrative": "A supernatural fog rolls in from the Pacific, thicker than any natural mist. Your followers can barely see their hands.",
       "choiceA": {
@@ -34,7 +34,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_jungle_spirits",
+      "id": "pantanal_feiticeira_jungle_spirits",
       "title": "The Jungle Speaks",
       "narrative": "The rainforest around your territory begins to whisper at night. The spirits of the trees are testing your resolve.",
       "choiceA": {
@@ -62,7 +62,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_ancient_temple",
+      "id": "pantanal_feiticeira_ancient_temple",
       "title": "The Lost Temple",
       "narrative": "Scouts discover an overgrown temple deep in the jungle. The carvings on its walls still glow faintly.",
       "choiceA": {
@@ -82,7 +82,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_river_spirits",
+      "id": "pantanal_feiticeira_river_spirits",
       "title": "The River Turns Red",
       "narrative": "The great river that feeds your territory turns blood-red for three days. The fish die. The people panic.",
       "choiceA": {
@@ -102,7 +102,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_shaman_challenge",
+      "id": "pantanal_feiticeira_shaman_challenge",
       "title": "The Rival Shaman",
       "narrative": "A powerful shaman from a neighboring tribe challenges your spiritual authority before a council of elders.",
       "choiceA": {
@@ -130,7 +130,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_jaguar_spirit",
+      "id": "pantanal_feiticeira_jaguar_spirit",
       "title": "The Jaguar Spirit",
       "narrative": "A massive black jaguar appears at the edge of your territory. It sits and watches with intelligent eyes for three nights.",
       "choiceA": {
@@ -158,7 +158,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_flood_season",
+      "id": "pantanal_feiticeira_flood_season",
       "title": "The Flood Season",
       "narrative": "The seasonal floods rise higher than any in living memory. Your lowland shrines are threatened.",
       "choiceA": {
@@ -179,7 +179,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_cursed_idol",
+      "id": "pantanal_feiticeira_cursed_idol",
       "title": "The Cursed Idol",
       "narrative": "A farmer plows up a golden idol with obsidian eyes. Everyone who touches it begins to dream of drowning.",
       "choiceA": {
@@ -199,7 +199,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_ancestor_council",
+      "id": "pantanal_feiticeira_ancestor_council",
       "title": "The Ancestor Council",
       "narrative": "The spirits of a thousand generations gather in your dreams, demanding to know why you disturb their rest.",
       "choiceA": {
@@ -227,7 +227,7 @@
       }
     },
     {
-      "id": "la_recta_provincia_eclipse_rite",
+      "id": "pantanal_feiticeira_eclipse_rite",
       "title": "The Solar Eclipse",
       "narrative": "A total eclipse darkens your territory. The old texts say this is the moment of greatest power.",
       "choiceA": {
