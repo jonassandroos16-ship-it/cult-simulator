@@ -1,0 +1,44 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+<div class="panel buildings-panel glass-panel rounded-[20px] p-5">
+    <h2 class="panel-title">Constructions</h2>
+    <p class="text-xs text-slate-400 mb-3 leading-relaxed">Build structures to automate and boost your cult's income. Each construction increases in cost as you build more. Some buildings generate Gold — visit the <strong class="text-violet-300">Bank</strong> tab to manage it.</p>
+    <div class="building-list flex flex-col gap-2.5">
+        @foreach (var def in GameData.Buildings.Where(b => GameData.PreachBuildings.Contains(b.Type)))
+        {
+            var owned = activeCoven.Buildings.GetValueOrDefault(def.Type);
+            var cost = GameEngine.BuildingCost(def, owned);
+            var affordable = def.CostResource == ResourceKind.Faith ? activeCoven.Faith >= cost : activeCoven.Gold >= cost;
+            var costIcon = def.CostResource == ResourceKind.Faith ? "✨" : "💰";
+            var displayName = GameData.BuildingNameFor(Game.State.ActiveCovenId, def.Type);
+            <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full
+                          disabled:opacity-45 disabled:cursor-not-allowed
+                          hover:not(:disabled):bg-amber-500/10 hover:not(:disabled):border-amber-500/30"
+                    style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                    disabled="@(!affordable)" @onclick="() => Game.BuyBuilding(def.Type)">
+                <div class="building-icon text-3xl flex-shrink-0">@def.Icon</div>
+                <div class="building-info flex-1 flex flex-col gap-0.5">
+                    <span class="building-name font-display text-base text-amber-100 font-medium">@displayName</span>
+                    <span class="building-effect text-xs text-emerald-400">@def.EffectDescription</span>
+                    <span class="building-owned text-[0.7rem] text-violet-300">owned: @owned</span>
+                </div>
+                <div class="building-cost flex items-baseline gap-1 flex-shrink-0">
+                    <span class="cost-value font-display font-semibold text-amber-400 text-base">@NumberFormat.Fmt(cost)</span>
+                    <span class="cost-icon text-sm">@costIcon</span>
+                </div>
+            </button>
+        }
+    </div>
+</div>
+
+@code {
+    private CovenState activeCoven => Game.State.ActiveCoven;
+
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Game.OnChange -= StateChanged;
+}

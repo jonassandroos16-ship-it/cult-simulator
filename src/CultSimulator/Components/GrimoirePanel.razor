@@ -1,0 +1,183 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+<div class="panel glass-panel rounded-[20px] p-5">
+    <h2 class="panel-title">Grimoire</h2>
+    <p class="text-xs text-slate-400 mb-3 leading-relaxed">Socket artifacts to gain passive bonuses. Collect 3 of the same suit to activate a powerful set bonus. Unlock more sockets via the Codex (Void &amp; Astral branch). Artifacts are obtained from the Forbidden Cauldron below — forge them using Materials harvested from Ley Line nodes.</p>
+    <div class="flex flex-col gap-4">
+        <div class="socket-display flex items-center justify-center gap-3 p-4 rounded-[14px]"
+             style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+            @for (int i = 0; i < occult.UnlockedSocketCount; i++)
+            {
+                var artifactId = i < occult.SocketedArtifacts.Count ? occult.SocketedArtifacts[i] : null;
+                var def = artifactId != null ? OccultData.Artifact(artifactId) : null;
+                <div class="socket-slot w-16 h-16 rounded-full flex items-center justify-center text-3xl"
+                     style="background: @(def != null ? "radial-gradient(circle, rgba(76,29,149,0.4), rgba(15,10,36,0.8))" : "rgba(15,10,36,0.5)"); border: 2px dashed @(def != null ? "rgba(245,158,11,0.4)" : "rgba(139,92,246,0.15)");">
+                    @if (def != null)
+                    {
+                        <span title="@def.Name - @def.EffectDescription">@def.Icon</span>
+                    }
+                    else
+                    {
+                        <span class="text-violet-500/30 text-xl">+</span>
+                    }
+                </div>
+            }
+        </div>
+
+        @if (suitCounts.Count > 0)
+        {
+            <div class="flex gap-2 flex-wrap">
+                @foreach (var suit in suitCounts)
+                {
+                    var hasBonus = suit.Value >= 3;
+                    <span class="px-3 py-1.5 rounded-full text-xs font-display tracking-[0.1em] @(hasBonus ? "text-amber-400 border border-amber-400/30 bg-amber-400/5" : "text-violet-300 border border-violet-500/20")">
+                        @SuitIcon(suit.Key) @suit.Value× @SuitName(suit.Key) @(hasBonus ? "★" : "")
+                    </span>
+                }
+            </div>
+        }
+
+        @if (occult.OwnedArtifacts.Count > 0)
+        {
+            <div>
+                <h3 class="text-xs font-display tracking-[0.2em] uppercase text-violet-300 mb-2">Inventory</h3>
+                <div class="flex flex-col gap-2">
+                    @foreach (var artifactId in occult.OwnedArtifacts)
+                    {
+                        var def = OccultData.Artifact(artifactId);
+                        if (def == null) continue;
+                        var canSocket = Grimoire.CanSocket(occult);
+                        <div class="upgrade-item flex items-center gap-3.5 p-3 rounded-[14px]"
+                             style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                            <div class="text-2xl flex-shrink-0">@def.Icon</div>
+                            <div class="flex-1 flex flex-col gap-0.5">
+                                <span class="font-display text-sm text-amber-100 font-medium">@def.Name</span>
+                                <span class="text-xs text-violet-300">@def.EffectDescription</span>
+                            </div>
+                            <button class="upgrade-buy px-3 py-1.5 rounded-full font-body text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
+                                    disabled="@(!canSocket)"
+                                    @onclick="() => Game.SocketArtifact(artifactId)">
+                                Socket
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        @if (occult.SocketedArtifacts.Count > 0)
+        {
+            <div>
+                <h3 class="text-xs font-display tracking-[0.2em] uppercase text-violet-300 mb-2">Socketed</h3>
+                <div class="flex flex-col gap-2">
+                    @foreach (var artifactId in occult.SocketedArtifacts)
+                    {
+                        var def = OccultData.Artifact(artifactId);
+                        if (def == null) continue;
+                        <div class="upgrade-item flex items-center gap-3.5 p-3 rounded-[14px] border-amber-500/20"
+                             style="background: rgba(15,10,36,0.5); border: 1px solid rgba(245,158,11,0.2);">
+                            <div class="text-2xl flex-shrink-0">@def.Icon</div>
+                            <div class="flex-1 flex flex-col gap-0.5">
+                                <span class="font-display text-sm text-amber-100 font-medium">@def.Name</span>
+                                <span class="text-xs text-violet-300">@def.EffectDescription</span>
+                            </div>
+                            <button class="upgrade-buy px-3 py-1.5 rounded-full font-body text-xs cursor-pointer transition-transform duration-200"
+                                    style="background: rgba(100,100,100,0.3); border: 1px solid var(--panel-border); color: var(--gold-soft);"
+                                    @onclick="() => Game.UnsocketArtifact(artifactId)">
+                                Remove
+                            </button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@if (Cauldron.IsUnlocked(occult))
+{
+    <div class="panel glass-panel rounded-[20px] p-5">
+        <h2 class="panel-title">Forbidden Cauldron</h2>
+        <div class="flex flex-col gap-3">
+            <div class="mb-2 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <p class="text-violet-300">The Cauldron brews elixirs and forges artifacts from occult Materials. Materials are harvested passively from conquered Ley Line nodes — go to the Ley Lines tab, conquer nodes, and set them to <span class="text-amber-400">Harvest</span> stance to collect them.</p>
+                <p class="text-slate-400 text-xs mt-2">Elixirs grant temporary bonuses for 60 seconds. Forge recipes consume materials to create a random artifact of the matching suit — these go to your Grimoire inventory for socketing.</p>
+            </div>
+            <div class="flex gap-3 flex-wrap mb-2">
+                @foreach (var mat in Enum.GetValues<MaterialKind>())
+                {
+                    <div class="flex items-baseline gap-1.5 px-3 py-1.5 rounded-full"
+                         style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                        <span class="text-sm">@MaterialIcon(mat)</span>
+                        <span class="font-display text-sm text-amber-100">@occult.Materials.GetValueOrDefault(mat)</span>
+                        <span class="text-[0.65rem] text-slate-400">@MaterialName(mat)</span>
+                    </div>
+                }
+            </div>
+            @foreach (var recipe in OccultData.Recipes)
+            {
+                var canCraft = Cauldron.CanCraft(occult, recipe);
+                <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed"
+                        style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                        disabled="@(!canCraft)"
+                        @onclick="() => Game.CraftRecipe(recipe.Id)">
+                    <div class="text-3xl flex-shrink-0">@recipe.Icon</div>
+                    <div class="flex-1 flex flex-col gap-0.5">
+                        <span class="font-display text-base text-amber-100 font-medium">@recipe.Name</span>
+                        <span class="text-xs @(recipe.IsPermanent ? "text-amber-400" : "text-emerald-400")">@recipe.EffectDescription</span>
+                        <span class="text-[0.7rem] text-violet-300">
+                            @foreach (var (material, amount) in recipe.Materials)
+                            {
+                                <span class="mr-2">@MaterialIcon(material) @MaterialName(material) @amount</span>
+                            }
+                        </span>
+                        @if (occult.ElixirTimer > 0 && !recipe.IsPermanent)
+                        {
+                            <span class="text-[0.7rem] text-amber-400">Active elixir: @Math.Ceiling(occult.ElixirTimer)s remaining</span>
+                        }
+                    </div>
+                </button>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private OccultState occult => Game.State.Occult;
+    private IReadOnlyDictionary<ArtifactSuit, int> suitCounts => Grimoire.SocketedSuitCounts(occult);
+
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private static string SuitIcon(ArtifactSuit suit) => suit switch
+    {
+        ArtifactSuit.Blood => "🩸",
+        ArtifactSuit.Void => "🔮",
+        ArtifactSuit.Mind => "🧠",
+        ArtifactSuit.Flesh => "🧿",
+        _ => "?"
+    };
+
+    private static string SuitName(ArtifactSuit suit) => suit.ToString();
+
+    private static string MaterialIcon(MaterialKind mat) => mat switch
+    {
+        MaterialKind.GraveDust => "💀",
+        MaterialKind.DemonBile => "🧪",
+        MaterialKind.AstralMercury => "⚗️",
+        _ => "?"
+    };
+
+    private static string MaterialName(MaterialKind mat) => mat switch
+    {
+        MaterialKind.GraveDust => "Grave Dust",
+        MaterialKind.DemonBile => "Demon Bile",
+        MaterialKind.AstralMercury => "Astral Mercury",
+        _ => "?"
+    };
+
+    public void Dispose() => Game.OnChange -= StateChanged;
+}

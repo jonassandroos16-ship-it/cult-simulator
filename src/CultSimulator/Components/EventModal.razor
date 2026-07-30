@@ -1,0 +1,37 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+@if (Game.ActiveEvent != null)
+{
+    <div class="event-overlay fixed inset-0 z-[100] flex items-center justify-center p-8 animate-fade-in"
+         style="background: rgba(5,3,8,0.8); backdrop-filter: blur(8px);">
+        <div class="event-modal relative rounded-3xl p-10 max-w-md w-full overflow-hidden animate-modal-rise"
+             style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.25);">
+            <div class="event-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
+                 style="background: radial-gradient(circle at center, rgba(124,58,237,0.12) 0%, transparent 60%);"></div>
+            <h2 class="event-title relative font-display text-2xl font-semibold text-amber-100 tracking-[0.1em] mb-4 text-center">@Game.ActiveEvent.Title</h2>
+            <p class="event-narrative relative text-sm leading-7 text-violet-300 mb-6 text-center">@Game.ActiveEvent.Narrative</p>
+            <div class="event-choices flex flex-col gap-3 relative">
+                <button class="event-choice flex flex-col gap-1 p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                        @onclick="() => Game.ChooseEvent(Game.ActiveEvent.ChoiceA)">
+                    <span class="choice-label font-display text-base text-amber-100 font-medium">@Game.ActiveEvent.ChoiceA.Label</span>
+                    <span class="choice-desc text-xs text-amber-200">@Game.ActiveEvent.ChoiceA.Description</span>
+                </button>
+                <button class="event-choice flex flex-col gap-1 p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                        @onclick="() => Game.ChooseEvent(Game.ActiveEvent.ChoiceB)">
+                    <span class="choice-label font-display text-base text-amber-100 font-medium">@Game.ActiveEvent.ChoiceB.Label</span>
+                    <span class="choice-desc text-xs text-amber-200">@Game.ActiveEvent.ChoiceB.Description</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => Game.OnChange -= StateChanged;
+}
