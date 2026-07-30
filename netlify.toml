@@ -1,0 +1,11 @@
+[build]
+command = "npm install && npm run build:css && dotnet publish src/CultSimulator/CultSimulator.csproj -c Release -o release"
+publish = "release/wwwroot"
+
+[build.environment]
+DOTNET_VERSION = "8.0"
+
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
