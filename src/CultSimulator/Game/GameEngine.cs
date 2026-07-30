@@ -96,7 +96,7 @@ public static class GameEngine
         return $"{hours / 24.0:F1} d";
     }
 
-    public static void TickAllCovens(GameState state)
+    public static void TickAllCovens(GameState state, WorldLocationService locations)
     {
         foreach (var coven in state.Covens)
         {
@@ -105,7 +105,7 @@ public static class GameEngine
             coven.Faith += faith; coven.Gold += gold;
             OccultEngine.Tick(state, coven, 1.0);
         }
-        ShadowWarEngine.Tick(state.ShadowWarOrInit, state, 1.0);
+        ShadowWarEngine.Tick(state.ShadowWarOrInit, state, locations, 1.0);
     }
 
     public static (double faith, double gold) ApplyOfflineIncome(GameState state, long elapsedMs)

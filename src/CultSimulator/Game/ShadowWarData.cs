@@ -23,7 +23,7 @@ public static class ShadowWarData
 
     public static readonly ImmutableArray<InstitutionDef> Institutions = ImmutableArray.Create(
         // Europe
-        new InstitutionDef("eu_police", "Lund Police Station", "europe", InstitutionType.Police, InstitutionTier.Tier1, 100, 2.5, 0.05, "Suspicion decay +0.5/s", 0.5, "A small-town precinct. Easy to infiltrate.", null),
+        new InstitutionDef("eu_police", "Lund Police Station", "europe", InstitutionType.Police, InstitutionTier.Tier1, 60, 1.5, 0.03, "Suspicion decay +0.5/s", 0.5, "A small-town precinct. Easy to infiltrate.", null),
         new InstitutionDef("eu_media", "Nordic Broadcasting Corp", "europe", InstitutionType.Media, InstitutionTier.Tier2, 280, 3.0, 0.08, "Global detection rate -10%", 0.1, "Regional news network.", new[] { "eu_police" }),
         new InstitutionDef("eu_gov", "European Parliament", "europe", InstitutionType.Government, InstitutionTier.Tier3, 600, 4.0, 0.12, "Agent recruitment +25%", 0.25, "The heart of European governance.", new[] { "eu_media" }),
 

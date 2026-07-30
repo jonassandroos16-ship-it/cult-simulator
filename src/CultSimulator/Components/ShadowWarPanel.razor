@@ -1,10 +1,19 @@
 @using CultSimulator.Game
 @inject GameService Game
+@inject WorldLocationService LocationService
 @implements IDisposable
 
 <div class="panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">🕯️ The Shadow War</h2>
-    <p class="text-sm text-violet-300 mb-4">Your cult does not fight openly — it seeps into society. Train acolytes into sleeper agents, then deploy them to infiltrate real-world institutions across the globe.</p>
+    <p class="text-sm text-violet-300 mb-3">Your cult does not fight openly — it seeps into society. Train acolytes into sleeper agents, then deploy them to infiltrate real-world institutions across the globe.</p>
+    <div class="mb-4 p-3 rounded-[12px] text-xs leading-relaxed text-slate-300" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
+        <p class="text-amber-300 font-medium mb-1">How it works</p>
+        <p class="mb-1">1. <span class="text-slate-200">Recon</span> — send 1–3 agents to scout an institution. There's a risk they get detected.</p>
+        <p class="mb-1">2. <span class="text-slate-200">Infiltrate</span> — send waves of agents to wear down its defense. Watch the detection meter — if it hits 100%, agents are lost and heat rises.</p>
+        <p class="mb-1">3. <span class="text-slate-200">Control</span> — once defense reaches zero, the institution is yours and grants a permanent bonus.</p>
+        <p class="mb-1">🏰 <span class="text-emerald-300">Coven Support:</span> Each converted coven in the same continent as an institution reduces detection and recon risk by 5% (up to 40%). Convert more covens to make infiltration easier.</p>
+        <p>👁️ <span class="text-rose-300">Heat</span> rises when agents are caught and decays passively over time. If heat gets too high, investigations trigger. Control Police institutions to increase heat decay.</p>
+    </div>
 
     <!-- Resource summary -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
@@ -20,7 +29,7 @@
         <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
             <div class="text-xs text-rose-400 uppercase tracking-wider">Heat</div>
             <div class="font-display text-lg text-amber-100">@((int)sw.Heat)</div>
-            <div class="text-[10px] text-slate-400">@(ShadowWarEngine.SuspicionDecay(sw) > 0 ? $"-{ShadowWarEngine.SuspicionDecay(sw):F1}/s" : "no decay")</div>
+            <div class="text-[10px] text-slate-400">-@((0.3 + ShadowWarEngine.SuspicionDecay(sw)).ToString("F1"))/s</div>
         </div>
         <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
             <div class="text-xs text-slate-400 uppercase tracking-wider">Controlled</div>
@@ -50,7 +59,16 @@
                         <span class="text-[10px] font-medium text-emerald-400 px-2 py-0.5 rounded" style="background: rgba(16,185,129,0.15);">BONUS</span>
                     }
                 </div>
-                <div class="text-[10px] text-slate-500 mb-2 px-2 py-1 rounded" style="background: rgba(5,3,8,0.4);">@territory.BonusLabel</div>
+                <div class="text-[10px] text-slate-500 mb-1 px-2 py-1 rounded" style="background: rgba(5,3,8,0.4);">@territory.BonusLabel</div>
+                @{ var tc = ShadowWarEngine.CovensInContinent(Game.State, LocationService, territory.Id); }
+                @if (tc > 0)
+                {
+                    <div class="text-[10px] text-emerald-400 mb-2 px-2 py-0.5 rounded" style="background: rgba(16,185,129,0.08);">🏰 @tc covens · -@((int)(ShadowWarEngine.CovenContinentBonus(tc) * 100))% risk</div>
+                }
+                else
+                {
+                    <div class="text-[10px] text-slate-600 mb-2 px-2">No coven support yet</div>
+                }
                 <div class="flex flex-col gap-1.5">
                     @foreach (var def in insts)
                     {
