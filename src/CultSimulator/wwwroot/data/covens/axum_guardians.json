@@ -1,0 +1,243 @@
+{
+  "id": "axum_guardians",
+  "name": "Axum Guardians",
+  "location": "Aksum",
+  "country": "Ethiopia",
+  "countryFlag": "🇪🇹",
+  "era": "Ancient",
+  "continent": "africa",
+  "latitude": 14.12,
+  "longitude": 38.73,
+  "summary": "Guardians of the ancient obelisks of Axum, keepers of the Ark's shadow. Their power is older than Christianity itself.",
+  "lore": "The obelisks of Axum pierce the sky like stone fingers pointing at the gods. The Guardians say they protect something that cannot be named, something that predates every religion. Their patience is geological.",
+  "followersRequired": 225000,
+  "baseMultiplier": 2185.4,
+  "events": [
+    {
+      "id": "axum_guardians_desert_mirage",
+      "title": "The Desert Mirage",
+      "narrative": "A vast mirage shimmers on the horizon — but it shows a city that should not exist, full of towers of black glass.",
+      "choiceA": {
+        "label": "Walk into the mirage",
+        "description": "+20% Faith or -5 Followers",
+        "random": {
+          "winChance": 0.5,
+          "winMessage": "You walk between worlds and return with power. +20% Faith.",
+          "lossMessage": "The mirage traps five followers in the between-place. -5 Followers.",
+          "lossEffects": {
+            "followers": -5
+          },
+          "winEffects": {
+            "faithPct": 0.2
+          }
+        }
+      },
+      "choiceB": {
+        "label": "Ward against it and stay",
+        "description": "+15% Faith",
+        "effects": {
+          "faithPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_bone_divination",
+      "title": "The Bone Reading",
+      "narrative": "An elder casts the sacred bones and they fall in a pattern not seen for a thousand years. The ancestors are restless.",
+      "choiceA": {
+        "label": "Interpret the pattern and act",
+        "description": "+25% Faith, -10% Gold",
+        "effects": {
+          "faithPct": 0.25,
+          "goldPct": -0.1
+        }
+      },
+      "choiceB": {
+        "label": "Ask the ancestors for guidance directly",
+        "description": "+8 Followers, -15% Faith",
+        "effects": {
+          "followers": 8,
+          "faithPct": -0.15
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_lion_spirit",
+      "title": "The Lion Spirit",
+      "narrative": "A ghostly lion with stars in its mane pads through your territory at dawn. It looks at you with ancient eyes.",
+      "choiceA": {
+        "label": "Offer yourself as its vessel",
+        "description": "+10 Followers, -20% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Hunt it to claim its power",
+        "description": "+25% Faith or -6 Followers",
+        "random": {
+          "winChance": 0.4,
+          "winMessage": "You bind the lion spirit! Its courage fills your coven. +25% Faith.",
+          "lossMessage": "The spirit is too ancient. Six followers are broken. -6 Followers.",
+          "lossEffects": {
+            "followers": -6
+          },
+          "winEffects": {
+            "faithPct": 0.25
+          }
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_star_knowledge",
+      "title": "The Star Knowledge",
+      "narrative": "The Dogon priests share a secret: a star is about to return, and with it, the beings who first gave humanity fire.",
+      "choiceA": {
+        "label": "Prepare the ritual of return",
+        "description": "+30% Faith, -15% Gold",
+        "effects": {
+          "faithPct": 0.3,
+          "goldPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Reject the star-beings and assert independence",
+        "description": "+18% Faith",
+        "effects": {
+          "faithPct": 0.18
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_ancestor_army",
+      "title": "The Ancestor Army",
+      "narrative": "On the night of the new moon, the dead rise from the old burial grounds — not as zombies, but as warriors of light.",
+      "choiceA": {
+        "label": "Lead them in a war-rite",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Feed them offerings to return to rest",
+        "description": "+22% Faith, -12% Gold",
+        "effects": {
+          "faithPct": 0.22,
+          "goldPct": -0.12
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_sacred_mountain",
+      "title": "The Sacred Mountain",
+      "narrative": "The mountain that anchors your territory begins to hum. The sound drives away all wildlife for miles.",
+      "choiceA": {
+        "label": "Climb to the peak and commune",
+        "description": "+28% Faith",
+        "effects": {
+          "faithPct": 0.28
+        }
+      },
+      "choiceB": {
+        "label": "Mine the mountain's sacred stone",
+        "description": "+25% Gold, -15% Faith",
+        "effects": {
+          "goldPct": 0.25,
+          "faithPct": -0.15
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_river_goddess",
+      "title": "The River Goddess",
+      "narrative": "A woman rises from the river at midnight, her skin scaled with gold. She says the river is hers, and demands tribute.",
+      "choiceA": {
+        "label": "Offer tribute and form a pact",
+        "description": "+8 Followers, -20% Gold",
+        "effects": {
+          "followers": 8,
+          "goldPct": -0.2
+        }
+      },
+      "choiceB": {
+        "label": "Challenge her claim",
+        "description": "+20% Faith or -5 Followers",
+        "random": {
+          "winChance": 0.45,
+          "winMessage": "Your magic exceeds hers! The river bends to your will. +20% Faith.",
+          "lossMessage": "The goddess floods your lands. Five followers are lost. -5 Followers.",
+          "lossEffects": {
+            "followers": -5
+          },
+          "winEffects": {
+            "faithPct": 0.2
+          }
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_sandstorm",
+      "title": "The Eternal Sandstorm",
+      "narrative": "A sandstorm that has raged for a week finally reaches your territory. Within it, voices speak in a dead language.",
+      "choiceA": {
+        "label": "Listen to the voices",
+        "description": "+25% Faith, -8% Gold",
+        "effects": {
+          "faithPct": 0.25,
+          "goldPct": -0.08
+        }
+      },
+      "choiceB": {
+        "label": "Shelter and wait it out",
+        "description": "+10% Faith, +5 Followers",
+        "effects": {
+          "faithPct": 0.1,
+          "followers": 5
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_old_pharaoh",
+      "title": "The Old Pharaoh",
+      "narrative": "A traveler brings a scarab that glows in the dark. He says it was pried from a seal that should never have been broken.",
+      "choiceA": {
+        "label": "Use the scarab to commune with the pharaoh's spirit",
+        "description": "+20% Faith, -15% Gold",
+        "effects": {
+          "faithPct": 0.2,
+          "goldPct": -0.15
+        }
+      },
+      "choiceB": {
+        "label": "Destroy the scarab",
+        "description": "+15% Faith",
+        "effects": {
+          "faithPct": 0.15
+        }
+      }
+    },
+    {
+      "id": "axum_guardians_eclipse_ceremony",
+      "title": "The Eclipse Ceremony",
+      "narrative": "A solar eclipse passes over your lands. The old texts say the sun's absence is a door.",
+      "choiceA": {
+        "label": "Open the door",
+        "description": "+10 Followers, -25% Faith",
+        "effects": {
+          "followers": 10,
+          "faithPct": -0.25
+        }
+      },
+      "choiceB": {
+        "label": "Guard the door and keep it closed",
+        "description": "+30% Faith",
+        "effects": {
+          "faithPct": 0.3
+        }
+      }
+    }
+  ]
+}
