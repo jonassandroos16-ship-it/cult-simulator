@@ -1,20 +1,20 @@
 {
-  "id": "skanor",
-  "name": "Skanör",
-  "location": "Skanör, Skåne",
+  "id": "uppsala_gothi",
+  "name": "Uppsala Gothi",
+  "location": "Gamla Uppsala",
   "country": "Sweden",
   "countryFlag": "🇸🇪",
   "era": "Viking Age",
   "continent": "europe",
-  "latitude": 55.41,
-  "longitude": 12.88,
-  "summary": "A windswept fishing village at the edge of the Öresund. Your coven begins here, where the old gods still whisper in the salt wind.",
-  "lore": "Skanör's medieval harbor was a place of wealth and whispers. On moonless nights, the old fishermen say, the lanterns of the dead still flicker across the strait. It is here, in the shadow of the old runestones, that you will found your order.",
-  "followersRequired": 0,
-  "baseMultiplier": 1.0,
+  "latitude": 59.86,
+  "longitude": 17.64,
+  "summary": "The great temple at Uppsala still draws pilgrims. The Gothi who guard it have grown complacent in their power.",
+  "lore": "The ancient temple mounds of Uppsala rise from the earth like the bones of giants. The Gothi here once sacrificed kings; now they merely collect tithes. Their power is real but rusting.",
+  "followersRequired": 20,
+  "baseMultiplier": 1.5,
   "events": [
     {
-      "id": "skanor_herring_omens",
+      "id": "uppsala_gothi_herring_omens",
       "title": "The Herring Run Fails",
       "narrative": "The herring vanish from the Öresund overnight. Fishers gather at the shore, muttering that the old sea-spirits have been offended.",
       "choiceA": {
@@ -35,7 +35,7 @@
       }
     },
     {
-      "id": "skanor_runestone_omen",
+      "id": "uppsala_gothi_runestone_omen",
       "title": "A Runestone Weeps Blood",
       "narrative": "An ancient runestone near your village begins to weep red sap. The elders say it is a warning from the old gods.",
       "choiceA": {
@@ -54,7 +54,7 @@
       }
     },
     {
-      "id": "skanor_frost_giant",
+      "id": "uppsala_gothi_frost_giant",
       "title": "A Frost Giant Stirs",
       "narrative": "The earth trembles and a vast shape moves in the blizzard. The skalds say a frost giant walks again.",
       "choiceA": {
@@ -82,7 +82,7 @@
       }
     },
     {
-      "id": "skanor_valkyrie_vision",
+      "id": "uppsala_gothi_valkyrie_vision",
       "title": "A Valkyrie Appears",
       "narrative": "A winged woman lands on the cliff above your village, her armor gleaming. She studies your followers with cold eyes.",
       "choiceA": {
@@ -102,7 +102,7 @@
       }
     },
     {
-      "id": "skanor_longship_raiders",
+      "id": "uppsala_gothi_longship_raiders",
       "title": "Longship Raiders Approach",
       "narrative": "A dragon-prowed longship appears on the horizon. They are raiders — or perhaps recruits.",
       "choiceA": {
@@ -130,7 +130,7 @@
       }
     },
     {
-      "id": "skanor_winter_solstice",
+      "id": "uppsala_gothi_winter_solstice",
       "title": "The Long Night",
       "narrative": "The winter solstice falls over your village. The longest night. Your followers gather around a bonfire on the frozen beach.",
       "choiceA": {
@@ -150,7 +150,7 @@
       }
     },
     {
-      "id": "skanor_berserker_challenge",
+      "id": "uppsala_gothi_berserker_challenge",
       "title": "A Berserker Demands Trial",
       "narrative": "A massive berserker arrives, challenging your authority. His eyes are already turning white with the bear-spirit.",
       "choiceA": {
@@ -178,7 +178,7 @@
       }
     },
     {
-      "id": "skanor_seidr_witch",
+      "id": "uppsala_gothi_seidr_witch",
       "title": "A Seiðr Witch Arrives",
       "narrative": "An old woman with one eye arrives at your village, claiming to walk between worlds. She offers to teach your coven the old ways.",
       "choiceA": {
@@ -198,7 +198,7 @@
       }
     },
     {
-      "id": "skanor_odin_raven",
+      "id": "uppsala_gothi_odin_raven",
       "title": "Odin's Raven Watches",
       "narrative": "A great raven perches on the roof of your hall for three days. It does not eat, drink, or sleep. It only watches.",
       "choiceA": {
@@ -218,7 +218,7 @@
       }
     },
     {
-      "id": "skanor_drowning_vision",
+      "id": "uppsala_gothi_drowning_vision",
       "title": "A Drowning in the Sound",
       "narrative": "A young fisher is pulled from the freezing water, barely alive. He babbles of a city of lights beneath the waves.",
       "choiceA": {
