@@ -103,9 +103,23 @@
                                     <span class="font-display text-base text-amber-100 font-medium">@name</span>
                                     <span class="text-xs text-violet-300">👥 @coven.Followers · ✨ @NumberFormat.Fmt(coven.Faith) · 💰 @NumberFormat.Fmt(coven.Gold)</span>
                                 </div>
-                                <div class="flex flex-col items-end gap-0.5">
-                                    <span class="text-xs text-emerald-400">+@NumberFormat.Fmt(faithPerSec)/s ✨</span>
-                                    <span class="text-xs text-amber-500">+@NumberFormat.Fmt(goldPerSec)/s 💰</span>
+                                <div class="flex items-center gap-3">
+                                    <div class="flex flex-col items-end gap-0.5">
+                                        <span class="text-xs text-emerald-400">+@NumberFormat.Fmt(faithPerSec)/s ✨</span>
+                                        <span class="text-xs text-amber-500">+@NumberFormat.Fmt(goldPerSec)/s 💰</span>
+                                    </div>
+                                    @if (coven.Id != Game.State.ActiveCovenId)
+                                    {
+                                        <button class="switch-coven-btn px-3 py-1.5 rounded-full font-body text-xs font-semibold cursor-pointer transition-all duration-200"
+                                                style="background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);"
+                                                @onclick="() => Game.SwitchActiveCoven(coven.Id)">
+                                            Switch
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-[0.65rem] font-semibold tracking-[0.15em] uppercase text-amber-400 px-2.5 py-1.5 border border-amber-500/30 rounded-full" style="background: rgba(245,158,11,0.08);">Active</span>
+                                    }
                                 </div>
                             </div>
                         }

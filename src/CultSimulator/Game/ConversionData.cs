@@ -19,6 +19,7 @@ public static class ConversionData
             LaCabotina,
             IxchelPriestesses,
             NewForest,
+            UppsalaGothi,
         };
 
     public static ConversionDef? Find(string covenId) =>
@@ -765,6 +766,105 @@ public static class ConversionData
                         }
                         s.Followers -= 5;
                         return "The younger members rebel. 'The world needs us.' Five split off to follow Gardner into the public eye. −5 Followers.";
+                    }),
+                0.25, 0.5),
+        });
+
+    private static ConversionDef UppsalaGothi => new(
+        "uppsala_gothi",
+        "The Rusting of the Old Temple",
+        new[]
+        {
+            new ConversionStep(
+                "ug_1",
+                "The Pilgrim Roads",
+                "The great temple at Gamla Uppsala still draws pilgrims from across the Norse world. The Gothi who guard it have grown complacent, collecting tithes and performing rituals by rote. You arrive as a pilgrim yourself, bringing fresh fervor. The head Gothi, an aging man named Sten, eyes you with suspicion. 'Another wanderer with bright eyes. The temple has seen a thousand like you. What makes you different?'",
+                new ConversionChoice(
+                    "Preach in the temple courtyard",
+                    "−100 Faith, +progress if you draw a crowd",
+                    s => { s.Faith -= 100; if (s.Faith < 0) s.Faith = 0; s.Followers += 2; return "Your words cut through the ritualized chants. Pilgrims stop to listen. Two young men pledge themselves to your cause. +2 Followers."; }),
+                new ConversionChoice(
+                    "Challenge Sten's authority directly",
+                    "Risky: +progress if you intimidate",
+                    s =>
+                    {
+                        if (Random.Shared.NextDouble() < 0.4)
+                        {
+                            s.Faith += 80;
+                            return "Sten's composure cracks. The other Gothi murmur. Your boldness has shaken their confidence. +80 Faith.";
+                        }
+                        s.Followers -= 2;
+                        return "Sten laughs and has you ejected from the courtyard. Two followers slip away in the shame. −2 Followers.";
+                    }),
+                0.25, 0.5),
+
+            new ConversionStep(
+                "ug_2",
+                "The Winter Blót",
+                "Winter falls hard on Uppsala. The annual Blót — the great sacrifice to the gods — approaches. Sten invites you to participate, a test of your devotion. 'We sacrifice the nine kinds. The blood must be real. If your god is stronger, prove it at the altar.' The temple mound looms against the snow, torches flickering.",
+                new ConversionChoice(
+                    "Perform a rival sacrifice with greater fervor",
+                    "−180 Faith, +progress if the omens favor you",
+                    s =>
+                    {
+                        s.Faith -= 180; if (s.Faith < 0) s.Faith = 0;
+                        if (Random.Shared.NextDouble() < 0.55)
+                        {
+                            s.Followers += 5;
+                            return "Your sacrifice is visceral and raw. The gathered crowd gasps as ravens circle the mound — a sign Odin himself has noticed. Five pilgrims join you. +5 Followers.";
+                        }
+                        s.Followers -= 3;
+                        return "The omens are ambiguous. Sten declares the gods prefer the old ways. Three followers drift back to the temple. −3 Followers.";
+                    }),
+                new ConversionChoice(
+                    "Subvert the ritual from within",
+                    "−80 Faith, safe: small progress",
+                    s => { s.Faith -= 80; if (s.Faith < 0) s.Faith = 0; s.Followers += 1; return "You insinuate yourself into the ritual, subtly redirecting the energy. The Gothi don't notice, but a sharp-eyed priestess does. She joins you after. +1 Follower."; }),
+                0.25, 0.5),
+
+            new ConversionStep(
+                "ug_3",
+                "The Seiðr Alliance",
+                "A Seiðr witch named Yrsa, who dwells in a hut on the edge of the temple grounds, approaches you secretly. 'I've watched you. Sten is a fool — he worships the form, not the power. I practice the old seiðr, the magic that walks between worlds. The Gothi fear me. Join with me, and we'll take the temple from within. But I won't be discarded after.'",
+                new ConversionChoice(
+                    "Forge an alliance with Yrsa",
+                    "−120 Faith, +progress, but you share power",
+                    s => { s.Faith -= 120; if (s.Faith < 0) s.Faith = 0; s.Followers += 4; return "Yrsa's seiðr and your charisma are a potent combination. She whispers to the temple servants, and four more join your cause. +4 Followers."; }),
+                new ConversionChoice(
+                    "Use her, then dispose of her",
+                    "Risky: +progress if she doesn't see through you",
+                    s =>
+                    {
+                        if (Random.Shared.NextDouble() < 0.35)
+                        {
+                            s.Faith += 200;
+                            return "Yrsa never suspects. Her intelligence is invaluable, and when the time comes, she vanishes into the snow. +200 Faith.";
+                        }
+                        s.Followers -= 5;
+                        return "Yrsa sees the betrayal in your eyes before you move. She curses you and vanishes — and five followers leave with her. −5 Followers.";
+                    }),
+                0.25, 0.5),
+
+            new ConversionStep(
+                "ug_4",
+                "The Fall of the Temple",
+                "The time has come. Sten's authority is crumbling. Pilgrims whisper your name. Yrsa's seiðr has undermined the temple's protections. The Gothi are divided — some have already joined you. Sten stands before the great oak, the last holdout. 'You think you can take the temple? The gods will not allow it. Prove your power here, at the sacred tree, or leave forever.'",
+                new ConversionChoice(
+                    "Overwhelm Sten with a show of force",
+                    "−250 Faith, convert the coven",
+                    s => { s.Faith -= 250; if (s.Faith < 0) s.Faith = 0; return null; }),
+                new ConversionChoice(
+                    "Offer Sten a place in the new order",
+                    "Risky: +progress if he accepts",
+                    s =>
+                    {
+                        if (Random.Shared.NextDouble() < 0.45)
+                        {
+                            s.Faith += 300; s.Followers += 6;
+                            return "Sten sees the inevitable. He kneels at the oak and pledges the temple to you. Six of his most loyal join as well. +300 Faith, +6 Followers.";
+                        }
+                        s.Followers -= 4;
+                        return "Sten spits at your feet. 'I would rather burn the temple than serve you.' He rallies the remaining Gothi. Four followers are lost in the clash. −4 Followers.";
                     }),
                 0.25, 0.5),
         });
