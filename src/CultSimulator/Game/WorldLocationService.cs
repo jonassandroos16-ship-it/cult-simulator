@@ -21,6 +21,15 @@ public class WorldLocationService
     public WorldLocationDef? Find(string id) =>
         _locations.FirstOrDefault(l => l.Id == id);
 
+    public IReadOnlyList<WorldLocationDef> ForContinent(string continent) =>
+        _locations.Where(l => string.Equals(l.Continent, continent, StringComparison.OrdinalIgnoreCase)).ToList();
+
+    public IReadOnlyList<string> ContinentsWithCovens() =>
+        _locations.Select(l => l.Continent).Distinct().ToList();
+
+    public IReadOnlyList<WorldLocationDef> CovensForContinentInOrder(string continent) =>
+        ForContinent(continent).OrderBy(l => l.FollowersRequired).ToList();
+
     public async Task LoadAsync()
     {
         if (_loaded) return;
@@ -28,21 +37,21 @@ public class WorldLocationService
         try
         {
             var manifest = await _http.GetFromJsonAsync<string[]>("data/covens/manifest.json");
-            if (manifest == null) return;
+            if (manifest == null) { _loaded = true; return; }
 
-            var builder = ImmutableArray.CreateBuilder<WorldLocationDef>();
+            var list = new List<WorldLocationDef>();
             foreach (var id in manifest)
             {
-                var loc = await _http.GetFromJsonAsync<WorldLocationDef>($"data/covens/{id}.json");
-                if (loc != null) builder.Add(loc);
+                try
+                {
+                    var loc = await _http.GetFromJsonAsync<WorldLocationDef>($"data/covens/{id}.json");
+                    if (loc != null) list.Add(loc);
+                }
+                catch { /* skip missing coven file */ }
             }
-            _locations = builder.ToImmutable();
-            _loaded = true;
+            _locations = list.ToImmutableArray();
         }
-        catch
-        {
-            _locations = ImmutableArray<WorldLocationDef>.Empty;
-            _loaded = true;
-        }
+        catch { /* manifest missing */ }
+        _loaded = true;
     }
 }

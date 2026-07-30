@@ -60,4 +60,32 @@ public static class CovenProgress
 
     public static bool IsHomeCoven(GameState state) => state.ActiveCovenId == "skanor" || string.IsNullOrEmpty(state.ActiveCovenId);
     public static int TotalFollowers(GameState state) => state.Covens.Where(c => c.Converted).Sum(c => c.Followers);
+
+    public static bool IsContinentComplete(GameState state, ImmutableArray<WorldLocationDef> locations, string continent)
+    {
+        var covens = locations.Where(l => string.Equals(l.Continent, continent, StringComparison.OrdinalIgnoreCase) && l.Id != "skanor");
+        return covens.All(l => state.FindCoven(l.Id)?.Converted == true);
+    }
+
+    public static string? CurrentContinent(GameState state, ImmutableArray<WorldLocationDef> locations)
+    {
+        foreach (var continent in ContinentThemes.ProgressionOrder)
+        {
+            if (!IsContinentComplete(state, locations, continent))
+                return continent;
+        }
+        return null;
+    }
+
+    public static bool IsContinentUnlocked(GameState state, ImmutableArray<WorldLocationDef> locations, string continent)
+    {
+        var idx = Array.IndexOf(ContinentThemes.ProgressionOrder, continent);
+        if (idx <= 0) return true;
+        for (int i = 0; i < idx; i++)
+        {
+            if (!IsContinentComplete(state, locations, ContinentThemes.ProgressionOrder[i]))
+                return false;
+        }
+        return true;
+    }
 }

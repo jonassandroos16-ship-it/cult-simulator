@@ -14,6 +14,7 @@ public record WorldLocationDef(
     string Country,
     string CountryFlag,
     string Era,
+    string Continent,
     double Latitude,
     double Longitude,
     string Summary,
