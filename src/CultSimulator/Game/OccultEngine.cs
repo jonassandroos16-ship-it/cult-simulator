@@ -133,4 +133,25 @@ public static class OccultEngine
 
     public static bool CanActivateCovenBlessing(OccultState o) => o.Initiates >= 20 && !o.IsCovenBlessingActive;
     public static bool ActivateCovenBlessing(OccultState o) { if (!CanActivateCovenBlessing(o)) return false; o.Initiates -= 20; o.CovenBlessingTimer = OccultBalance.CovenBlessingDurationSec; return true; }
+
+    public static double TotalFaithPerSecForCoven(GameState state, CovenState coven)
+    {
+        var o = coven.Occult;
+        double total = o.Initiates * 0.1 * GrandSacrifice.GlobalProductionMult(state) * Grimoire.GlobalProductionMult(o);
+        if (TechTree.HasTech(o, TechId.SanguineAutomata)) total += o.Initiates * 0.05;
+        total *= WorldMapSystem.GreatSealMultiplier(o);
+        return total;
+    }
+
+    public static double TotalMapFaithPerSecForCoven(OccultState o, GameState state)
+    {
+        double baseFaith = WorldMapSystem.TotalFaithPerSec(o);
+        baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Scholar) * OccultBalance.ScholarFaithPerSec;
+        baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Infiltrator) * OccultBalance.InfiltratorFaithPerSec;
+        baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult;
+        if (o.IsMassHysteriaActive) baseFaith *= 2.0;
+        if (o.IsCovenBlessingActive) baseFaith *= 2.0;
+        return baseFaith;
+    }
+
 }

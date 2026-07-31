@@ -4,7 +4,7 @@
 @implements IDisposable
 
 @{
-    var sw = ShadowWarEngine.EnsureInitialized(Game.State);
+    var sw = Game.State.ShadowWarOrInit;
     var losses = Game.RecentTerritoryLosses;
 }
 
@@ -34,226 +34,161 @@
         <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
             <div class="text-[0.65rem] text-rose-400 uppercase tracking-wider mb-1">Heat</div>
             <div class="font-display text-lg text-amber-100">@((int)sw.Heat)</div>
-            <div class="text-[10px] text-slate-500 mt-0.5">Rival aggression level</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">Decays over time</div>
         </div>
         <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="text-[0.65rem] text-slate-400 uppercase tracking-wider mb-1">Controlled</div>
-            <div class="font-display text-lg text-amber-100">@sw.ControlledInstitutions.Count</div>
-            <div class="text-[10px] text-slate-500 mt-0.5">Shadow War institutions</div>
+            <div class="text-[0.65rem] text-amber-400 uppercase tracking-wider mb-1">Controlled</div>
+            <div class="font-display text-lg text-amber-100">@sw.TotalControlled</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">Institutions seized</div>
         </div>
     </div>
 
     @if (losses.Count > 0)
     {
-        <div class="mt-4 p-3 rounded-[14px]" style="background: rgba(220,38,38,0.08); border: 1px solid rgba(220,38,38,0.25);">
-            <div class="text-[0.65rem] text-rose-400 uppercase tracking-wider mb-1">⚠️ Recent Defeats</div>
+        <div class="mt-3 p-2.5 rounded-[12px] text-xs" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+            <div class="text-rose-300 mb-1 font-medium">Recent Territory Losses</div>
             @foreach (var loss in losses)
             {
-                <div class="text-xs text-rose-300">@loss.RivalName drove you back in @loss.ContinentId</div>
+                <div class="text-slate-400 text-[0.7rem]">@loss.RivalName took @loss.ContinentId</div>
             }
         </div>
     }
 </div>
 
-<div class="panel glass-panel rounded-[20px] p-5 mb-4">
-    <h2 class="panel-title mb-1">YOUR FORCES</h2>
-    <p class="text-xs text-slate-400 mb-3 leading-5">
-        These are your recruited agents waiting to be deployed. Each type fills a different role:
-        <strong class="text-amber-200">Initiates</strong> are cheap and reliable,
-        <strong class="text-amber-200">Zealots</strong> deal heavy damage but are loud,
-        <strong class="text-amber-200">Infiltrators</strong> reduce the damage rivals deal back to you.
-    </p>
-    <div class="flex flex-col gap-2.5">
-        @foreach (var agentDef in BattleData.AgentTypes)
-        {
-            sw.RecruitedAgents.TryGetValue(agentDef.Type, out int owned);
-            <div class="flex items-center gap-3.5 p-3.5 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                <div class="text-3xl flex-shrink-0">@agentDef.Icon</div>
-                <div class="flex-1 min-w-0">
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <span class="font-display text-base text-amber-100 font-medium">@agentDef.Name</span>
-                        <span class="text-[0.65rem] text-violet-300 px-2 py-0.5 rounded-full" style="border: 1px solid rgba(167,139,250,0.25);">@owned ready</span>
-                    </div>
-                    <p class="text-xs text-slate-400 mt-0.5">@agentDef.Description</p>
-                    <div class="flex gap-3 mt-1 text-[0.65rem]">
-                        <span class="text-rose-300">⚔ ATK @agentDef.Attack</span>
-                        <span class="text-cyan-300">🛡 DEF @agentDef.Defense</span>
-                        <span class="text-emerald-300">👁 STL @agentDef.Stealth</span>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-</div>
-
-<div class="panel glass-panel rounded-[20px] p-5 mb-4">
-    <h2 class="panel-title mb-1">RECRUIT AGENTS</h2>
-    <p class="text-xs text-slate-400 mb-3 leading-5">
-        Spend from your <strong class="text-amber-200">Agent Pool</strong> (generated passively, shown above) to recruit battle units.
-        Adjust the quantity with <strong class="text-amber-200">+ / −</strong>, then press the cost button to recruit.
-    </p>
-    <div class="flex flex-col gap-2.5">
-        @foreach (var agentDef in BattleData.AgentTypes)
-        {
-            int qty = recruitCounts.GetValueOrDefault(agentDef.Type, 1);
-            int totalCost = agentDef.AgentCost * qty;
-            bool canRecruit = sw.AvailableAgents >= totalCost;
-            <div class="p-3.5 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                <div class="flex items-center gap-3">
-                    <span class="text-2xl flex-shrink-0">@agentDef.Icon</span>
-                    <div class="flex-1 min-w-0">
-                        <span class="font-display text-sm text-amber-100 font-medium">@agentDef.Name</span>
-                        <div class="text-[0.65rem] text-slate-400">@agentDef.AgentCost agents each &middot; @agentDef.Description</div>
-                    </div>
-                    <div class="flex items-center gap-1.5 flex-shrink-0">
-                        <button class="w-6 h-6 rounded-full text-xs flex items-center justify-center"
-                                style="background: rgba(100,100,100,0.25); border: 1px solid var(--panel-border); color: var(--gold-soft);"
-                                @onclick="() => AdjustCount(agentDef.Type, -1)">-</button>
-                        <span class="text-sm text-amber-100 w-5 text-center">@qty</span>
-                        <button class="w-6 h-6 rounded-full text-xs flex items-center justify-center"
-                                style="background: rgba(100,100,100,0.25); border: 1px solid var(--panel-border); color: var(--gold-soft);"
-                                @onclick="() => AdjustCount(agentDef.Type, 1)">+</button>
-                        <button class="px-3 py-1.5 rounded-full font-body font-semibold text-xs cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                                style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
-                                disabled="@(!canRecruit)"
-                                @onclick="() => OnRecruitClick(agentDef.Type, qty)">
-                            @totalCost 🧹
-                        </button>
-                    </div>
-                </div>
-            </div>
-        }
-    </div>
-</div>
-
 <div class="panel glass-panel rounded-[20px] p-5">
-    <h2 class="panel-title mb-1">BATTLE THEATRES</h2>
-    <p class="text-xs text-slate-400 mb-4 leading-5">
-        Each continent where you hold 2+ covens becomes an active theatre. Deploy recruited agents here, then press
-        <strong class="text-amber-200">Launch Attack</strong> to begin fighting. Your squad fights automatically — come back to see the result.
-        Victory rewards Faith; defeat raises Suspicion and returns your agents.
-    </p>
+    <h2 class="panel-title mb-3">Battle Theatres</h2>
+    <p class="text-xs text-slate-400 mb-4 leading-relaxed">Each continent where you control 2+ covens becomes a Battle Theatre. Recruit agents from the pool above, deploy them here, then start the battle. Victory grants a Faith bonus based on your total covens.</p>
+
     <div class="flex flex-col gap-3">
         @foreach (var theater in BattleData.Theaters)
         {
             bool active = BattleEngine.IsTheaterActive(Game.State, LocationService, theater.ContinentId);
             var battle = active ? BattleEngine.GetOrCreateBattle(Game.State, LocationService, theater.ContinentId) : Game.State.BattleSystem?.GetBattle(theater.ContinentId);
-            var rivalDef = BattleData.RivalForContinent(theater.ContinentId);
 
-            <div class="p-4 rounded-[14px] @(!active ? "opacity-50" : "")" style="background: rgba(15,10,36,0.5); border: 1px solid @(battle?.Phase == BattlePhase.Fighting ? "rgba(220,38,38,0.4)" : active ? "rgba(245,158,11,0.25)" : "var(--panel-border)");">
-                <div class="flex items-start gap-3 mb-2">
-                    <span class="text-2xl mt-0.5">@theater.Icon</span>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <span class="font-display text-sm font-medium text-amber-100">@theater.Name</span>
-                            @if (!active)
-                            {
-                                <span class="text-[0.6rem] text-slate-500 uppercase tracking-wider">Inactive — need 2+ covens</span>
-                            }
-                            else if (battle?.Phase == BattlePhase.Fighting)
-                            {
-                                <span class="text-[0.6rem] text-rose-400 uppercase tracking-wider animate-pulse">FIGHTING</span>
-                            }
-                            else if (battle?.Phase == BattlePhase.Deploy)
-                            {
-                                <span class="text-[0.6rem] text-amber-400 uppercase tracking-wider">RIVAL PRESENT</span>
-                            }
-                            else if (battle?.Phase == BattlePhase.Cooldown)
-                            {
-                                <span class="text-[0.6rem] text-emerald-400 uppercase tracking-wider">VICTORY — COOLING DOWN</span>
-                            }
-                        </div>
-                        <p class="text-[0.68rem] text-slate-400 mt-0.5">@theater.Description</p>
-                        @if (rivalDef != null && active)
-                        {
-                            <p class="text-[0.65rem] text-rose-300 mt-0.5">Rival: @rivalDef.Name (@rivalDef.Icon) &mdash; Strength @rivalDef.AgentStrength.ToString("F1")</p>
-                        }
+            <div class="p-4 rounded-[16px] @(active ? "" : "opacity-50")" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">@theater.Icon</span>
+                        <span class="font-display text-sm font-semibold text-amber-100">@theater.Name</span>
                     </div>
+                    @if (active)
+                    {
+                        <span class="text-[0.6rem] px-2 py-0.5 rounded-full @(battle?.Phase == BattlePhase.Fighting ? "bg-rose-500/20 text-rose-300" : battle?.Phase == BattlePhase.Deploy ? "bg-amber-500/20 text-amber-300" : "bg-slate-500/20 text-slate-300")">@battle?.Phase</span>
+                    }
+                    else
+                    {
+                        <span class="text-[0.6rem] px-2 py-0.5 rounded-full bg-slate-500/20 text-slate-400">Inactive</span>
+                    }
                 </div>
 
-                @if (active && battle != null && battle.Phase != BattlePhase.NoThreat)
+                @if (active && battle != null)
                 {
-                    <div class="flex flex-col gap-1 mb-3">
-                        <div class="flex justify-between text-[0.68rem] mb-0.5">
-                            <span class="text-amber-300">Your Forces</span>
-                            <span class="text-amber-200">@battle.PlayerHp.ToString("F0") / @battle.PlayerMaxHp HP</span>
+                    <div class="grid grid-cols-2 gap-2 mb-3 text-xs">
+                        <div>
+                            <div class="text-slate-400 text-[0.65rem] mb-0.5">Your HP</div>
+                            <div class="text-emerald-300 font-display">@((int)battle.PlayerHp) / @((int)battle.PlayerMaxHp)</div>
+                            <div class="w-full h-1.5 rounded-full bg-slate-700/50 mt-1 overflow-hidden">
+                                <div class="h-full bg-emerald-400 rounded-full transition-all duration-300" style="width: @(battle.PlayerMaxHp > 0 ? (battle.PlayerHp / battle.PlayerMaxHp * 100).ToString("F0") : "0")%;"></div>
+                            </div>
                         </div>
-                        <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.06);">
-                            <div class="h-full rounded-full" style="width: @(battle.PlayerMaxHp > 0 ? (battle.PlayerHp / battle.PlayerMaxHp * 100).ToString("F0") : "0")%; background: linear-gradient(90deg, var(--gold-warm), var(--gold-deep));"></div>
-                        </div>
-                        <div class="flex justify-between text-[0.68rem] mt-1 mb-0.5">
-                            <span class="text-rose-400">Rival Cult</span>
-                            <span class="text-rose-300">@battle.RivalHp.ToString("F0") / @battle.RivalMaxHp HP</span>
-                        </div>
-                        <div class="h-1.5 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.06);">
-                            <div class="h-full rounded-full" style="width: @(battle.RivalMaxHp > 0 ? (battle.RivalHp / battle.RivalMaxHp * 100).ToString("F0") : "0")%; background: linear-gradient(90deg, #dc2626, #7f1d1d);"></div>
+                        <div>
+                            <div class="text-slate-400 text-[0.65rem] mb-0.5">Rival HP</div>
+                            <div class="text-rose-300 font-display">@((int)battle.RivalHp) / @((int)battle.RivalMaxHp)</div>
+                            <div class="w-full h-1.5 rounded-full bg-slate-700/50 mt-1 overflow-hidden">
+                                <div class="h-full bg-rose-400 rounded-full transition-all duration-300" style="width: @(battle.RivalMaxHp > 0 ? (battle.RivalHp / battle.RivalMaxHp * 100).ToString("F0") : "0")%;"></div>
+                            </div>
                         </div>
                     </div>
+
+                    @if (battle.DeployedSquad.Count > 0)
+                    {
+                        <div class="flex flex-wrap gap-1.5 mb-3">
+                            @foreach (var slot in battle.DeployedSquad)
+                            {
+                                var def = BattleData.AgentDef(slot.Type);
+                                <div class="text-[0.65rem] px-2 py-1 rounded-[8px] flex items-center gap-1" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
+                                    <span>@def?.Icon</span>
+                                    <span class="text-amber-200">@slot.Count</span>
+                                </div>
+                            }
+                        </div>
+                    }
 
                     @if (battle.Phase == BattlePhase.Deploy)
                     {
-                        <div class="mb-2">
-                            <div class="text-[0.65rem] text-slate-400 mb-1.5">Deploy from your recruited agents:</div>
-                            <div class="flex gap-2 flex-wrap">
-                                @foreach (var agentDef in BattleData.AgentTypes)
-                                {
-                                    sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
-                                    int deployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == agentDef.Type)?.Count ?? 0;
-                                    <button class="px-2.5 py-1 rounded-full text-[0.68rem] font-body disabled:opacity-40 disabled:cursor-not-allowed"
-                                            style="background: rgba(15,10,36,0.8); border: 1px solid var(--panel-border); color: var(--gold-soft);"
-                                            disabled="@(avail < 1)"
-                                            @onclick="() => OnDeployClick(theater.ContinentId, agentDef.Type)">
-                                        @agentDef.Icon @agentDef.Name (@avail) @(deployed > 0 ? $"[{deployed} deployed]" : "")
-                                    </button>
-                                }
-                            </div>
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            @foreach (var agentDef in BattleData.AgentTypes)
+                            {
+                                sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
+                                <button class="battle-agent-card p-2 rounded-[8px] text-center transition-all hover:-translate-y-0.5"
+                                        style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);"
+                                        @onclick="() => OnDeploy(theater.ContinentId, agentDef.Type)">
+                                    <div class="text-lg mb-0.5">@agentDef.Icon</div>
+                                    <div class="text-[0.6rem] text-amber-200">@agentDef.Name</div>
+                                    <div class="text-[0.55rem] text-slate-400">@avail available</div>
+                                </button>
+                            }
                         </div>
-
-                        @if (battle.TotalDeployed > 0)
-                        {
-                            <div class="flex gap-2">
-                                <button class="flex-1 py-2 rounded-[14px] font-body font-semibold text-sm"
-                                        style="background: linear-gradient(135deg, #dc2626, #991b1b); border: none; color: #fef3c7; cursor: pointer;"
-                                        @onclick="() => OnStartBattle(theater.ContinentId)">
-                                    Launch Attack — @battle.TotalDeployed agents
-                                </button>
-                                <button class="px-4 py-2 rounded-[14px] font-body text-sm"
-                                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: var(--gold-soft); cursor: pointer;"
-                                        @onclick="() => OnWithdraw(theater.ContinentId)">
-                                    Withdraw
-                                </button>
-                            </div>
-                        }
-                        else
-                        {
-                            <p class="text-[0.68rem] text-slate-500 italic">No agents deployed yet. Recruit some above, then deploy them here.</p>
-                        }
+                        <div class="flex gap-2">
+                            <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
+                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
+                                    @onclick="() => OnWithdraw(theater.ContinentId)">
+                                Withdraw
+                            </button>
+                            <button class="flex-1 p-2 rounded-[10px] text-xs text-amber-100 font-medium transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
+                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
+                                    @onclick="() => OnStartBattle(theater.ContinentId)">
+                                Start Battle
+                            </button>
+                        </div>
                     }
-
-                    @if (battle.Phase == BattlePhase.Fighting)
+                    else if (battle.Phase == BattlePhase.Fighting)
                     {
-                        <p class="text-xs text-rose-300 italic">Battle in progress — your agents are fighting automatically. Check back soon.</p>
+                        <div class="text-center text-xs text-rose-300 py-2">Battle in progress...</div>
                     }
-
-                    @if (battle.Phase == BattlePhase.Cooldown)
+                    else if (battle.Phase == BattlePhase.Cooldown)
                     {
-                        <p class="text-xs text-emerald-300 italic">Victory achieved. A new rival will rise shortly.</p>
+                        <div class="text-center text-xs text-slate-400 py-2">Cooldown active...</div>
                     }
 
                     @if (battle.Log.Count > 0)
                     {
-                        <div class="mt-2 p-2 rounded-[10px] text-[0.65rem] text-slate-400 max-h-24 overflow-y-auto" style="background: rgba(0,0,0,0.3);">
-                            @foreach (var entry in Enumerable.Reverse(battle.Log).Take(5))
+                        <div class="mt-2 p-2 rounded-[8px] text-[0.65rem] space-y-0.5 max-h-24 overflow-y-auto" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
+                            @foreach (var entry in battle.Log.TakeLast(5))
                             {
-                                <div>@entry</div>
+                                <div class="text-slate-400">@entry</div>
                             }
                         </div>
                     }
                 }
                 else if (!active)
                 {
-                    <p class="text-[0.68rem] text-slate-500 italic">Convert a second coven in @theater.Name to unlock this theatre.</p>
+                    <div class="text-xs text-slate-500 text-center py-2">Control 2+ covens in this continent to activate.</div>
                 }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="panel glass-panel rounded-[20px] p-5 mt-4">
+    <h2 class="panel-title mb-3">Recruit Agents</h2>
+    <p class="text-xs text-slate-400 mb-4 leading-relaxed">Spend agents from your pool to recruit units. Each unit type has different stats and costs.</p>
+
+    <div class="grid grid-cols-3 gap-3">
+        @foreach (var agentDef in BattleData.AgentTypes)
+        {
+            sw.RecruitedAgents.TryGetValue(agentDef.Type, out int owned);
+            <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <div class="text-xl mb-1">@agentDef.Icon</div>
+                <div class="text-sm font-display text-amber-100">@agentDef.Name</div>
+                <div class="text-[0.6rem] text-slate-400 mt-1">ATK @agentDef.Attack / DEF @agentDef.Defense / STL @agentDef.Stealth</div>
+                <div class="text-[0.6rem] text-cyan-400 mt-1">Cost: @agentDef.AgentCost agents</div>
+                <div class="text-[0.6rem] text-slate-500">Owned: @owned</div>
+                <button class="mt-2 w-full p-1.5 rounded-[8px] text-xs text-amber-100 transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
+                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
+                        @onclick="() => OnRecruit(agentDef.Type, 1)">
+                    Recruit
+                </button>
             </div>
         }
     </div>
@@ -262,28 +197,16 @@
 @code {
     [Parameter] public EventCallback OnViewMap { get; set; }
 
-    private Dictionary<AgentType, int> recruitCounts = new()
-    {
-        { AgentType.Initiate, 1 },
-        { AgentType.Zealot, 1 },
-        { AgentType.Infiltrator, 1 }
-    };
+    private void StateChanged() => StateHasChanged();
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
-    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
 
-    private void AdjustCount(AgentType type, int delta)
+    private void OnRecruit(AgentType type, int count)
     {
-        recruitCounts.TryGetValue(type, out int current);
-        recruitCounts[type] = Math.Max(1, current + delta);
+        Game.RecruitAgent(type, count);
     }
 
-    private void OnRecruitClick(AgentType type, int qty)
-    {
-        Game.RecruitAgent(type, qty);
-    }
-
-    private void OnDeployClick(string continentId, AgentType type)
+    private void OnDeploy(string continentId, AgentType type)
     {
         Game.DeployAgents(continentId, type, 1);
     }
