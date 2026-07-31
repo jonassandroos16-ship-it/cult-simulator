@@ -2,349 +2,68 @@ namespace CultSimulator.Game;
 
 public static class ShadowWarEngine
 {
-    public static ShadowWarState CreateInitialState()
+    public static double AgentRecruitCost(OccultState o, AgentDef def)
+        => Math.Ceiling(OccultBalance.AgentCostBase * Math.Pow(OccultBalance.AgentCostGrowth, def.AgentCost - OccultBalance.AgentCostBase + AgentCount(o, def.Type)));
+
+    public static int AgentCount(OccultState o, AgentType type)
+        => OccultData.GetShadowAgent(o, type)?.Count ?? 0;
+
+    public static bool CanRecruit(GameState state, AgentDef def)
     {
-        var state = new ShadowWarState();
-        foreach (var def in ShadowWarData.Institutions)
-        {
-            state.Institutions.Add(new InstitutionState
-            {
-                Id = def.Id,
-                Status = def.Prerequisites == null || def.Prerequisites.Length == 0
-                    ? InstitutionStatus.Unlocked
-                    : InstitutionStatus.Locked,
-                DefenseRemaining = def.Defense
-            });
-        }
-        return state;
+        var o = state.Occult;
+        if (o.Agents < def.AgentCost) return false;
+        if (AgentCount(o, def.Type) >= OccultBalance.MaxAgentsPerType) return false;
+        return true;
     }
 
-    // ── Computed bonuses from controlled institutions ──
-
-    public static IReadOnlyList<InstitutionDef> ControlledInstitutions(ShadowWarState sw) =>
-        ShadowWarData.Institutions.Where(d => sw.GetInstitution(d.Id)?.Status == InstitutionStatus.Controlled).ToList();
-
-    public static bool IsTerritoryControlled(ShadowWarState sw, string territoryId)
+    public static bool Recruit(GameState state, AgentDef def)
     {
-        var t = ShadowWarData.Territory(territoryId);
-        if (t == null) return false;
-        return t.InstitutionIds.All(id => sw.GetInstitution(id)?.Status == InstitutionStatus.Controlled);
+        if (!CanRecruit(state, def)) return false;
+        var o = state.Occult;
+        o.Agents -= def.AgentCost;
+        var existing = OccultData.GetShadowAgent(o, def.Type);
+        if (existing != null) existing.Count++;
+        else o.ShadowAgents.Add(new ShadowAgent { Type = def.Type, Count = 1 });
+        return true;
     }
 
-    public static IReadOnlyList<TerritoryDef> ControlledTerritories(ShadowWarState sw) =>
-        ShadowWarData.Territories.Where(t => IsTerritoryControlled(sw, t.Id)).ToList();
-
-    public static bool IsAllTerritoriesControlled(ShadowWarState sw) =>
-        ShadowWarData.Territories.All(t => IsTerritoryControlled(sw, t.Id));
-
-    public static double SuspicionDecay(ShadowWarState sw) =>
-        ControlledInstitutions(sw).Where(i => i.Type == InstitutionType.Police).Sum(i => i.RewardValue);
-
-    public static double DetectionMultiplier(ShadowWarState sw)
-    {
-        var reduction = ControlledInstitutions(sw).Where(i => i.Type == InstitutionType.Media).Sum(i => i.RewardValue);
-        return Math.Max(0.3, 1.0 - reduction);
-    }
-
-    public static double ReconRiskMultiplier(ShadowWarState sw)
-    {
-        var reduction = ControlledInstitutions(sw).Where(i => i.Type == InstitutionType.Intelligence).Sum(i => i.RewardValue);
-        return Math.Max(0.3, 1.0 - reduction);
-    }
-
-    public static double AgentStrength(ShadowWarState sw, GameState state)
-    {
-        double baseStrength = 1.0;
-        var militaryBonus = ControlledInstitutions(sw).Where(i => i.Type == InstitutionType.Military).Sum(i => i.RewardValue);
-        baseStrength *= 1.0 + militaryBonus;
-        var armyPower = state.Covens.Where(c => c.Converted).Sum(c => c.Occult.ArmyPower);
-        baseStrength *= 1.0 + armyPower * 0.001;
-        return baseStrength;
-    }
-
-    public static double AgentProductionPerSec(ShadowWarState sw, GameState state)
+    public static double TotalAgentFaithPerSec(OccultState o)
     {
         double total = 0;
-        foreach (var coven in state.Covens)
+        foreach (var sa in o.ShadowAgents)
         {
-            if (!coven.Converted) continue;
-            total += coven.Occult.Acolytes * 0.02;
+            var def = OccultData.Agent(sa.Type);
+            total += def.FaithPerSec * sa.Count;
         }
-        var govBonus = ControlledInstitutions(sw).Where(i => i.Type == InstitutionType.Government).Sum(i => i.RewardValue);
-        total *= 1.0 + govBonus;
-        var territories = ControlledTerritories(sw);
-        double agentMult = territories.Aggregate(1.0, (m, t) => m * t.AgentMultiplier);
-        total *= agentMult;
         return total;
     }
 
-    public static double FaithMultiplierBonus(ShadowWarState sw) =>
-        ControlledInstitutions(sw).Where(i => i.Type == InstitutionType.Finance).Sum(i => i.RewardValue);
-
-    // ── Coven bonuses ──
-
-    /// <summary>
-    /// Counts converted covens in the same continent as a shadow war territory.
-    /// More covens = easier infiltration of that region.
-    /// </summary>
-    public static int CovensInContinent(GameState state, WorldLocationService locations, string territoryId)
+    public static double TotalAgentSuspicionPerSec(OccultState o)
     {
-        var continentMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        double total = 0;
+        foreach (var sa in o.ShadowAgents)
         {
-            ["europe"] = "europe",
-            ["north_america"] = "north america",
-            ["south_america"] = "south america",
-            ["asia"] = "asia",
-            ["oceania"] = "oceania",
-            ["africa"] = "africa",
-            ["middle_east"] = "middle east"
-        };
-        if (!continentMap.TryGetValue(territoryId, out var continent)) return 0;
-        return state.Covens.Count(c => c.Converted &&
-            string.Equals(locations.Find(c.Id)?.Continent, continent, StringComparison.OrdinalIgnoreCase));
-    }
-
-    /// <summary>
-    /// Returns an infiltration ease multiplier (0–1 subtracted from base detection rate and recon risk)
-    /// based on how many converted covens the player has in a territory's continent.
-    /// Each coven reduces difficulty by 5%, up to 40%.
-    /// </summary>
-    public static double CovenContinentBonus(int covenCount) =>
-        Math.Min(0.40, covenCount * 0.05);
-
-
-
-    public static (bool success, string message) StartRecon(ShadowWarState sw, GameState state, WorldLocationService locations, string institutionId, int agentCount)
-    {
-        var inst = sw.GetInstitution(institutionId);
-        var def = ShadowWarData.Institution(institutionId);
-        if (inst == null || def == null) return (false, "Unknown institution.");
-        if (inst.Status != InstitutionStatus.Unlocked) return (false, "Cannot recon this institution now.");
-        if (agentCount < 1 || agentCount > 3) return (false, "Send 1-3 agents for recon.");
-        if (sw.AvailableAgents < agentCount) return (false, "Not enough available agents.");
-
-        var covenCount = CovensInContinent(state, locations, def.TerritoryId);
-        var covenBonus = CovenContinentBonus(covenCount);
-        var risk = def.ReconRisk * ReconRiskMultiplier(sw) * (1.0 - covenBonus);
-        if (Random.Shared.NextDouble() < risk)
-        {
-            sw.TotalAgents -= agentCount;
-            sw.Heat += 5 + agentCount * 2;
-            return (false, $"Recon team detected! Lost {agentCount} agents. Heat +{5 + agentCount * 2}.");
+            var def = OccultData.Agent(sa.Type);
+            total += def.SuspicionPerSec * sa.Count;
         }
-
-        sw.TotalAgents -= agentCount;
-        inst.Status = InstitutionStatus.Recon;
-        inst.AssignedAgents = agentCount;
-        inst.ReconProgress = 0;
-        return (true, $"Recon team of {agentCount} deployed to {def.Name}.{(covenBonus > 0 ? $" Coven support ({covenCount} covens): -{(int)(covenBonus * 100)}% recon risk." : "")}");
+        return total;
     }
 
-    public static (bool success, string message) SendInfiltrationWave(ShadowWarState sw, GameState state, WorldLocationService locations, string institutionId, int waveSize)
+    public static double TotalAgentArmyPowerPerSec(OccultState o)
     {
-        var inst = sw.GetInstitution(institutionId);
-        var def = ShadowWarData.Institution(institutionId);
-        if (inst == null || def == null) return (false, "Unknown institution.");
-        if (inst.Status != InstitutionStatus.Recon && inst.Status != InstitutionStatus.Infiltrating)
-            return (false, "Must recon before infiltrating.");
-        if (waveSize < 1) return (false, "Wave must have at least 1 agent.");
-        if (sw.AvailableAgents < waveSize) return (false, "Not enough available agents.");
-
-        sw.TotalAgents -= waveSize;
-        inst.AssignedAgents += waveSize;
-        inst.Status = InstitutionStatus.Infiltrating;
-        var covenCount = CovensInContinent(state, locations, def.TerritoryId);
-        var covenBonus = CovenContinentBonus(covenCount);
-        return (true, $"Wave of {waveSize} agents sent to {def.Name}.{(covenBonus > 0 ? $" Coven support ({covenCount} covens): -{(int)(covenBonus * 100)}% detection rate." : "")}");
-    }
-
-    public static (bool success, string message) WithdrawAgents(ShadowWarState sw, string institutionId)
-    {
-        var inst = sw.GetInstitution(institutionId);
-        var def = ShadowWarData.Institution(institutionId);
-        if (inst == null || def == null) return (false, "Unknown institution.");
-        if (inst.AssignedAgents <= 0) return (false, "No agents deployed here.");
-        if (inst.Status == InstitutionStatus.Controlled) return (false, "Institution is controlled.");
-
-        sw.TotalAgents += inst.AssignedAgents;
-        inst.AssignedAgents = 0;
-        inst.Status = InstitutionStatus.Unlocked;
-        inst.ReconProgress = 0;
-        inst.Detection = Math.Max(0, inst.Detection - 20);
-        return (true, $"Agents withdrawn from {def.Name}.");
-    }
-
-    public static (bool success, string message) AssignDefenders(ShadowWarState sw, string institutionId, int count)
-    {
-        var inst = sw.GetInstitution(institutionId);
-        var def = ShadowWarData.Institution(institutionId);
-        if (inst == null || def == null) return (false, "Unknown institution.");
-        if (inst.Status != InstitutionStatus.Investigated) return (false, "Not under investigation.");
-        if (sw.AvailableAgents < count) return (false, "Not enough available agents.");
-
-        sw.TotalAgents -= count;
-        inst.AssignedAgents += count;
-        return (true, $"{count} agents assigned to defend {def.Name}.");
-    }
-
-    // ── Tick ──
-
-    public static void Tick(ShadowWarState sw, GameState state, WorldLocationService locations, double deltaSec)
-    {
-        if (sw.VictoryAchieved) return;
-
-        sw.TotalAgents += AgentProductionPerSec(sw, state) * deltaSec;
-        // Passive heat decay: always 0.3/s as a floor, plus bonuses from controlled Police institutions
-        var totalDecay = 0.3 + SuspicionDecay(sw);
-        sw.Heat = Math.Max(0, sw.Heat - totalDecay * deltaSec);
-
-        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-
-        foreach (var def in ShadowWarData.Institutions)
+        double total = 0;
+        foreach (var sa in o.ShadowAgents)
         {
-            var inst = sw.GetInstitution(def.Id);
-            if (inst == null) continue;
-            ProcessInstitution(sw, inst, def, state, locations, deltaSec, now);
+            var def = OccultData.Agent(sa.Type);
+            total += def.ArmyPowerPerSec * sa.Count;
         }
-
-        UpdateLocks(sw);
-        MaybeTriggerInvestigation(sw, now);
-
-        if (IsAllTerritoriesControlled(sw) && !sw.VictoryAchieved)
-        {
-            sw.VictoryAchieved = true;
-            sw.PrestigeMultiplier = 5.0;
-        }
-
-        sw.TotalControlled = ControlledInstitutions(sw).Count;
+        return total;
     }
 
-    private static void ProcessInstitution(ShadowWarState sw, InstitutionState inst, InstitutionDef def, GameState state, WorldLocationService locations, double deltaSec, long now)
+    public static int TotalAgentCount(OccultState o)
     {
-        switch (inst.Status)
-        {
-            case InstitutionStatus.Recon:
-            {
-                inst.ReconProgress += 15 * deltaSec * inst.AssignedAgents;
-                if (inst.ReconProgress >= 100)
-                {
-                    inst.ReconProgress = 100;
-                    inst.Status = InstitutionStatus.Infiltrating;
-                }
-                break;
-            }
-            case InstitutionStatus.Infiltrating:
-            {
-                double strength = AgentStrength(sw, state);
-                double damage = inst.AssignedAgents * strength * 2 * deltaSec;
-                inst.DefenseRemaining = Math.Max(0, inst.DefenseRemaining - damage);
-                inst.ControlProgress = ((def.Defense - inst.DefenseRemaining) / def.Defense) * 100;
-
-                // Coven continent bonus reduces detection rate
-                var covenCount = CovensInContinent(state, locations, def.TerritoryId);
-                var covenBonus = CovenContinentBonus(covenCount);
-                double detectionGain = def.DetectionRate * inst.AssignedAgents * deltaSec * DetectionMultiplier(sw) * (1.0 - covenBonus);
-                inst.Detection = Math.Min(100, inst.Detection + detectionGain);
-
-                if (inst.Detection >= 100)
-                {
-                    int lost = inst.AssignedAgents;
-                    inst.AssignedAgents = 0;
-                    inst.Detection = 100;
-                    inst.Status = InstitutionStatus.Alerted;
-                    inst.CooldownUntil = now + 30_000;
-                    sw.Heat += 20 + lost * 5;
-                    break;
-                }
-
-                if (inst.DefenseRemaining <= 0)
-                {
-                    inst.Status = InstitutionStatus.Controlled;
-                    inst.Detection = 0;
-                    inst.AssignedAgents = 0;
-                    inst.ControlProgress = 100;
-                    inst.InvestigationDefense = 0;
-                }
-                break;
-            }
-            case InstitutionStatus.Alerted:
-            {
-                inst.Detection = Math.Max(0, inst.Detection - 5 * deltaSec);
-                if (now >= inst.CooldownUntil)
-                {
-                    inst.Status = InstitutionStatus.Unlocked;
-                    inst.Detection = 0;
-                    inst.DefenseRemaining = def.Defense;
-                    inst.ControlProgress = 0;
-                }
-                break;
-            }
-            case InstitutionStatus.Investigated:
-            {
-                double defend = inst.AssignedAgents * 3 * deltaSec;
-                double decay = 5 * deltaSec;
-                inst.InvestigationDefense = Math.Max(0, inst.InvestigationDefense + defend - decay);
-
-                if (inst.InvestigationDefense <= 0)
-                {
-                    inst.Status = InstitutionStatus.Unlocked;
-                    inst.AssignedAgents = 0;
-                    inst.DefenseRemaining = def.Defense;
-                    inst.Detection = 0;
-                    inst.ControlProgress = 0;
-                    sw.Heat += 15;
-                }
-                else if (inst.InvestigationDefense >= 100)
-                {
-                    inst.Status = InstitutionStatus.Controlled;
-                    inst.AssignedAgents = 0;
-                    inst.InvestigationDefense = 0;
-                }
-                break;
-            }
-        }
-    }
-
-    private static void UpdateLocks(ShadowWarState sw)
-    {
-        foreach (var def in ShadowWarData.Institutions)
-        {
-            var inst = sw.GetInstitution(def.Id);
-            if (inst == null || inst.Status != InstitutionStatus.Locked) continue;
-            if (def.Prerequisites == null || def.Prerequisites.Length == 0)
-            {
-                inst.Status = InstitutionStatus.Unlocked;
-                continue;
-            }
-            bool allMet = def.Prerequisites.All(pid => sw.GetInstitution(pid)?.Status == InstitutionStatus.Controlled);
-            if (allMet) inst.Status = InstitutionStatus.Unlocked;
-        }
-    }
-
-    private static long _nextInvestigationTime;
-
-    private static void MaybeTriggerInvestigation(ShadowWarState sw, long now)
-    {
-        if (now < _nextInvestigationTime) return;
-        var controlled = ControlledInstitutions(sw);
-        if (controlled.Count == 0)
-        {
-            _nextInvestigationTime = now + 60_000;
-            return;
-        }
-        double chance = Math.Min(0.8, 0.15 + controlled.Count * 0.03);
-        if (Random.Shared.NextDouble() < chance)
-        {
-            var target = controlled[Random.Shared.Next(controlled.Count)];
-            var inst = sw.GetInstitution(target.Id);
-            if (inst != null && inst.Status == InstitutionStatus.Controlled)
-            {
-                inst.Status = InstitutionStatus.Investigated;
-                inst.InvestigationDefense = 50;
-                inst.AssignedAgents = 0;
-            }
-        }
-        long interval = Math.Max(15_000, 60_000 - controlled.Count * 2000);
-        _nextInvestigationTime = now + interval;
+        int total = 0;
+        foreach (var sa in o.ShadowAgents) total += sa.Count;
+        return total;
     }
 }
