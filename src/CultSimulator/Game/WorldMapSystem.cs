@@ -51,26 +51,6 @@ public static class WorldMapSystem
         if (o.Minions.Count > 0 && Random.Shared.NextDouble() < 0.3) o.Minions.RemoveAt(Random.Shared.Next(o.Minions.Count));
     }
 
-    public static bool CanConnectLeyLine(OccultState o, string nodeA, string nodeB) =>
-        IsConquered(o, nodeA) && IsConquered(o, nodeB) && nodeA != nodeB;
-
-    public static bool ConnectLeyLine(OccultState o, string nodeA, string nodeB)
-    {
-        if (!CanConnectLeyLine(o, nodeA, nodeB) || o.LeyLines.Any(l => l.Contains(nodeA) && l.Contains(nodeB))) return false;
-        o.LeyLines.Add(new[] { nodeA, nodeB });
-        return true;
-    }
-
-    public static int GreatSealCount(OccultState o)
-    {
-        int count = 0;
-        for (int i = 0; i < o.LeyLines.Count; i++) for (int j = i + 1; j < o.LeyLines.Count; j++) for (int k = j + 1; k < o.LeyLines.Count; k++)
-            if (o.LeyLines[i].Concat(o.LeyLines[j]).Concat(o.LeyLines[k]).Distinct().Count() == 3) count++;
-        return count;
-    }
-
-    public static double GreatSealMultiplier(OccultState o) { int seals = GreatSealCount(o); return seals == 0 ? 1.0 : 1.0 + seals * (Grimoire.GreatSealMult(o) - 1.0); }
-
     public static int ConqueredNodeCount(GameState state)
     {
         var covenNodes = OccultData.NodesForActiveCoven(state);

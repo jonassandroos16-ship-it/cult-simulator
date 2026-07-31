@@ -28,44 +28,55 @@ public static class RivalCultEngine
         return state.RivalCults;
     }
 
-    public static void Activate(GameState state)
+    public static bool ShouldActivateForContinent(GameState state, WorldLocationService locations, string continentId)
+    {
+        int count = state.Covens.Count(c => c.Converted &&
+            string.Equals(locations.Find(c.Id)?.Continent, continentId, StringComparison.OrdinalIgnoreCase));
+        return count >= 2;
+    }
+
+    public static void ActivateForContinent(GameState state, string continentId)
     {
         var rs = EnsureInitialized(state);
-        if (rs.IsActive) return;
-        rs.IsActive = true;
-        rs.ActivatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var now = rs.ActivatedAt;
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
         foreach (var rival in rs.Rivals)
         {
+            var def = RivalCultData.Find(rival.Id);
+            if (def == null || def.PreferredTerritoryId != continentId) continue;
+            if (rival.Status != RivalCultStatus.Dormant) continue;
+
             rival.Status = RivalCultStatus.Active;
             rival.Power = 20;
             rival.NextActionAt = now + (long)(Random.Shared.Next(30, 60) * 1000);
         }
     }
 
-    public static bool ShouldActivate(GameState state)
-    {
-        var sw = state.ShadowWarOrInit;
-        return sw.TotalControlled >= 3;
-    }
-
-    public static void Tick(GameState state, double deltaSec)
+    public static void Tick(GameState state, WorldLocationService locations, double deltaSec)
     {
         var rs = EnsureInitialized(state);
-        if (!rs.IsActive)
-        {
-            if (ShouldActivate(state))
-                Activate(state);
-            else
-                return;
-        }
-
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         foreach (var def in RivalCultData.Rivals)
         {
             var rival = rs.GetRival(def.Id);
             if (rival == null) continue;
+
+            bool shouldActive = ShouldActivateForContinent(state, locations, def.PreferredTerritoryId);
+
+            if (shouldActive && rival.Status == RivalCultStatus.Dormant)
+            {
+                ActivateForContinent(state, def.PreferredTerritoryId);
+            }
+            else if (!shouldActive && rival.Status != RivalCultStatus.Dormant)
+            {
+                rival.Status = RivalCultStatus.Dormant;
+                rival.Power = 0;
+                rival.ControlledInstitutions.Clear();
+                rival.TerritoryControl = 0;
+            }
+
+            if (rival.Status == RivalCultStatus.Dormant) continue;
 
             rival.Power += def.GrowthRate * deltaSec * (1.0 + rival.TerritoryControl * 0.5);
 
@@ -110,12 +121,6 @@ public static class RivalCultEngine
         if (unlocked.Count > 0)
             return sw.GetInstitution(unlocked[Random.Shared.Next(unlocked.Count)].Id);
 
-        var allUnlocked = ShadowWarData.Institutions
-            .Where(i => sw.GetInstitution(i.Id)?.Status == InstitutionStatus.Unlocked)
-            .ToList();
-        if (allUnlocked.Count > 0)
-            return sw.GetInstitution(allUnlocked[Random.Shared.Next(allUnlocked.Count)].Id);
-
         return null;
     }
 
@@ -148,14 +153,12 @@ public static class RivalCultEngine
     public static int TotalRivalControlled(GameState state)
     {
         var rs = EnsureInitialized(state);
-        if (!rs.IsActive) return 0;
-        return rs.Rivals.Sum(r => r.ControlledInstitutions.Count);
+        return rs.Rivals.Where(r => r.Status != RivalCultStatus.Dormant).Sum(r => r.ControlledInstitutions.Count);
     }
 
     public static IReadOnlyList<(RivalCultDef def, RivalCultState state)> ActiveRivals(GameState state)
     {
         var rs = EnsureInitialized(state);
-        if (!rs.IsActive) return new List<(RivalCultDef, RivalCultState)>();
         return rs.Rivals
             .Where(r => r.Status != RivalCultStatus.Dormant)
             .Select(r => (RivalCultData.Find(r.Id)!, r))
