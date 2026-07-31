@@ -21,6 +21,9 @@ public class GameService
     public bool EventPending => _eventPending;
     public string? ConvertedCovenName { get; private set; }
     public bool ConversionCompletePending => ConvertedCovenName != null;
+
+    public FootholdDef? PendingFoothold { get; private set; }
+    public bool ContinentStoryPending => PendingFoothold != null;
     public string? PopupMessage { get; private set; }
     public string? PopupTitle { get; private set; }
     public bool PopupPending => PopupMessage != null;
@@ -57,6 +60,7 @@ public class GameService
             _state = loaded;
         }
         catch { _state = GameEngine.InitialState(); }
+        _locations.SyncFootholds(_state);
         EnsureHomeCoven();
         ApplyOfflineIncome();
         NotifyChanged();
@@ -329,6 +333,7 @@ public class GameService
             {
                 var loc = _locations.Find(_state.Conversion.CovenId);
                 if (loc != null) ConvertedCovenName = loc.Name;
+                CheckContinentCompletion();
             }
             NotifyChanged();
         }
@@ -345,6 +350,38 @@ public class GameService
 
     public void CancelConversion() { ConversionEngine.Cancel(_state); NotifyChanged(); }
     public void DismissConversionComplete() { ConversionEngine.ClearCompleted(_state); ConvertedCovenName = null; NotifyChanged(); }
+
+    /// <summary>
+    /// Checks whether the most recent conversion completed a continent. If so,
+    /// queues the continent-completion story beat for display. The foothold
+    /// coven is granted when the player dismisses the story.
+    /// </summary>
+    private void CheckContinentCompletion()
+    {
+        var continent = CovenProgress.NewlyCompletedContinent(_state, _locations.Locations);
+        if (continent == null) return;
+        CovenProgress.MarkContinentStoryPending(_state, continent);
+        var foothold = ContinentFootholds.ForCompleted(continent);
+        PendingFoothold = foothold;
+    }
+
+    /// <summary>
+    /// Called when the player dismisses the continent-completion story.
+    /// Grants the foothold coven, syncs the location list, and saves.
+    /// </summary>
+    public void GrantContinentFoothold()
+    {
+        var foothold = CovenProgress.GrantFoothold(_state, _locations.Locations);
+        if (foothold != null)
+        {
+            _locations.SyncFootholds(_state);
+            ConvertedCovenName = null;
+            ConversionEngine.ClearCompleted(_state);
+        }
+        PendingFoothold = null;
+        _ = SaveAsync();
+        NotifyChanged();
+    }
     public bool IsConversionActive => ConversionEngine.IsActive(_state);
     public ConversionStep? CurrentConversionStep => ConversionEngine.CurrentStep(_state, _conversions);
     public ConversionDef? ActiveConversion => _state.Conversion == null ? null : _conversions.Find(_state.Conversion.CovenId);
@@ -390,7 +427,7 @@ public class GameService
     public LocalCultDef? PendingLocalCultDef =>
         PendingLocalCultId == null ? null : LocalCultData.Find(PendingLocalCultId);
 
-    public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; NotifyChanged(); }
+    public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; CheckContinentCompletion(); NotifyChanged(); }
     public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
     public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
 
@@ -425,7 +462,7 @@ public class GameService
         return r;
     }
 
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; PendingLocalCultId = null; SpawnedLocalCultId = null; await SaveAsync(); NotifyChanged(); }
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
     {
