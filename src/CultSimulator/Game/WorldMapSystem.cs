@@ -69,10 +69,5 @@ public static class WorldMapSystem
         }
     }
 
-    public static double GreatSealMultiplier(OccultState o)
-    {
-        if (!o.UnlockedTechs.Contains(TechId.GreatSeal)) return 1.0;
-        int conqueredCount = o.MapNodes.Count(n => n.Conquered);
-        return 1.0 + conqueredCount * 0.05;
-    }
+    public static double GreatSealMultiplier(OccultState o) => 1.0;
 }

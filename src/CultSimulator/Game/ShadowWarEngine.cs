@@ -61,18 +61,7 @@ public static class ShadowWarEngine
         return strength;
     }
 
-    public static double FaithMultiplierBonus(ShadowWarState sw)
-    {
-        double bonus = 0;
-        foreach (var inst in sw.Institutions)
-        {
-            if (inst.Status != InstitutionStatus.Controlled) continue;
-            var def = ShadowWarData.Institution(inst.Id);
-            if (def != null && def.Type == InstitutionType.Religious)
-                bonus += def.RewardValue;
-        }
-        return bonus;
-    }
+    public static double FaithMultiplierBonus(ShadowWarState sw) => 0.0;
 
     public static double ReconRiskMultiplier(ShadowWarState sw)
     {
