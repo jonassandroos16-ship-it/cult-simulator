@@ -25,8 +25,15 @@ public class ShadowWarState
     public double PrestigeMultiplier { get; set; } = 1.0;
     public int TotalControlled { get; set; }
 
+    /// <summary>Recruited battle agents available to deploy, keyed by AgentType enum value.</summary>
+    public Dictionary<AgentType, int> RecruitedAgents { get; set; } = new();
+
     [JsonIgnore]
     public double AvailableAgents => Math.Floor(TotalAgents - DeployedAgents);
+
+    [JsonIgnore]
+    public List<InstitutionState> ControlledInstitutions =>
+        Institutions.Where(i => i.Status == InstitutionStatus.Controlled).ToList();
 
     public InstitutionState? GetInstitution(string id) =>
         Institutions.FirstOrDefault(i => i.Id == id);

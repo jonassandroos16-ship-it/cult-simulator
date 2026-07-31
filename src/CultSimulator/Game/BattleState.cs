@@ -2,6 +2,11 @@ using System.Text.Json.Serialization;
 
 namespace CultSimulator.Game;
 
+public record TerritoryLossEvent(
+    string ContinentId,
+    string RivalName,
+    long OccurredAt);
+
 public class DeployedAgent
 {
     public AgentType Type { get; set; } = AgentType.Initiate;
@@ -21,6 +26,7 @@ public class BattleState
     public long LastTickAt { get; set; }
     public BattleStatus Status { get; set; } = BattleStatus.NotStarted;
     public List<string> Log { get; set; } = new();
+    public List<TerritoryLossEvent> RecentLosses { get; set; } = new();
 
     [JsonIgnore]
     public int TotalDeployed => DeployedSquad.Sum(d => d.Count);

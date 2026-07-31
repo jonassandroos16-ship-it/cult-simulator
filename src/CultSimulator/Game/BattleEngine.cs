@@ -8,6 +8,7 @@ public static class BattleEngine
     public const double RivalBaseHp = 100;
     public const double CooldownSec = 30;
     public const int MaxLogEntries = 20;
+    public const int MaxRecentLosses = 5;
 
     public static BattleSystemState CreateInitialState() => new();
 
@@ -28,11 +29,6 @@ public static class BattleEngine
     {
         return state.Covens.Any(c => c.Converted &&
             string.Equals(locations.Find(c.Id)?.Continent, continentId, StringComparison.OrdinalIgnoreCase));
-    }
-
-    public static bool ShouldSpawnRival(GameState state, WorldLocationService locations, string continentId)
-    {
-        return IsTheaterActive(state, locations, continentId);
     }
 
     public static BattleState GetOrCreateBattle(GameState state, WorldLocationService locations, string continentId)
@@ -58,87 +54,79 @@ public static class BattleEngine
         return battle;
     }
 
-    public static bool CanRecruitAgent(GameState state, AgentType type)
+    public static (bool success, string message) RecruitAgent(GameState state, AgentType type, int count)
     {
         var sw = ShadowWarEngine.EnsureInitialized(state);
         var def = BattleData.AgentDef(type);
-        if (def == null) return false;
-        return sw.AvailableAgents >= def.AgentCost;
-    }
-
-    public static bool RecruitAgent(GameState state, AgentType type, int count = 1)
-    {
-        var sw = ShadowWarEngine.EnsureInitialized(state);
-        var def = BattleData.AgentDef(type);
-        if (def == null) return false;
+        if (def == null) return (false, "Unknown agent type.");
         int totalCost = def.AgentCost * count;
-        if (sw.AvailableAgents < totalCost) return false;
-        sw.AvailableAgents -= totalCost;
+        if (sw.AvailableAgents < totalCost)
+            return (false, $"Not enough agents. Need {totalCost}, have {(int)sw.AvailableAgents}.");
+        sw.TotalAgents -= totalCost;
         sw.RecruitedAgents.TryGetValue(type, out int existing);
         sw.RecruitedAgents[type] = existing + count;
-        return true;
+        return (true, $"Recruited {count} {def.Name}.");
     }
 
-    public static bool DeployAgent(GameState state, string continentId, AgentType type, int count = 1)
+    public static (bool success, string message) DeployAgents(GameState state, string continentId, AgentType type, int count)
     {
         var sw = ShadowWarEngine.EnsureInitialized(state);
         sw.RecruitedAgents.TryGetValue(type, out int available);
-        if (available < count) return false;
+        if (available < count)
+            return (false, $"Not enough {type} agents. Have {available}, need {count}.");
 
-        var battle = GetOrCreateBattle(state, new WorldLocationService(), continentId);
-        if (battle.Phase == BattlePhase.NoThreat) return false;
+        var bs = EnsureInitialized(state);
+        var battle = bs.GetBattle(continentId);
+        if (battle == null || battle.Phase == BattlePhase.NoThreat)
+            return (false, "No active battle in that continent.");
+        if (battle.Phase == BattlePhase.Fighting)
+            return (false, "Battle already in progress — withdraw first.");
 
         sw.RecruitedAgents[type] = available - count;
         var slot = battle.DeployedSquad.FirstOrDefault(d => d.Type == type);
         if (slot != null) slot.Count += count;
         else battle.DeployedSquad.Add(new DeployedAgent { Type = type, Count = count });
-        return true;
+        return (true, $"Deployed {count} {type}.");
     }
 
-    public static double CalculatePlayerAttack(BattleState battle, ShadowWarState sw, GameState state)
+    public static (bool success, string message) WithdrawAgents(GameState state, string continentId)
     {
-        double attack = 0;
-        double strengthMult = ShadowWarEngine.AgentStrength(sw, state);
-        foreach (var deployed in battle.DeployedSquad)
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        var bs = EnsureInitialized(state);
+        var battle = bs.GetBattle(continentId);
+        if (battle == null) return (false, "No battle found.");
+        if (battle.Phase == BattlePhase.Fighting)
+            return (false, "Cannot withdraw during an active battle.");
+
+        foreach (var slot in battle.DeployedSquad)
         {
-            var def = BattleData.AgentDef(deployed.Type);
-            if (def != null) attack += def.Attack * deployed.Count * strengthMult;
+            sw.RecruitedAgents.TryGetValue(slot.Type, out int existing);
+            sw.RecruitedAgents[slot.Type] = existing + slot.Count;
         }
-        return attack;
+        battle.DeployedSquad.Clear();
+        return (true, "Agents withdrawn.");
     }
 
-    public static double CalculatePlayerDefense(BattleState battle, ShadowWarState sw, GameState state)
+    public static (bool success, string message) StartBattle(GameState state, string continentId)
     {
-        double defense = 0;
-        foreach (var deployed in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(deployed.Type);
-            if (def != null) defense += def.Defense * deployed.Count;
-        }
-        return defense;
-    }
-
-    public static double CalculatePlayerStealth(BattleState battle)
-    {
-        double stealth = 0;
-        int total = battle.TotalDeployed;
-        if (total == 0) return 0;
-        foreach (var deployed in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(deployed.Type);
-            if (def != null) stealth += def.Stealth * deployed.Count;
-        }
-        return stealth / total;
-    }
-
-    public static void StartBattle(GameState state, WorldLocationService locations, string continentId)
-    {
-        var battle = GetOrCreateBattle(state, locations, continentId);
-        if (battle.Phase != BattlePhase.Deploy) return;
-        if (battle.TotalDeployed == 0) return;
+        var bs = EnsureInitialized(state);
+        var battle = bs.GetBattle(continentId);
+        if (battle == null) return (false, "No battle found.");
+        if (battle.Phase != BattlePhase.Deploy) return (false, "Not in deploy phase.");
+        if (battle.TotalDeployed == 0) return (false, "Deploy some agents first.");
         battle.Phase = BattlePhase.Fighting;
         battle.LastTickAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        AppendLog(battle, $"Battle started in {continentId}! {battle.TotalDeployed} agents deployed.");
+        AppendLog(battle, $"Battle started! {battle.TotalDeployed} agents deployed.");
+        return (true, "Battle started.");
+    }
+
+    public static List<TerritoryLossEvent> GetRecentLosses(GameState state)
+    {
+        var bs = EnsureInitialized(state);
+        return bs.Battles.SelectMany(b => b.RecentLosses)
+            .OrderByDescending(e => e.OccurredAt)
+            .Take(MaxRecentLosses)
+            .ToList();
     }
 
     public static void TickBattle(GameState state, WorldLocationService locations, string continentId, double deltaSec)
@@ -146,10 +134,26 @@ public static class BattleEngine
         var sw = ShadowWarEngine.EnsureInitialized(state);
         var battle = GetOrCreateBattle(state, locations, continentId);
 
-        if (battle.Phase == BattlePhase.NoThreat && ShouldSpawnRival(state, locations, continentId))
+        if (battle.Phase == BattlePhase.NoThreat && IsTheaterActive(state, locations, continentId))
         {
             battle.Phase = BattlePhase.Deploy;
             AppendLog(battle, $"A rival cult has emerged in {continentId}!");
+        }
+
+        if (battle.Phase == BattlePhase.Cooldown)
+        {
+            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            if (now >= battle.CooldownUntil)
+            {
+                var rivalDef2 = BattleData.RivalForContinent(continentId);
+                var rivalHp2 = RivalBaseHp + (rivalDef2?.AgentStrength ?? 5.0) * 20;
+                battle.RivalHp = rivalHp2;
+                battle.RivalMaxHp = rivalHp2;
+                battle.PlayerHp = PlayerBaseHp;
+                battle.Phase = BattlePhase.Deploy;
+                AppendLog(battle, "A new rival cult has risen. Prepare your agents.");
+            }
+            return;
         }
 
         if (battle.Phase != BattlePhase.Fighting) return;
@@ -177,26 +181,15 @@ public static class BattleEngine
         }
         else if (battle.PlayerHp <= 0)
         {
+            var lossRival = rivalDef?.Name ?? continentId;
+            battle.RecentLosses.Add(new TerritoryLossEvent(continentId, lossRival, DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()));
+            if (battle.RecentLosses.Count > MaxRecentLosses) battle.RecentLosses.RemoveAt(0);
             battle.Phase = BattlePhase.Deploy;
             battle.Status = BattleStatus.Defeat;
             battle.PlayerHp = PlayerBaseHp;
             battle.DeployedSquad.Clear();
-            ApplyDefeatPenalty(state, continentId);
+            ApplyDefeatPenalty(state);
             AppendLog(battle, $"Defeat! Your agents were repelled in {continentId}.");
-        }
-
-        if (battle.Phase == BattlePhase.Cooldown)
-        {
-            long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            if (now >= battle.CooldownUntil)
-            {
-                var rivalHp = RivalBaseHp + (rivalDef?.AgentStrength ?? 5.0) * 20;
-                battle.RivalHp = rivalHp;
-                battle.RivalMaxHp = rivalHp;
-                battle.PlayerHp = PlayerBaseHp;
-                battle.Phase = BattlePhase.Deploy;
-                AppendLog(battle, "A new rival cult has risen. Prepare your agents.");
-            }
         }
     }
 
@@ -209,6 +202,42 @@ public static class BattleEngine
             _ => 0
         };
 
+    private static double CalculatePlayerAttack(BattleState battle, ShadowWarState sw, GameState state)
+    {
+        double attack = 0;
+        double strengthMult = ShadowWarEngine.AgentStrength(sw, state);
+        foreach (var deployed in battle.DeployedSquad)
+        {
+            var def = BattleData.AgentDef(deployed.Type);
+            if (def != null) attack += def.Attack * deployed.Count * strengthMult;
+        }
+        return attack;
+    }
+
+    private static double CalculatePlayerDefense(BattleState battle, ShadowWarState sw, GameState state)
+    {
+        double defense = 0;
+        foreach (var deployed in battle.DeployedSquad)
+        {
+            var def = BattleData.AgentDef(deployed.Type);
+            if (def != null) defense += def.Defense * deployed.Count;
+        }
+        return defense;
+    }
+
+    private static double CalculatePlayerStealth(BattleState battle)
+    {
+        int total = battle.TotalDeployed;
+        if (total == 0) return 0;
+        double stealth = 0;
+        foreach (var deployed in battle.DeployedSquad)
+        {
+            var def = BattleData.AgentDef(deployed.Type);
+            if (def != null) stealth += def.Stealth * deployed.Count;
+        }
+        return stealth / total;
+    }
+
     private static void ApplyVictoryReward(GameState state, string continentId)
     {
         double faithBonus = state.Covens.Count(c => c.Converted) * 200.0;
@@ -216,7 +245,7 @@ public static class BattleEngine
         state.Occult.LifetimeFaith += faithBonus;
     }
 
-    private static void ApplyDefeatPenalty(GameState state, string continentId)
+    private static void ApplyDefeatPenalty(GameState state)
     {
         state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 10);
     }
