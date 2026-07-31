@@ -571,6 +571,32 @@
         _ = RefreshMap();
     }
 
+    private void StartLocalCultBattle(string cultId)
+    {
+        var battle = Game.GetLocalCultBattle(cultId);
+        if (battle == null || battle.Phase == LocalCultBattlePhase.Victory)
+        {
+            var def = LocalCultData.Find(cultId);
+            if (def != null) LocalCultEngine.StartBattle(Game.State, cultId);
+        }
+        StateHasChanged();
+    }
+
+    private void DeployLocalCult(string cultId, AgentType type)
+    {
+        Game.DeployLocalCultAgents(cultId, type, 1);
+    }
+
+    private void WithdrawLocalCult(string cultId)
+    {
+        Game.WithdrawLocalCultAgents(cultId);
+    }
+
+    private void FightLocalCult(string cultId)
+    {
+        Game.StartLocalCultBattle(cultId);
+    }
+
     private void Switch(string id)
     {
         Game.SwitchActiveCoven(id);
