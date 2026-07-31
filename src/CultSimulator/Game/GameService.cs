@@ -101,7 +101,7 @@ public class GameService
         _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
     }
 
-    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); NotifyChanged(); }
+    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); LocalCultBattleEngine.Tick(_state, delta); NotifyChanged(); }
     private void Tick() { GameEngine.TickAllCovens(_state, _locations); NotifyChanged(); }
 
     private void TryEvent()
@@ -180,7 +180,7 @@ public class GameService
         NotifyChanged();
     }
     public void SetNodeStance(string nodeId, NodeStance stance) { WorldMapSystem.SetStance(_state.Occult, nodeId, stance); NotifyChanged(); }
-    public void CraftRecipe(CauldronRecipeId id) { Cauldron.Craft(_state.Occult, id); NotifyChanged(); }
+    public void CraftRecipe(CauldronRecipeId id) { Cauldron.Craft(_state, id); NotifyChanged(); }
 
     public (bool success, string message) RecruitAgent(AgentType type, int count)
     {
@@ -437,6 +437,32 @@ public class GameService
 
     public void CancelLocalCultReward() { PendingLocalCultId = null; NotifyChanged(); }
 
+    // ── Local Cult Battle System ──
+    public LocalCultBattleState? GetLocalCultBattle(string cultId) => LocalCultBattleEngine.GetBattle(_state, cultId);
+    public (bool success, string message) DeployLocalCultAgents(string cultId, AgentType type, int count)
+    {
+        var r = LocalCultBattleEngine.DeployAgents(_state, cultId, type, count);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) WithdrawLocalCultAgents(string cultId)
+    {
+        var r = LocalCultBattleEngine.WithdrawAgents(_state, cultId);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) StartLocalCultBattle(string cultId)
+    {
+        var r = LocalCultBattleEngine.StartBattle(_state, cultId);
+        NotifyChanged();
+        return r;
+    }
+    public bool CanStartLocalCultBattle(string cultId)
+    {
+        var def = LocalCultData.Find(cultId);
+        return def != null && LocalCultEngine.CanStartBattle(_state, def);
+    }
+
     public LocalCultDef? PendingLocalCultDef =>
         PendingLocalCultId == null ? null : LocalCultData.Find(PendingLocalCultId);
 
@@ -486,11 +512,6 @@ public class GameService
         _ = SaveAsync();
     }
 
-    /// <summary>
-    /// Serializes the current state and pushes the JSON to the JS-side cache
-    /// (window.__cultSaveJson) so the beforeunload/pagehide handler can write
-    /// it synchronously even if the .NET runtime is being torn down.
-    /// </summary>
     public async Task SyncSaveJsonToJSAsync()
     {
         _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
