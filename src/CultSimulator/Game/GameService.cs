@@ -12,6 +12,7 @@ public class GameService
     private bool _eventPending;
     private DateTime _lastOccultTick;
     private DateTime _lastSave = DateTime.UtcNow;
+    private readonly SemaphoreSlim _saveLock = new(1, 1);
 
     public GameState State => _state;
     public WorldLocationService Locations => _locations;
@@ -56,7 +57,8 @@ public class GameService
         {
             var primary = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
             var backup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
-            var (loaded, success) = SaveLoad.LoadGameWithBackup(primary, backup);
+            var backup2 = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey2);
+            var (loaded, success) = SaveLoad.LoadGameWithBackup(primary, backup, backup2);
             _state = loaded;
         }
         catch { _state = GameEngine.InitialState(); }
@@ -470,18 +472,46 @@ public class GameService
         _lastSave = now;
         _ = SaveAsync();
     }
-    public async Task SaveAsync()
+
+    /// <summary>
+    /// Serializes the current state and pushes the JSON to the JS-side cache
+    /// (window.__cultSaveJson) so the beforeunload/pagehide handler can write
+    /// it synchronously even if the .NET runtime is being torn down.
+    /// </summary>
+    public async Task SyncSaveJsonToJSAsync()
     {
         _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var json = SaveLoad.SaveGame(_state);
+        try { await _js.InvokeVoidAsync("eval", $"window.__cultSaveJson={JsonSerializer.Serialize(json)};"); }
+        catch { }
+    }
+
+    public async Task SaveAsync()
+    {
+        await _saveLock.WaitAsync();
         try
         {
-            var prev = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
-            if (!string.IsNullOrWhiteSpace(prev))
-                await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey, prev);
-            await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json);
+            _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            var json = SaveLoad.SaveGame(_state);
+            try
+            {
+                var prev = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
+                if (!string.IsNullOrWhiteSpace(prev))
+                {
+                    var prevBackup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
+                    if (!string.IsNullOrWhiteSpace(prevBackup))
+                        await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey2, prevBackup);
+                    await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey, prev);
+                }
+                await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json);
+                await _js.InvokeVoidAsync("eval", $"window.__cultSaveJson={JsonSerializer.Serialize(json)};");
+            }
+            catch { }
         }
-        catch { }
-        _lastSave = DateTime.UtcNow;
+        finally
+        {
+            _lastSave = DateTime.UtcNow;
+            _saveLock.Release();
+        }
     }
 }
