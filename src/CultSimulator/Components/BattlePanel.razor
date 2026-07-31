@@ -55,6 +55,29 @@
     }
 </div>
 
+<div class="panel glass-panel rounded-[20px] p-5 mb-4">
+    <h2 class="panel-title mb-3">Recruit Agents</h2>
+    <p class="text-xs text-slate-400 mb-4 leading-relaxed">Spend agents from your pool to recruit units. Each unit type has different stats and costs.</p>
+
+    <div class="grid grid-cols-3 gap-3">
+        @foreach (var agentDef in BattleData.AgentTypes)
+        {
+            sw.RecruitedAgents.TryGetValue(agentDef.Type, out int owned);
+            <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <div class="text-xl mb-1">@agentDef.Icon</div>
+                <div class="text-sm font-display text-amber-100">@agentDef.Name</div>
+                <div class="text-[0.6rem] text-slate-400 mt-1">ATK @agentDef.Attack / DEF @agentDef.Defense / STL @agentDef.Stealth</div>
+                <div class="text-[0.6rem] text-cyan-400 mt-1">Cost: @agentDef.AgentCost agents</div>
+                <div class="text-[0.6rem] text-slate-500">Owned: @owned</div>
+                <button class="mt-2 w-full p-1.5 rounded-[8px] text-xs text-amber-100 transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
+                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
+                        @onclick="() => OnRecruit(agentDef.Type, 1)">
+                    Recruit
+                </button>
+            </div>
+        }
+    </div>
+</div>
 <div class="panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title mb-3">Battle Theatres</h2>
     <p class="text-xs text-slate-400 mb-4 leading-relaxed">Each continent where you control 2+ covens becomes a Battle Theatre. Recruit agents from the pool above, deploy them here, then start the battle. Victory grants a Faith bonus based on your total covens.</p>
@@ -170,29 +193,6 @@
     </div>
 </div>
 
-<div class="panel glass-panel rounded-[20px] p-5 mt-4">
-    <h2 class="panel-title mb-3">Recruit Agents</h2>
-    <p class="text-xs text-slate-400 mb-4 leading-relaxed">Spend agents from your pool to recruit units. Each unit type has different stats and costs.</p>
-
-    <div class="grid grid-cols-3 gap-3">
-        @foreach (var agentDef in BattleData.AgentTypes)
-        {
-            sw.RecruitedAgents.TryGetValue(agentDef.Type, out int owned);
-            <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                <div class="text-xl mb-1">@agentDef.Icon</div>
-                <div class="text-sm font-display text-amber-100">@agentDef.Name</div>
-                <div class="text-[0.6rem] text-slate-400 mt-1">ATK @agentDef.Attack / DEF @agentDef.Defense / STL @agentDef.Stealth</div>
-                <div class="text-[0.6rem] text-cyan-400 mt-1">Cost: @agentDef.AgentCost agents</div>
-                <div class="text-[0.6rem] text-slate-500">Owned: @owned</div>
-                <button class="mt-2 w-full p-1.5 rounded-[8px] text-xs text-amber-100 transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
-                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                        @onclick="() => OnRecruit(agentDef.Type, 1)">
-                    Recruit
-                </button>
-            </div>
-        }
-    </div>
-</div>
 
 @code {
     [Parameter] public EventCallback OnViewMap { get; set; }
