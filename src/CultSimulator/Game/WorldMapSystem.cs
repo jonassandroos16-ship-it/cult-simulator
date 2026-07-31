@@ -47,7 +47,7 @@ public static class WorldMapSystem
     public static void ApplyRaid(OccultState o)
     {
         o.Suspicion = 0;
-        if (o.Acolytes > 10) o.Acolytes = (int)(o.Acolytes * 0.8);
+        if (o.Initiates > 10) o.Initiates = (int)(o.Initiates * 0.8);
         if (o.Minions.Count > 0 && Random.Shared.NextDouble() < 0.3) o.Minions.RemoveAt(Random.Shared.Next(o.Minions.Count));
     }
 
@@ -67,5 +67,12 @@ public static class WorldMapSystem
             double rate = ns.Stance == NodeStance.Harvest ? 0.1 : 0.05;
             foreach (var (material, amount) in def.Materials) o.Materials[material] = o.Materials.GetValueOrDefault(material) + (int)(amount * rate * deltaSec);
         }
+    }
+
+    public static double GreatSealMultiplier(OccultState o)
+    {
+        if (!o.UnlockedTechs.Contains(TechId.GreatSeal)) return 1.0;
+        int conqueredCount = o.MapNodes.Count(n => n.Conquered);
+        return 1.0 + conqueredCount * 0.05;
     }
 }
