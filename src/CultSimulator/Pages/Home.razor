@@ -2,6 +2,7 @@
 @using CultSimulator.Game
 @inject IJSRuntime JS
 @inject GameService Game
+@inject WorldLocationService Locations
 @implements IDisposable
 
 @if (!initialized)
@@ -20,7 +21,7 @@ else if (Game.NeedsStory)
 }
 else
 {
-    <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6">
+    <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6 @themeClass">
         <ResourceBar />
         <div class="bookmark-tabs">
             <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick='() => SwitchTab("preach")'><span class="bookmark-tab-icon">🕯️</span><span class="bookmark-tab-label">Preach</span></button>
@@ -28,10 +29,9 @@ else
             <button class="bookmark-tab @(activeTab == "sanctum" ? "active" : "")" @onclick='() => SwitchTab("sanctum")'><span class="bookmark-tab-icon">🔮</span><span class="bookmark-tab-label">Sanctum</span></button>
             <button class="bookmark-tab @(activeTab == "codex" ? "active" : "")" @onclick='() => SwitchTab("codex")'><span class="bookmark-tab-icon">📜</span><span class="bookmark-tab-label">Codex</span></button>
             <button class="bookmark-tab @(activeTab == "grimoire" ? "active" : "")" @onclick='() => SwitchTab("grimoire")'><span class="bookmark-tab-icon">📖</span><span class="bookmark-tab-label">Grimoire</span></button>
-            <button class="bookmark-tab @(activeTab == "leylines" ? "active" : "")" @onclick='() => SwitchTab("leylines")'><span class="bookmark-tab-icon">⚡</span><span class="bookmark-tab-label">Ley Lines</span></button>
             <button class="bookmark-tab @(activeTab == "ascension" ? "active" : "")" @onclick='() => SwitchTab("ascension")'><span class="bookmark-tab-icon">🌟</span><span class="bookmark-tab-label">Ascension</span></button>
-            <button class="bookmark-tab @(activeTab == "shadowwar" ? "active" : "")" @onclick='() => SwitchTab("shadowwar")'><span class="bookmark-tab-icon">🕵️</span><span class="bookmark-tab-label">Shadow War</span></button>
             <button class="bookmark-tab @(activeTab == "bank" ? "active" : "")" @onclick='() => SwitchTab("bank")'><span class="bookmark-tab-icon">🏦</span><span class="bookmark-tab-label">Bank</span></button>
+            <button class="bookmark-tab @(activeTab == "battle" ? "active" : "")" @onclick='() => SwitchTab("battle")'><span class="bookmark-tab-icon">⚔️</span><span class="bookmark-tab-label">Battle</span></button>
         </div>
         @if (activeTab == "preach")
         {
@@ -51,28 +51,36 @@ else
         }
         else if (activeTab == "codex") { <CodexPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "grimoire") { <GrimoirePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "leylines") { <LeyLinesPanel OnViewMap="SwitchToLeyLineMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+
         else if (activeTab == "ascension") { <GrandSacrificePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "shadowwar") { <ShadowWarPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "bank") { <BankPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "battle") { <BattlePanel OnViewMap="SwitchToBattleMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
     </div>
-    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><RankUpModal />
+    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><RankUpModal /><VictoryScreen /><ContinentStoryScreen />
 }
 
 @code {
     private bool initialized = false;
     private string activeTab = "preach";
     private string mapInitialMode = "world";
+    private string themeClass => ComputeThemeClass();
+
+    private string ComputeThemeClass()
+    {
+        var loc = Locations.Find(Game.State.ActiveCovenId);
+        if (loc == null) return "theme-viking";
+        return ContinentThemes.For(loc.Continent).ThemeClass;
+    }
     protected override async Task OnInitializedAsync() { await Game.InitAsync(); Game.OnChange += StateChanged; Game.StartTimers(); initialized = true; }
     protected override async Task OnAfterRenderAsync(bool firstRender) { if (firstRender) { try { await JS.InvokeVoidAsync("setupAutoSave", DotNetObjectReference.Create(this)); } catch { } } }
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
     private void SwitchTab(string tab) => activeTab = tab;
-    private void SwitchToLeyLineMap() { mapInitialMode = "leylines"; activeTab = "map"; }
+    private void SwitchToBattleMap() { mapInitialMode = "shadowwar"; activeTab = "map"; }
     private void StoryDismissed() { }
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
-    private async Task ResetGame() => await Game.ResetAsync();
+    private async Task ResetGame() { await Game.ResetAsync(); }
     public void Dispose() { Game.OnChange -= StateChanged; _ = Game.SaveAsync(); }
     [Microsoft.JSInterop.JSInvokable] public async Task SaveOnExit() => await Game.SaveAsync();
 }
