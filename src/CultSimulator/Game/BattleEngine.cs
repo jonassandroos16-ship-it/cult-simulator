@@ -100,8 +100,8 @@ public static class BattleEngine
 
         foreach (var slot in battle.DeployedSquad)
         {
-            sw.RecruitedAgents.TryGetValue(slot.Type, out int existing);
-            sw.RecruitedAgents[slot.Type] = existing + slot.Count;
+            sw.RecruitedAgents.TryGetValue(slot.Type, out int cur);
+            sw.RecruitedAgents[slot.Type] = cur + slot.Count;
         }
         battle.DeployedSquad.Clear();
         return (true, "Agents withdrawn.");
@@ -111,13 +111,14 @@ public static class BattleEngine
     {
         var bs = EnsureInitialized(state);
         var battle = bs.GetBattle(continentId);
-        if (battle == null) return (false, "No battle found.");
-        if (battle.Phase != BattlePhase.Deploy) return (false, "Not in deploy phase.");
-        if (battle.TotalDeployed == 0) return (false, "Deploy some agents first.");
+        if (battle == null || battle.Phase != BattlePhase.Deploy)
+            return (false, "Not in deploy phase.");
+        if (battle.TotalDeployed == 0)
+            return (false, "Deploy at least one agent before starting.");
         battle.Phase = BattlePhase.Fighting;
-        battle.LastTickAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        AppendLog(battle, $"Battle started! {battle.TotalDeployed} agents deployed.");
-        return (true, "Battle started.");
+        battle.Status = BattleStatus.Active;
+        AppendLog(battle, $"Battle started in {continentId} with {battle.TotalDeployed} agents.");
+        return (true, "Battle started!");
     }
 
     public static List<TerritoryLossEvent> GetRecentLosses(GameState state)
@@ -127,6 +128,12 @@ public static class BattleEngine
             .OrderByDescending(e => e.OccurredAt)
             .Take(MaxRecentLosses)
             .ToList();
+    }
+
+    public static void Tick(GameState state, WorldLocationService locations, double deltaSec)
+    {
+        foreach (var theater in BattleData.Theaters)
+            TickBattle(state, locations, theater.ContinentId, deltaSec);
     }
 
     public static void TickBattle(GameState state, WorldLocationService locations, string continentId, double deltaSec)
@@ -204,12 +211,12 @@ public static class BattleEngine
 
     private static double CalculatePlayerAttack(BattleState battle, ShadowWarState sw, GameState state)
     {
+        double strength = ShadowWarEngine.AgentStrength(sw, state);
         double attack = 0;
-        double strengthMult = ShadowWarEngine.AgentStrength(sw, state);
-        foreach (var deployed in battle.DeployedSquad)
+        foreach (var slot in battle.DeployedSquad)
         {
-            var def = BattleData.AgentDef(deployed.Type);
-            if (def != null) attack += def.Attack * deployed.Count * strengthMult;
+            var def = BattleData.AgentDef(slot.Type);
+            if (def != null) attack += def.Attack * slot.Count * strength;
         }
         return attack;
     }
@@ -217,25 +224,24 @@ public static class BattleEngine
     private static double CalculatePlayerDefense(BattleState battle, ShadowWarState sw, GameState state)
     {
         double defense = 0;
-        foreach (var deployed in battle.DeployedSquad)
+        foreach (var slot in battle.DeployedSquad)
         {
-            var def = BattleData.AgentDef(deployed.Type);
-            if (def != null) defense += def.Defense * deployed.Count;
+            var def = BattleData.AgentDef(slot.Type);
+            if (def != null) defense += def.Defense * slot.Count;
         }
         return defense;
     }
 
     private static double CalculatePlayerStealth(BattleState battle)
     {
-        int total = battle.TotalDeployed;
-        if (total == 0) return 0;
+        if (battle.TotalDeployed == 0) return 0;
         double stealth = 0;
-        foreach (var deployed in battle.DeployedSquad)
+        foreach (var slot in battle.DeployedSquad)
         {
-            var def = BattleData.AgentDef(deployed.Type);
-            if (def != null) stealth += def.Stealth * deployed.Count;
+            var def = BattleData.AgentDef(slot.Type);
+            if (def != null) stealth += def.Stealth * slot.Count;
         }
-        return stealth / total;
+        return stealth / battle.TotalDeployed;
     }
 
     private static void ApplyVictoryReward(GameState state, string continentId)
