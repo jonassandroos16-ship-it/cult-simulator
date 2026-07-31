@@ -5,9 +5,9 @@ public static class CultistHierarchy
     private static readonly string[] MinionNames = { "Vael", "Morgrith", "Sszark", "Nyx", "Dolgrim", "Cael", "Vesh", "Kraix", "Umbra", "Tholos", "Zeph", "Grel", "Ishara", "Pyrros", "Mallek", "Sevren", "Ourobor", "Nethis", "Kaelthas", "Dravos" };
     private static readonly string[] CouncilNames = { "Grand Harrower", "Eye of the Abyss", "Mouth of the Void", "Hand of Ruin", "Voice of the Deep", "Keeper of Seals" };
 
-    public static int AcolyteCap(OccultState o, CovenState? activeCoven = null)
+    public static int InitiateCap(OccultState o, CovenState? activeCoven = null)
     {
-        int cap = OccultBalance.AcolyteCapBase;
+        int cap = OccultBalance.InitiateCapBase;
         if (activeCoven != null)
             cap += activeCoven.Buildings.GetValueOrDefault(BuildingType.Undercroft) * (int)GameBalance.UndercroftAcolyteBonus;
         foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") cap += 50; }
@@ -16,12 +16,26 @@ public static class CultistHierarchy
         return cap;
     }
 
-    public static bool CanPromote(OccultState o) => o.Acolytes >= OccultBalance.PromoteAcolyteCost;
+    public static int AcolyteCap(OccultState o, CovenState? activeCoven = null) => InitiateCap(o, activeCoven);
+
+    public static bool CanRecruitUnit(OccultState o) => o.Initiates >= OccultBalance.RecruitUnitCost;
+    public static bool CanPromote(OccultState o) => CanRecruitUnit(o);
 
     public static Minion Promote(OccultState o)
     {
-        o.Acolytes -= OccultBalance.PromoteAcolyteCost;
+        o.Initiates -= OccultBalance.RecruitUnitCost;
         var role = OccultData.PromotedRoles[Random.Shared.Next(OccultData.PromotedRoles.Length)];
+        var trait = OccultData.Traits[Random.Shared.Next(OccultData.Traits.Length)];
+        var minion = new Minion { Role = role, TraitId = trait.Id, Name = MinionNames[Random.Shared.Next(MinionNames.Length)] };
+        o.Minions.Add(minion);
+        return minion;
+    }
+
+    /// <summary>Recruits a disciple of the player's chosen role, spending 100 Initiates.</summary>
+    public static Minion? RecruitUnit(OccultState o, PromotedRole role)
+    {
+        if (!CanRecruitUnit(o)) return null;
+        o.Initiates -= OccultBalance.RecruitUnitCost;
         var trait = OccultData.Traits[Random.Shared.Next(OccultData.Traits.Length)];
         var minion = new Minion { Role = role, TraitId = trait.Id, Name = MinionNames[Random.Shared.Next(MinionNames.Length)] };
         o.Minions.Add(minion);
@@ -42,19 +56,17 @@ public static class CultistHierarchy
         return faith;
     }
 
-    public static bool CanAppointCouncil(GameState state, CouncilRole role)
+    public static bool CanAppointCouncil(OccultState o, CouncilRole role)
     {
-        var o = state.Occult;
         if (o.HighCouncil.Any(c => c.Role == role)) return false;
         if (o.HighCouncil.Count >= 3) return false;
-        if (role == CouncilRole.HighPriest && state.GrandSacrificeCount == 0 && !o.UnlockedTechs.Contains(TechId.AstralAnchor)) return false;
+        if (role == CouncilRole.HighPriest && o.GrandSacrificeCount == 0 && !o.UnlockedTechs.Contains(TechId.AstralAnchor)) return false;
         return o.Minions.Count > 0;
     }
 
-    public static bool AppointCouncil(GameState state, CouncilRole role, string minionId)
+    public static bool AppointCouncil(OccultState o, CouncilRole role, string minionId)
     {
-        if (!CanAppointCouncil(state, role)) return false;
-        var o = state.Occult;
+        if (!CanAppointCouncil(o, role)) return false;
         var minion = o.Minions.FirstOrDefault(m => m.Id == minionId);
         if (minion == null) return false;
         o.Minions.Remove(minion);
