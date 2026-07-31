@@ -82,5 +82,6 @@ else
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
     private async Task ResetGame() { await Game.ResetAsync(); }
     public void Dispose() { Game.OnChange -= StateChanged; _ = Game.SaveAsync(); }
+    [Microsoft.JSInterop.JSInvokable] public async Task SyncSaveJsonToJS() => await Game.SyncSaveJsonToJSAsync();
     [Microsoft.JSInterop.JSInvokable] public async Task SaveOnExit() => await Game.SaveAsync();
 }
