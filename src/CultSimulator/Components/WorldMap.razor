@@ -39,16 +39,18 @@
     else if (mapMode == "local")
     {
         <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <p class="text-violet-300">Local cults operate near your active coven — @activeCovenName. They are weaker than full covens and can be converted quickly for a reward of followers or gold. A new cult appears every hour, up to @LocalCultEngine.MaxActiveLocalCults at a time.</p>
+            <p class="text-violet-300">Local cults operate near your active coven — @activeCovenName. Send your battle agents to attack and defeat them. Each victory grants a Faith bonus. A new cult appears every hour, up to @LocalCultEngine.MaxActiveLocalCults at a time.</p>
         </div>
         <div id="local-map-container" class="world-map-container"></div>
 
         @if (selectedLocalCult != null)
         {
             var cultDef = selectedLocalCult;
-            var canConvert = Game.CanConvertLocalCult(cultDef.Id);
+            var canBattle = Game.CanStartLocalCultBattle(cultDef.Id);
+            var battle = Game.GetLocalCultBattle(cultDef.Id);
+            var sw = Game.State.ShadowWarOrInit;
 
-            <div class="coven-popup" style="display:block;">
+            <div class="coven-popup" style="display:block; max-width: 400px;">
                 <button class="coven-popup-close" @onclick="CloseLocalPopup">×</button>
                 <h3 class="coven-popup-name">@cultDef.Name</h3>
                 <p class="coven-popup-summary">@cultDef.Description</p>
@@ -60,15 +62,105 @@
                     </div>
                     <div class="rank-progress h-1.5 bg-white/[0.06] rounded-full overflow-hidden mb-2">
                         <div class="h-full rounded-full transition-all duration-500"
-                             style="width: @(Math.Min(1.0, (double)CovenProgress.TotalFollowers(Game.State) / cultDef.FollowersRequired) * 100)%; background: @((canConvert ? "var(--success)" : "var(--danger)"));"></div>
+                             style="width: @(Math.Min(1.0, (double)CovenProgress.TotalFollowers(Game.State) / cultDef.FollowersRequired) * 100)%; background: @((canBattle ? "var(--success)" : "var(--danger)"));"></div>
                     </div>
-                    <p class="text-[0.65rem] text-amber-300 mb-2">Reward: @cultDef.RewardAmount followers or gold</p>
-                    <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                            style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
-                            disabled="@(!canConvert)"
-                            @onclick="() => ConvertLocalCult(cultDef.Id)">
-                        Convert
-                    </button>
+
+                    @if (battle == null)
+                    {
+                        <p class="text-[0.65rem] text-amber-300 mb-2">Reward: @cultDef.RewardAmount Faith bonus</p>
+                        <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
+                                disabled="@(!canBattle)"
+                                @onclick="() => StartLocalCultBattle(cultDef.Id)">
+                            Attack
+                        </button>
+                    }
+                    else if (battle.Phase == LocalCultBattlePhase.Deploy)
+                    {
+                        <div class="grid grid-cols-2 gap-2 mb-3">
+                            <div>
+                                <div class="text-slate-400 text-[0.65rem] mb-0.5">Your HP</div>
+                                <div class="text-emerald-300 font-display text-sm">@((int)battle.PlayerHp) / @((int)battle.PlayerMaxHp)</div>
+                                <div class="w-full h-1.5 rounded-full bg-slate-700/50 mt-1 overflow-hidden">
+                                    <div class="h-full bg-emerald-400 rounded-full transition-all duration-300" style="width: @(battle.PlayerMaxHp > 0 ? (battle.PlayerHp / battle.PlayerMaxHp * 100).ToString("F0") : "0")%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="text-slate-400 text-[0.65rem] mb-0.5">Rival HP</div>
+                                <div class="text-rose-300 font-display text-sm">@((int)battle.RivalHp) / @((int)battle.RivalMaxHp)</div>
+                                <div class="w-full h-1.5 rounded-full bg-slate-700/50 mt-1 overflow-hidden">
+                                    <div class="h-full bg-rose-400 rounded-full transition-all duration-300" style="width: @(battle.RivalMaxHp > 0 ? (battle.RivalHp / battle.RivalMaxHp * 100).ToString("F0") : "0")%;"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (battle.DeployedSquad.Count > 0)
+                        {
+                            <div class="flex flex-wrap gap-1.5 mb-3">
+                                @foreach (var slot in battle.DeployedSquad)
+                                {
+                                    var agentDef = BattleData.AgentDef(slot.Type);
+                                    <div class="text-[0.65rem] px-2 py-1 rounded-[8px] flex items-center gap-1" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
+                                        <span>@agentDef?.Icon</span>
+                                        <span class="text-amber-200">@slot.Count</span>
+                                    </div>
+                                }
+                            </div>
+                        }
+
+                        <div class="grid grid-cols-3 gap-2 mb-3">
+                            @foreach (var agentDef in BattleData.AgentTypes)
+                            {
+                                sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
+                                <button class="p-2 rounded-[8px] text-center transition-all hover:-translate-y-0.5"
+                                        style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);"
+                                        @onclick="() => DeployLocalCult(cultDef.Id, agentDef.Type)">
+                                    <div class="text-lg mb-0.5">@agentDef.Icon</div>
+                                    <div class="text-[0.6rem] text-amber-200">@agentDef.Name</div>
+                                    <div class="text-[0.55rem] text-slate-400">@avail</div>
+                                </button>
+                            }
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
+                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
+                                    @onclick="() => WithdrawLocalCult(cultDef.Id)">
+                                Withdraw
+                            </button>
+                            <button class="flex-1 p-2 rounded-[10px] text-xs text-amber-100 font-medium transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
+                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
+                                    @onclick="() => FightLocalCult(cultDef.Id)">
+                                Fight!
+                            </button>
+                        </div>
+                    }
+                    else if (battle.Phase == LocalCultBattlePhase.Fighting)
+                    {
+                        <div class="text-center text-xs text-rose-300 py-3 animate-pulse">Battle in progress...</div>
+                        @if (battle.Log.Count > 0)
+                        {
+                            <div class="mt-2 p-2 rounded-[8px] text-[0.65rem] space-y-0.5 max-h-20 overflow-y-auto" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
+                                @foreach (var entry in battle.Log.TakeLast(3))
+                                {
+                                    <div class="text-slate-400">@entry</div>
+                                }
+                            </div>
+                        }
+                    }
+                    else if (battle.Phase == LocalCultBattlePhase.Victory)
+                    {
+                        <div class="text-center text-xs text-emerald-300 py-3">Victory! Faith bonus earned.</div>
+                    }
+
+                    @if (battle?.Log.Count > 0 && battle?.Phase != LocalCultBattlePhase.Fighting)
+                    {
+                        <div class="mt-2 p-2 rounded-[8px] text-[0.65rem] space-y-0.5 max-h-20 overflow-y-auto" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
+                            @foreach (var entry in battle.Log.TakeLast(3))
+                            {
+                                <div class="text-slate-400">@entry</div>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
         }
