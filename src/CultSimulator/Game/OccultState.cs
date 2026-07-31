@@ -39,6 +39,8 @@ public class OccultState
     public double EldritchFavor { get; set; }
     public int GrandSacrificeCount { get; set; }
     public int Initiates { get; set; }
+    [JsonIgnore]
+    public int Acolytes { get => Initiates; set => Initiates = value; }
     public List<Minion> Minions { get; set; } = new();
     public List<CovenMember> HighCouncil { get; set; } = new();
     public List<TechId> UnlockedTechs { get; set; } = new();
