@@ -8,7 +8,7 @@ public record AgentTypeDef(
     double Attack,
     double Defense,
     double Stealth,
-    int FaithCost);
+    int AgentCost);
 
 public record BattleTheaterDef(
     string ContinentId,

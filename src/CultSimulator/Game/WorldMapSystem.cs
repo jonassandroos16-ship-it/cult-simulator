@@ -6,6 +6,7 @@ public static class WorldMapSystem
     public static bool IsConquered(OccultState o, string nodeId) => GetNode(o, nodeId)?.Conquered ?? false;
 
     public static bool CanConquer(GameState state, MapNodeDef def) =>
+        def.CovenId == state.ActiveCovenId &&
         !IsConquered(state.Occult, def.Id) && state.ActiveCoven.Faith >= def.FaithCost && state.Occult.ArmyPower >= def.ArmyPowerRequired;
 
     public static bool Conquer(GameState state, MapNodeDef def)
@@ -35,7 +36,7 @@ public static class WorldMapSystem
 
     public static void TickSuspicion(OccultState o, double deltaSec)
     {
-        double gen = (TotalSuspicionPerSec(o) + ShadowWarEngine.TotalAgentSuspicionPerSec(o)) * CultistHierarchy.SuspicionMult(o) * TechTree.SuspicionReductionMult(o) * Grimoire.SuspicionReductionBonus(o) * o.ElixirSuspicionMult;
+        double gen = TotalSuspicionPerSec(o) * CultistHierarchy.SuspicionMult(o) * TechTree.SuspicionReductionMult(o) * Grimoire.SuspicionReductionBonus(o) * o.ElixirSuspicionMult;
         if (o.IsDarkVigilActive) gen *= 0.5;
         if (o.IsCovenBlessingActive) gen *= 0.5;
         o.Suspicion = Math.Clamp(o.Suspicion + (gen - OccultBalance.SuspicionDecayPerSec) * deltaSec, 0, OccultBalance.SuspicionMax);
@@ -50,26 +51,11 @@ public static class WorldMapSystem
         if (o.Minions.Count > 0 && Random.Shared.NextDouble() < 0.3) o.Minions.RemoveAt(Random.Shared.Next(o.Minions.Count));
     }
 
-    public static bool CanConnectLeyLine(OccultState o, string nodeA, string nodeB) =>
-        IsConquered(o, nodeA) && IsConquered(o, nodeB) && nodeA != nodeB;
-
-    public static bool ConnectLeyLine(OccultState o, string nodeA, string nodeB)
+    public static int ConqueredNodeCount(GameState state)
     {
-        if (!CanConnectLeyLine(o, nodeA, nodeB) || o.LeyLines.Any(l => l.Contains(nodeA) && l.Contains(nodeB))) return false;
-        o.LeyLines.Add(new[] { nodeA, nodeB });
-        return true;
+        var covenNodes = OccultData.NodesForActiveCoven(state);
+        return state.Occult.MapNodes.Count(n => n.Conquered && covenNodes.Any(cn => cn.Id == n.NodeId));
     }
-
-    public static int GreatSealCount(OccultState o)
-    {
-        int count = 0;
-        for (int i = 0; i < o.LeyLines.Count; i++) for (int j = i + 1; j < o.LeyLines.Count; j++) for (int k = j + 1; k < o.LeyLines.Count; k++)
-            if (o.LeyLines[i].Concat(o.LeyLines[j]).Concat(o.LeyLines[k]).Distinct().Count() == 3) count++;
-        return count;
-    }
-
-    public static double GreatSealMultiplier(OccultState o) { int seals = GreatSealCount(o); return seals == 0 ? 1.0 : 1.0 + seals * (Grimoire.GreatSealMult(o) - 1.0); }
-    public static int ConqueredNodeCount(OccultState o) => o.MapNodes.Count(n => n.Conquered);
 
     public static void TickMaterials(OccultState o, double deltaSec)
     {

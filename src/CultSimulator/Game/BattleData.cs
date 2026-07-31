@@ -7,13 +7,13 @@ public static class BattleData
     public static readonly ImmutableArray<AgentTypeDef> AgentTypes = ImmutableArray.Create(
         new AgentTypeDef(AgentType.Acolyte, "Acolyte", "🧙",
             "Basic agent. Cheap and expendable. Low attack but decent defense.",
-            Attack: 2.0, Defense: 3.0, Stealth: 1.0, FaithCost: 50),
+            Attack: 2.0, Defense: 3.0, Stealth: 1.0, AgentCost: 5),
         new AgentTypeDef(AgentType.Zealot, "Zealot", "⚔️",
             "Fanatical warrior. High attack, low stealth. Recruit from promoted Zealots.",
-            Attack: 6.0, Defense: 4.0, Stealth: 0.3, FaithCost: 200),
+            Attack: 6.0, Defense: 4.0, Stealth: 0.3, AgentCost: 20),
         new AgentTypeDef(AgentType.Infiltrator, "Infiltrator", "🗡️",
             "Stealth operative. Low attack but high stealth — reduces rival counterattack damage.",
-            Attack: 3.0, Defense: 2.0, Stealth: 3.0, FaithCost: 150)
+            Attack: 3.0, Defense: 2.0, Stealth: 3.0, AgentCost: 15)
     );
 
     public static AgentTypeDef? AgentDef(AgentType type) =>
