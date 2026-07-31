@@ -1,0 +1,93 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+@if (Game.OfflinePopupPending)
+{
+    <div class="event-overlay fixed inset-0 z-[150] flex items-center justify-center p-8 animate-fade-in"
+         style="background: rgba(5,3,8,0.85); backdrop-filter: blur(8px);">
+        <div class="event-modal relative rounded-3xl p-10 max-w-md w-full overflow-hidden animate-modal-rise"
+             style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.25);">
+            <div class="event-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
+                 style="background: radial-gradient(circle at center, rgba(124,58,237,0.18) 0%, transparent 60%);"></div>
+            <div class="relative text-center">
+                <div class="text-3xl mb-3">🌙</div>
+                <h2 class="font-display text-sm font-semibold tracking-[0.3em] uppercase text-violet-300 mb-4">
+                    While You Were Away
+                </h2>
+                <p class="text-sm leading-7 text-violet-300 mb-4">
+                    Your covens gathered resources for @FormatTime(Game.OfflineSeconds).
+                </p>
+
+                <div class="flex gap-6 flex-wrap justify-center mb-4">
+                    <div class="flex items-baseline gap-1.5">
+                        <span class="text-xl">✨</span>
+                        <span class="font-display text-lg font-semibold text-amber-100">+@NumberFormat.Fmt(Game.OfflineFaith)</span>
+                        <span class="text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Faith</span>
+                    </div>
+                    @if (Game.OfflineGold > 0)
+                    {
+                        <div class="flex items-baseline gap-1.5">
+                            <span class="text-xl">💰</span>
+                            <span class="font-display text-lg font-semibold text-amber-100">+@NumberFormat.Fmt(Game.OfflineGold)</span>
+                            <span class="text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Gold</span>
+                        </div>
+                    }
+                </div>
+
+                @if (Game.OfflineLostFaith > 0 || Game.OfflineLostGold > 0)
+                {
+                    <div class="rounded-[12px] p-3 mb-4 text-left"
+                         style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+                        <p class="text-[0.8rem] text-rose-300 mb-2">
+                            Your bank could only hold so much. The rest was taken as interest by the bank.
+                        </p>
+                        <div class="flex gap-4 flex-wrap">
+                            @if (Game.OfflineLostFaith > 0)
+                            {
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-sm">✨</span>
+                                    <span class="font-display text-sm font-semibold text-rose-300">-@NumberFormat.Fmt(Game.OfflineLostFaith)</span>
+                                </div>
+                            }
+                            @if (Game.OfflineLostGold > 0)
+                            {
+                                <div class="flex items-baseline gap-1">
+                                    <span class="text-sm">💰</span>
+                                    <span class="font-display text-sm font-semibold text-rose-300">-@NumberFormat.Fmt(Game.OfflineLostGold)</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                    <p class="text-[0.75rem] text-amber-300 italic mb-4">
+                        Bank Manager: Perhaps invest in the bank, ey?
+                    </p>
+                }
+
+                <button class="event-choice w-full p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-center hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                        @onclick="Dismiss">
+                    <span class="choice-label font-display text-base text-amber-100 font-medium">Collect</span>
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void Dismiss() => Game.DismissOfflineReport();
+
+    public void Dispose() => Game.OnChange -= StateChanged;
+
+    private static string FormatTime(double seconds)
+    {
+        if (seconds < 60) return $"{Math.Floor(seconds)}s";
+        if (seconds < 3600) return $"{Math.Floor(seconds / 60)}m {Math.Floor(seconds % 60)}s";
+        if (seconds < 86400) return $"{Math.Floor(seconds / 3600)}h {Math.Floor((seconds % 3600) / 60)}m";
+        return $"{Math.Floor(seconds / 86400)}d {Math.Floor((seconds % 86400) / 3600)}h";
+    }
+}

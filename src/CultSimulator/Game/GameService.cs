@@ -1,551 +1,335 @@
-using Microsoft.JSInterop;
+using System.Linq;
 using System.Text.Json;
 
 namespace CultSimulator.Game;
 
 public class GameService
 {
-    private readonly IJSRuntime _js;
-    private readonly WorldLocationService _locations;
-    private readonly ConversionDataService _conversions;
     private GameState _state;
-    private Timer? _tickTimer, _eventTimer, _occultTimer, _periodicSaveTimer, _localCultTimer;
-    private bool _eventPending;
-    private DateTime _lastOccultTick;
-    private DateTime _lastSave = DateTime.UtcNow;
-    private readonly SemaphoreSlim _saveLock = new(1, 1);
-
     public GameState State => _state;
-    public WorldLocationService Locations => _locations;
-    public bool IsFirstRun => string.IsNullOrWhiteSpace(_state.CultName);
-    public bool NeedsStory => !IsFirstRun && !_state.StoryShown;
-    public EventDef? ActiveEvent { get; private set; }
-    public bool EventPending => _eventPending;
-    public string? ConvertedCovenName { get; private set; }
-    public bool ConversionCompletePending => ConvertedCovenName != null;
+    public ShadowWarState ShadowWar => _state.ShadowWarOrInit;
 
-    public FootholdDef? PendingFoothold { get; private set; }
-    public bool ContinentStoryPending => PendingFoothold != null;
+    public event Action? OnChange;
+
+    public CovenEventData? ActiveEvent { get; private set; }
+    public bool EventPending => ActiveEvent != null;
+    public string? ConvertedCovenName { get; private set; }
+    public string? PendingLocalCultId { get; private set; }
+    public string? SpawnedLocalCultId { get; private set; }
+    public string? PendingFoothold { get; private set; }
+
     public string? PopupMessage { get; private set; }
     public string? PopupTitle { get; private set; }
     public bool PopupPending => PopupMessage != null;
     public double OfflineFaith { get; private set; }
     public double OfflineGold { get; private set; }
     public double OfflineSeconds { get; private set; }
+    public double OfflineLostFaith { get; private set; }
+    public double OfflineLostGold { get; private set; }
     public bool HasOfflineReport => OfflineFaith > 0 || OfflineGold > 0;
-    public event Action? OnChange;
+    public bool OfflinePopupPending { get; private set; }
 
-    public string? PendingLocalCultId { get; private set; }
-    public bool LocalCultRewardPending => PendingLocalCultId != null;
+    public List<(string RivalName, string ContinentId)> RecentTerritoryLosses => _state.RivalCultsOrInit.RecentTerritoryLosses;
 
-    public string? SpawnedLocalCultId { get; private set; }
-    public bool LocalCultSpawnPending => SpawnedLocalCultId != null;
-    public LocalCultDef? SpawnedLocalCultDef =>
-        SpawnedLocalCultId == null ? null : LocalCultData.Find(SpawnedLocalCultId);
-
-    public GameService(IJSRuntime js, WorldLocationService locations, ConversionDataService conversions)
+    public GameService()
     {
-        _js = js;
-        _locations = locations;
-        _conversions = conversions;
         _state = GameEngine.InitialState();
+        _ = LoadAsync();
     }
 
-    public async Task InitAsync()
+    public async Task LoadAsync()
     {
-        await _locations.LoadAsync();
-        try
-        {
-            var primary = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
-            var backup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
-            var backup2 = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey2);
-            var (loaded, success) = SaveLoad.LoadGameWithBackup(primary, backup, backup2);
-            _state = loaded;
-        }
-        catch { _state = GameEngine.InitialState(); }
-        _locations.SyncFootholds(_state);
-        EnsureHomeCoven();
+        var (state, _) = SaveLoad.LoadGameWithBackup(
+            await SaveLoad.ReadSaveAsync(),
+            await SaveLoad.ReadBackupAsync(),
+            await SaveLoad.ReadBackup2Async());
+        _state = state ?? GameEngine.InitialState();
         ApplyOfflineIncome();
-        RestorePendingFoothold();
         NotifyChanged();
-    }
-
-    private void EnsureHomeCoven() { if (_state.Covens.Count == 0) { _state.Covens.Add(new CovenState { Id = "skanor", Converted = true }); _state.ActiveCovenId = "skanor"; } }
-
-    private void RestorePendingFoothold()
-    {
-        if (!string.IsNullOrEmpty(_state.PendingContinentStory))
-            PendingFoothold = ContinentFootholds.ForCompleted(_state.PendingContinentStory);
     }
 
     private void ApplyOfflineIncome()
     {
-        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var elapsed = now - _state.LastSavedAt;
-        if (elapsed <= 0) { _state.LastSavedAt = now; return; }
-        var (faith, gold) = GameEngine.ApplyOfflineIncome(_state, elapsed);
+        long now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        long elapsed = now - _state.LastSavedAt;
+        if (elapsed <= 0) return;
+        var (faith, gold, lostFaith, lostGold) = GameEngine.ApplyOfflineIncome(_state, elapsed);
         OfflineFaith = faith; OfflineGold = gold; OfflineSeconds = elapsed / 1000.0;
+        OfflineLostFaith = lostFaith; OfflineLostGold = lostGold;
+        OfflinePopupPending = faith > 0 || gold > 0 || lostFaith > 0 || lostGold > 0;
         _state.LastSavedAt = now;
     }
 
-    public void DismissOfflineReport() { OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; NotifyChanged(); }
-
-    public void StartTimers()
+    public async Task SaveAsync()
     {
-        _tickTimer?.Dispose(); _eventTimer?.Dispose(); _occultTimer?.Dispose(); _periodicSaveTimer?.Dispose(); _localCultTimer?.Dispose();
-        _tickTimer = new Timer(_ => Tick(), null, 1000, 1000);
-        _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
-        _lastOccultTick = DateTime.UtcNow;
-        _occultTimer = new Timer(_ => OccultTick(), null, 100, 100);
-        _periodicSaveTimer = new Timer(async _ => await SaveAsync(), null, 5000, 5000);
-        _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
+        _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        await SaveLoad.WriteSaveAsync(SaveLoad.SaveGame(_state));
     }
 
-    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); LocalCultBattleEngine.Tick(_state, delta); NotifyChanged(); }
-    private void Tick() { GameEngine.TickAllCovens(_state, _locations); NotifyChanged(); }
+    public void NotifyChanged() => OnChange?.Invoke();
 
-    private void TryEvent()
+    public void DismissEvent()
     {
-        if (_eventPending || ActiveEvent != null) return;
-        if (ConversionEngine.IsActive(_state)) return;
-        if (_state.ActiveCoven.Followers < GameBalance.EventMinFollowers) return;
-        if (Random.Shared.NextDouble() > GameBalance.EventTriggerChance) return;
-
-        var loc = _locations.Find(_state.ActiveCovenId);
-        if (loc != null && loc.Events != null && loc.Events.Count > 0)
-        {
-            var def = loc.Events[Random.Shared.Next(loc.Events.Count)];
-            ActiveEvent = def.ToEventDef();
-        }
-        else
-        {
-            ActiveEvent = GameData.Events[Random.Shared.Next(GameData.Events.Length)];
-        }
-        _eventPending = true; NotifyChanged();
-    }
-
-    private void TrySpawnLocalCult()
-    {
-        if (ConversionEngine.IsActive(_state)) return;
-        var before = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId).Count;
-        LocalCultEngine.SpawnOne(_state, _state.ActiveCovenId);
-        var after = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId);
-        if (after.Count > before)
-        {
-            var spawned = after[^1];
-            SpawnedLocalCultId = spawned.CultId;
-        }
-        NotifyChanged();
-    }
-
-    public void DismissLocalCultSpawn() { SpawnedLocalCultId = null; NotifyChanged(); }
-
-    public double Preach() { var gained = GameEngine.Preach(_state); NotifyChanged(); return gained; }
-    public void Recruit() { GameEngine.Recruit(_state.ActiveCoven); NotifyChanged(); }
-    public void RecruitMultiple(int max) { GameEngine.RecruitMultiple(_state.ActiveCoven, max); NotifyChanged(); }
-    public void BuyBuilding(BuildingType type) { GameEngine.BuyBuilding(_state.ActiveCoven, type); NotifyChanged(); }
-    public void BuyBank() { GameEngine.BuyBank(_state.ActiveCoven); NotifyChanged(); }
-    public void BuyUpgrade(UpgradeId id) { GameEngine.BuyUpgrade(_state.ActiveCoven, id); NotifyChanged(); }
-
-    public double OccultTap() { var gained = OccultEngine.Tap(_state); NotifyChanged(); return gained; }
-    public void BuySermonPower() { OccultEngine.BuySermonPower(_state); NotifyChanged(); }
-    public void HireAcolyte() { OccultEngine.HireAcolyte(_state); NotifyChanged(); }
-    public void PromoteMinion() { CultistHierarchy.Promote(_state.Occult); NotifyChanged(); }
-    public void SacrificeMinion(string minionId) { CultistHierarchy.Sacrifice(_state, minionId); NotifyChanged(); }
-    public void AppointCouncil(CouncilRole role, string minionId) { CultistHierarchy.AppointCouncil(_state.Occult, role, minionId); NotifyChanged(); }
-    public void RemoveCouncil(CouncilRole role) { CultistHierarchy.RemoveCouncil(_state.Occult, role); NotifyChanged(); }
-    public void UnlockTech(TechId id) { TechTree.Unlock(_state, id); NotifyChanged(); }
-    public void SocketArtifact(string artifactId) { Grimoire.Socket(_state.Occult, artifactId); NotifyChanged(); }
-    public void UnsocketArtifact(string artifactId) { Grimoire.Unsocket(_state.Occult, artifactId); NotifyChanged(); }
-    public void ConquerNode(string nodeId)
-    {
-        var def = OccultData.MapNode(nodeId);
-        if (def == null) return;
-        if (!WorldMapSystem.CanConquer(_state, def))
-        {
-            var coven = _state.ActiveCoven;
-            if (def.CovenId != _state.ActiveCovenId)
-                PopupMessage = "This node belongs to a different coven. Switch active coven first.";
-            else if (coven.Faith < def.FaithCost)
-                PopupMessage = $"Not enough Faith. Need {NumberFormat.Fmt(def.FaithCost)} but have {NumberFormat.Fmt(coven.Faith)}.";
-            else if (_state.Occult.ArmyPower < def.ArmyPowerRequired)
-                PopupMessage = $"Not enough Army Power. Need {NumberFormat.Fmt(def.ArmyPowerRequired)} but have {NumberFormat.Fmt(_state.Occult.ArmyPower)}.";
-            else
-                PopupMessage = "Cannot conquer this node right now.";
-            PopupTitle = "Cannot Claim Node";
-            NotifyChanged();
-            return;
-        }
-        WorldMapSystem.Conquer(_state, def);
-        NotifyChanged();
-    }
-    public void SetNodeStance(string nodeId, NodeStance stance) { WorldMapSystem.SetStance(_state.Occult, nodeId, stance); NotifyChanged(); }
-    public void CraftRecipe(CauldronRecipeId id) { Cauldron.Craft(_state, id); NotifyChanged(); }
-
-    public (bool success, string message) RecruitAgent(AgentType type, int count)
-    {
-        var r = BattleEngine.RecruitAgent(_state, type, count);
-        NotifyChanged();
-        return r;
-    }
-    public (bool success, string message) DeployAgents(string continentId, AgentType type, int count)
-    {
-        var r = BattleEngine.DeployAgents(_state, continentId, type, count);
-        NotifyChanged();
-        return r;
-    }
-    public (bool success, string message) WithdrawBattleAgents(string continentId)
-    {
-        var r = BattleEngine.WithdrawAgents(_state, continentId);
-        NotifyChanged();
-        return r;
-    }
-    public (bool success, string message) StartBattle(string continentId)
-    {
-        var r = BattleEngine.StartBattle(_state, continentId);
-        NotifyChanged();
-        return r;
-    }
-    public bool IsBattleTheaterActive(string continentId) => BattleEngine.IsTheaterActive(_state, _locations, continentId);
-    public bool HasCovenInContinent(string continentId) => BattleEngine.HasCovenInContinent(_state, _locations, continentId);
-    public BattleState? GetBattle(string continentId) => BattleEngine.GetOrCreateBattle(_state, _locations, continentId);
-    public List<TerritoryLossEvent> RecentTerritoryLosses => BattleEngine.GetRecentLosses(_state);
-
-    public void ActivateFrenzy() { OccultEngine.ActivateFrenzy(_state.Occult); NotifyChanged(); }
-    public void ActivateMassHysteria() { OccultEngine.ActivateMassHysteria(_state.Occult); NotifyChanged(); }
-    public void SacrificeAcolyte() { OccultEngine.SacrificeAcolyte(_state); NotifyChanged(); }
-    public void ActivateBloodOffering() { OccultEngine.ActivateBloodOffering(_state); NotifyChanged(); }
-    public void ActivateDarkVigil() { OccultEngine.ActivateDarkVigil(_state.Occult); NotifyChanged(); }
-    public void ActivateWhisperChoir() { OccultEngine.ActivateWhisperChoir(_state.Occult); NotifyChanged(); }
-    public void ActivateCovenBlessing() { OccultEngine.ActivateCovenBlessing(_state.Occult); NotifyChanged(); }
-    public double PerformGrandSacrifice() { var favor = GrandSacrifice.PerformSacrifice(_state); NotifyChanged(); return favor; }
-
-    public void ChooseEvent(EventChoice choice)
-    {
-        var outcome = choice.Apply(_state.ActiveCoven);
-        Clamp(_state.ActiveCoven); ActiveEvent = null; _eventPending = false;
-        if (!string.IsNullOrWhiteSpace(outcome)) { PopupTitle = "Outcome"; PopupMessage = outcome; }
+        ActiveEvent = null;
         NotifyChanged();
     }
 
     public void DismissPopup() { PopupMessage = null; PopupTitle = null; NotifyChanged(); }
-    private static void Clamp(CovenState c) { if (c.Faith < 0) c.Faith = 0; if (c.Gold < 0) c.Gold = 0; if (c.Followers < 0) c.Followers = 0; }
-    public void ConfirmName(string name) { _state.CultName = name.Trim(); NotifyChanged(); }
-    public void MarkStoryShown() { _state.StoryShown = true; NotifyChanged(); }
+
+    public void DismissOfflineReport() { OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflinePopupPending = false; NotifyChanged(); }
 
     public bool CanConvert(string covenId)
     {
-        var loc = _locations.Find(covenId);
+        if (covenId == "skanor") return false;
+        var loc = WorldLocationService.FindStatic(covenId);
         if (loc == null) return false;
-        if (!ConversionEngine.CanStartConversion(_state, loc)) return false;
-        if (!CovenProgress.HasCovenInContinent(_state, _locations.Locations, loc.Continent)) return false;
-        return _conversions.Find(covenId) != null;
+        if (!HasCovenInContinent(loc.Continent)) { PopupTitle = "No Foothold"; PopupMessage = $"You need a coven in {loc.Continent} before you can convert covens there. Expand to a neighboring continent first."; return false; }
+        var coven = _state.FindCoven(covenId);
+        if (coven != null && coven.Converted) return false;
+        var totalFollowers = CovenProgress.TotalFollowers(_state);
+        if (totalFollowers < loc.FollowersRequired) { PopupTitle = "Not Ready"; PopupMessage = $"You need {loc.FollowersRequired - totalFollowers} more followers before you can convert this coven."; return false; }
+        return true;
     }
 
     public void StartConversion(string covenId)
     {
-        var loc = _locations.Find(covenId);
+        if (!CanConvert(covenId)) { NotifyChanged(); return; }
+        var def = ConversionDataService.FindStatic(covenId);
+        if (def == null) { PopupTitle = "No Conversion Available"; PopupMessage = "This coven has no conversion sequence. It may not have event data yet."; NotifyChanged(); return; }
+        _state.Conversion = new ConversionState { CovenId = covenId, StepIndex = 0, StartTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+        ConvertedCovenName = WorldLocationService.FindStatic(covenId)?.Name ?? covenId;
+        NotifyChanged();
+    }
+
+    public void ChooseConversionOption(int optionIndex)
+    {
+        if (_state.Conversion == null) return;
+        var def = ConversionDataService.FindStatic(_state.Conversion.CovenId);
+        if (def == null || _state.Conversion.StepIndex >= def.Steps.Count) return;
+        var step = def.Steps[_state.Conversion.StepIndex];
+        if (optionIndex < 0 || optionIndex >= step.Options.Count) return;
+        var option = step.Options[optionIndex];
+        var outcome = option.Outcome ?? "";
+        if (!string.IsNullOrWhiteSpace(outcome)) { PopupTitle = "Outcome"; PopupMessage = outcome; }
+        _state.Conversion.StepIndex++;
+        if (_state.Conversion.StepIndex >= def.Steps.Count)
+        {
+            CompleteConversion(_state.Conversion.CovenId);
+            _state.Conversion = null;
+        }
+        NotifyChanged();
+    }
+
+    private void CompleteConversion(string covenId)
+    {
+        var loc = WorldLocationService.FindStatic(covenId);
         if (loc == null) return;
-        if (!CovenProgress.HasCovenInContinent(_state, _locations.Locations, loc.Continent))
+        var existing = _state.FindCoven(covenId);
+        if (existing == null)
         {
-            PopupTitle = "No Foothold";
-            PopupMessage = $"You need a coven in {loc.Continent} before you can convert covens there. Expand to a neighboring continent first.";
-            NotifyChanged();
-            return;
+            existing = new CovenState { Id = covenId, Converted = true, TakenOver = true };
+            _state.Covens.Add(existing);
         }
-        if (!ConversionEngine.CanStartConversion(_state, loc))
+        else
         {
-            var needed = loc.FollowersRequired - CovenProgress.TotalFollowers(_state);
-            PopupTitle = "Not Ready";
-            PopupMessage = $"You need {needed} more followers before you can convert this coven.";
-            NotifyChanged();
-            return;
+            existing.Converted = true;
+            existing.TakenOver = true;
         }
-        var def = _conversions.Find(covenId);
-        if (def == null)
-        {
-            PopupTitle = "No Conversion Available";
-            PopupMessage = "This coven has no conversion sequence. It may not have event data yet.";
-            NotifyChanged();
-            return;
-        }
-        ConversionEngine.StartConversion(_state, _conversions, loc);
+        var home = _state.HomeCoven;
+        double faithTransfer = home.Faith * GameBalance.CovenTakeoverFaithPercent;
+        double goldTransfer = home.Gold * GameBalance.CovenTakeoverGoldPercent;
+        double followerTransfer = home.Followers * GameBalance.CovenTakeoverFollowerPercent;
+        home.Faith -= faithTransfer; home.Gold -= goldTransfer; home.Followers -= (int)followerTransfer;
+        existing.Faith = faithTransfer; existing.Gold = goldTransfer; existing.Followers = (int)followerTransfer;
+        PendingFoothold = loc.Continent;
+    }
+
+    public void CancelConversion()
+    {
+        _state.Conversion = null;
+        ConvertedCovenName = null;
         NotifyChanged();
     }
 
-    public string? ApplyConversionChoice(ConversionChoice choice)
+    public string? ConsumePendingFoothold()
     {
-        var outcome = ConversionEngine.ApplyChoice(_state, _conversions, choice);
-        NotifyChanged();
-        return outcome;
-    }
-
-    public bool IsConversionBattlePhase => _state.Conversion?.BattlePhase == true && !_state.Conversion.Completed;
-
-    public string? ConversionBattleContinent => _state.Conversion != null
-        ? _locations.Find(_state.Conversion.CovenId)?.Continent
-        : null;
-
-    public BattleState? ConversionBattle
-    {
-        get
-        {
-            var continent = ConversionBattleContinent;
-            if (continent == null) return null;
-            return _state.BattleSystem?.GetBattle(continent);
-        }
-    }
-
-    public void StartConversionBattle()
-    {
-        if (_state.Conversion == null || !_state.Conversion.BattlePhase) return;
-        var continent = ConversionBattleContinent;
-        if (continent == null) return;
-
-        var battle = BattleEngine.GetOrCreateBattle(_state, _locations, continent);
-        if (battle.Phase == BattlePhase.NoThreat || battle.Phase == BattlePhase.Cooldown)
-        {
-            battle.Phase = BattlePhase.Deploy;
-            battle.Status = BattleStatus.Active;
-            battle.RivalHp = battle.RivalMaxHp;
-            battle.PlayerHp = battle.PlayerMaxHp;
-            battle.DeployedSquad.Clear();
-        }
-        NotifyChanged();
-    }
-
-    public (bool success, string message) DeployConversionAgents(AgentType type, int count)
-    {
-        var continent = ConversionBattleContinent;
-        if (continent == null) return (false, "No conversion battle active.");
-        return DeployAgents(continent, type, count);
-    }
-
-    public (bool success, string message) StartConversionBattleFight()
-    {
-        var continent = ConversionBattleContinent;
-        if (continent == null) return (false, "No conversion battle active.");
-        return StartBattle(continent);
-    }
-
-    public void CheckConversionBattle()
-    {
-        if (_state.Conversion == null || !_state.Conversion.BattlePhase || _state.Conversion.Completed) return;
-        var continent = ConversionBattleContinent;
-        if (continent == null) return;
-        var battle = _state.BattleSystem?.GetBattle(continent);
-        if (battle == null) return;
-
-        if (battle.Status == BattleStatus.Victory)
-        {
-            ConversionEngine.OnBattleWon(_state, _conversions);
-            if (_state.Conversion != null && _state.Conversion.Completed)
-            {
-                var loc = _locations.Find(_state.Conversion.CovenId);
-                if (loc != null) ConvertedCovenName = loc.Name;
-                CheckContinentCompletion();
-            }
-            NotifyChanged();
-        }
-        else if (battle.Status == BattleStatus.Defeat)
-        {
-            battle.Phase = BattlePhase.Deploy;
-            battle.Status = BattleStatus.Active;
-            battle.RivalHp = battle.RivalMaxHp;
-            battle.PlayerHp = battle.PlayerMaxHp;
-            battle.DeployedSquad.Clear();
-            NotifyChanged();
-        }
-    }
-
-    public void CancelConversion() { ConversionEngine.Cancel(_state); NotifyChanged(); }
-    public void DismissConversionComplete() { ConversionEngine.ClearCompleted(_state); ConvertedCovenName = null; NotifyChanged(); }
-
-    private void CheckContinentCompletion()
-    {
-        var continent = CovenProgress.NewlyCompletedContinent(_state, _locations.Locations);
-        if (continent == null) return;
-        CovenProgress.MarkContinentStoryPending(_state, continent);
-        var foothold = ContinentFootholds.ForCompleted(continent);
-        PendingFoothold = foothold;
-    }
-
-    public void GrantContinentFoothold()
-    {
-        var foothold = CovenProgress.GrantFoothold(_state, _locations.Locations);
-        if (foothold != null)
-        {
-            _locations.SyncFootholds(_state);
-            ConvertedCovenName = null;
-            ConversionEngine.ClearCompleted(_state);
-        }
+        var f = PendingFoothold;
         PendingFoothold = null;
-        _ = SaveAsync();
+        return f;
+    }
+
+    public bool CanConquerNode(string nodeId)
+    {
+        var def = OccultData.MapNode(nodeId);
+        if (def == null) return false;
+        if (def.CovenId != _state.ActiveCovenId) { PopupTitle = "Wrong Coven"; PopupMessage = "This node belongs to a different coven. Switch active coven first."; return false; }
+        var coven = _state.ActiveCoven;
+        if (coven.Faith < def.FaithCost) { PopupTitle = "Cannot Claim Node"; PopupMessage = $"Not enough Faith. Need {NumberFormat.Fmt(def.FaithCost)} but have {NumberFormat.Fmt(coven.Faith)}."; return false; }
+        if (_state.Occult.ArmyPower < def.ArmyPowerRequired) { PopupTitle = "Cannot Claim Node"; PopupMessage = $"Not enough Army Power. Need {NumberFormat.Fmt(def.ArmyPowerRequired)} but have {NumberFormat.Fmt(_state.Occult.ArmyPower)}."; return false; }
+        if (WorldMapSystem.IsConquered(_state.Occult, def.Id)) { PopupTitle = "Cannot Claim Node"; PopupMessage = "Cannot conquer this node right now."; return false; }
+        return true;
+    }
+
+    public void ConquerNode(string nodeId)
+    {
+        if (!CanConquerNode(nodeId)) { NotifyChanged(); return; }
+        WorldMapSystem.Conquer(_state, OccultData.MapNode(nodeId)!);
         NotifyChanged();
     }
-    public bool IsConversionActive => ConversionEngine.IsActive(_state);
-    public ConversionStep? CurrentConversionStep => ConversionEngine.CurrentStep(_state, _conversions);
-    public ConversionDef? ActiveConversion => _state.Conversion == null ? null : _conversions.Find(_state.Conversion.CovenId);
-    public double GetConversionProgress(string covenId)
+
+    public void SetNodeStance(string nodeId, NodeStance stance)
     {
-        if (_state.Conversion?.CovenId != covenId) return 0.0;
-        return _state.Conversion.Progress;
+        WorldMapSystem.SetStance(_state.Occult, nodeId, stance);
+        NotifyChanged();
     }
 
-    public double GetConversionDetection(string covenId)
+    public void SwitchActiveCoven(string id)
     {
-        if (_state.Conversion?.CovenId != covenId) return 0.0;
-        return _state.Conversion.Progress > 0 ? Math.Min(1.0, _state.Conversion.Progress / 100.0 * 0.5) : 0.0;
+        var coven = _state.FindCoven(id);
+        if (coven == null || !coven.Converted) return;
+        _state.ActiveCovenId = id;
+        NotifyChanged();
     }
 
-    public double ConversionProgressValue => _state.Conversion?.Progress ?? 0.0;
+    public void RecruitAgent(AgentType type, int count)
+    {
+        ShadowWarEngine.RecruitAgent(_state, type, count);
+        NotifyChanged();
+    }
 
-    public IReadOnlyList<LocalCultInstance> ActiveLocalCultsForCurrentCoven =>
-        LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId);
+    public void DeployAgents(string continentId, AgentType type, int count)
+    {
+        BattleEngine.DeployAgents(_state, continentId, type, count);
+        NotifyChanged();
+    }
 
-    public bool CanConvertLocalCult(string cultId)
+    public void StartBattle(string continentId)
+    {
+        BattleEngine.StartBattle(_state, continentId);
+        NotifyChanged();
+    }
+
+    public void WithdrawBattleAgents(string continentId)
+    {
+        BattleEngine.WithdrawAgents(_state, continentId);
+        NotifyChanged();
+    }
+
+    public void InfiltrateInstitution(string id)
+    {
+        ShadowWarEngine.Infiltrate(_state, id);
+        NotifyChanged();
+    }
+
+    public void DefendInstitution(string id)
+    {
+        ShadowWarEngine.Defend(_state, id);
+        NotifyChanged();
+    }
+
+    public void DeployShadowWarAgents(string institutionId, int count)
+    {
+        ShadowWarEngine.DeployAgents(_state, institutionId, count);
+        NotifyChanged();
+    }
+
+    public void Tick(double deltaSec)
+    {
+        OccultEngine.Tick(_state, deltaSec);
+        ShadowWarEngine.Tick(_state, deltaSec);
+        BattleEngine.Tick(_state, deltaSec);
+        RivalCultEngine.Tick(_state, deltaSec);
+        LocalCultEngine.Tick(_state, deltaSec);
+        LocalCultEngine.SpawnTick(_state, deltaSec);
+        NotifyChanged();
+    }
+
+    public void TriggerEvent(CovenEventData evt)
+    {
+        ActiveEvent = evt;
+        NotifyChanged();
+    }
+
+    public void ResolveEvent(int optionIndex)
+    {
+        if (ActiveEvent == null) return;
+        var option = ActiveEvent.Options[optionIndex];
+        var outcome = option.Resolve?.Invoke(_state) ?? "";
+        if (!string.IsNullOrWhiteSpace(outcome)) { PopupTitle = "Outcome"; PopupMessage = outcome; }
+        ActiveEvent = null;
+        NotifyChanged();
+    }
+
+    public bool CanStartLocalCultBattle(string cultId)
     {
         var def = LocalCultData.Find(cultId);
-        return def != null && LocalCultEngine.CanConvert(_state, def);
+        if (def == null) return false;
+        return CovenProgress.TotalFollowers(_state) >= def.FollowersRequired;
     }
 
     public void RequestLocalCultConversion(string cultId)
     {
-        if (!CanConvertLocalCult(cultId))
+        var def = LocalCultData.Find(cultId);
+        if (def == null) return;
+        var totalFollowers = CovenProgress.TotalFollowers(_state);
+        if (totalFollowers < def.FollowersRequired)
         {
-            var def = LocalCultData.Find(cultId);
-            if (def != null)
-            {
-                var needed = def.FollowersRequired - CovenProgress.TotalFollowers(_state);
-                PopupTitle = "Not Ready";
-                PopupMessage = $"You need {needed} more followers to convert this local cult.";
-                NotifyChanged();
-            }
+            PopupTitle = "Not Ready";
+            PopupMessage = $"You need {def.FollowersRequired - totalFollowers} more followers to convert this local cult.";
+            NotifyChanged();
             return;
         }
         PendingLocalCultId = cultId;
         NotifyChanged();
     }
 
-    public void ConfirmLocalCultReward(LocalCultReward reward)
+    public void SpawnLocalCult(string cultId)
     {
-        if (PendingLocalCultId == null) return;
-        LocalCultEngine.Convert(_state, PendingLocalCultId, reward);
+        SpawnedLocalCultId = cultId;
+        NotifyChanged();
+    }
+
+    public string? ConsumeSpawnedLocalCult()
+    {
+        var id = SpawnedLocalCultId;
+        SpawnedLocalCultId = null;
+        return id;
+    }
+
+    public string? ConsumePendingLocalCult()
+    {
+        var id = PendingLocalCultId;
         PendingLocalCultId = null;
-        NotifyChanged();
+        return id;
     }
 
-    public void CancelLocalCultReward() { PendingLocalCultId = null; NotifyChanged(); }
-
-    // ── Local Cult Battle System ──
     public LocalCultBattleState? GetLocalCultBattle(string cultId) => LocalCultBattleEngine.GetBattle(_state, cultId);
-    public (bool success, string message) DeployLocalCultAgents(string cultId, AgentType type, int count)
+
+    public void DeployLocalCultAgents(string cultId, AgentType type, int count)
     {
-        var r = LocalCultBattleEngine.DeployAgents(_state, cultId, type, count);
+        LocalCultBattleEngine.DeployAgents(_state, cultId, type, count);
         NotifyChanged();
-        return r;
     }
-    public (bool success, string message) WithdrawLocalCultAgents(string cultId)
+
+    public void WithdrawLocalCultAgents(string cultId)
     {
-        var r = LocalCultBattleEngine.WithdrawAgents(_state, cultId);
+        LocalCultBattleEngine.WithdrawAgents(_state, cultId);
         NotifyChanged();
-        return r;
     }
-    public (bool success, string message) StartLocalCultBattle(string cultId)
+
+    public void StartLocalCultBattle(string cultId)
     {
-        var r = LocalCultBattleEngine.StartBattle(_state, cultId);
+        LocalCultBattleEngine.StartBattle(_state, cultId);
         NotifyChanged();
-        return r;
     }
-    public bool CanStartLocalCultBattle(string cultId)
+
+    public List<LocalCultInstance> ActiveLocalCultsForCurrentCoven => LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId);
+
+    public bool HasCovenInContinent(string continent)
     {
-        var def = LocalCultData.Find(cultId);
-        return def != null && LocalCultEngine.CanStartBattle(_state, def);
+        return _state.Covens.Any(c => c.Converted &&
+            string.Equals(WorldLocationService.FindStatic(c.Id)?.Continent, continent, StringComparison.OrdinalIgnoreCase));
     }
 
-    public LocalCultDef? PendingLocalCultDef =>
-        PendingLocalCultId == null ? null : LocalCultData.Find(PendingLocalCultId);
-
-    public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; CheckContinentCompletion(); NotifyChanged(); }
-    public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
-    public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
-
-    public ShadowWarState ShadowWar => _state.ShadowWarOrInit;
-    public bool ShadowWarVictory => ShadowWar.VictoryAchieved;
-
-    public (bool success, string message) StartRecon(string institutionId, int agentCount)
-    {
-        var r = ShadowWarEngine.StartRecon(ShadowWar, _state, _locations, institutionId, agentCount);
-        NotifyChanged();
-        return r;
-    }
-
-    public (bool success, string message) SendInfiltrationWave(string institutionId, int waveSize)
-    {
-        var r = ShadowWarEngine.SendInfiltrationWave(ShadowWar, _state, _locations, institutionId, waveSize);
-        NotifyChanged();
-        return r;
-    }
-
-    public (bool success, string message) WithdrawAgents(string institutionId)
-    {
-        var r = ShadowWarEngine.WithdrawAgents(ShadowWar, institutionId);
-        NotifyChanged();
-        return r;
-    }
-
-    public (bool success, string message) AssignDefenders(string institutionId, int count)
-    {
-        var r = ShadowWarEngine.AssignDefenders(ShadowWar, institutionId, count);
-        NotifyChanged();
-        return r;
-    }
-
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
-
-    private void NotifyChanged()
-    {
-        OnChange?.Invoke();
-        var now = DateTime.UtcNow;
-        if (now - _lastSave < TimeSpan.FromSeconds(3)) return;
-        _lastSave = now;
-        _ = SaveAsync();
-    }
-
-    public async Task SyncSaveJsonToJSAsync()
-    {
-        _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var json = SaveLoad.SaveGame(_state);
-        try { await _js.InvokeVoidAsync("eval", $"window.__cultSaveJson={JsonSerializer.Serialize(json)};"); }
-        catch { }
-    }
-
-    public async Task SaveAsync()
-    {
-        await _saveLock.WaitAsync();
-        try
-        {
-            _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            var json = SaveLoad.SaveGame(_state);
-            try
-            {
-                var prev = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
-                if (!string.IsNullOrWhiteSpace(prev))
-                {
-                    var prevBackup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
-                    if (!string.IsNullOrWhiteSpace(prevBackup))
-                        await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey2, prevBackup);
-                    await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey, prev);
-                }
-                await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.SaveKey, json);
-                await _js.InvokeVoidAsync("eval", $"window.__cultSaveJson={JsonSerializer.Serialize(json)};");
-            }
-            catch { }
-        }
-        finally
-        {
-            _lastSave = DateTime.UtcNow;
-            _saveLock.Release();
-        }
-    }
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
 }
