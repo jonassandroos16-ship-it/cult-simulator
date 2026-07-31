@@ -2,6 +2,7 @@
 @inject IJSRuntime JS
 @inject GameService Game
 @inject WorldLocationService LocationService
+@inject ConversionDataService Conversions
 @implements IDisposable
 
 <div class="world-map-wrapper">
@@ -120,7 +121,7 @@
                 var canConvert = Game.CanConvert(selectedCoven.Id);
                 var nextTarget = CovenProgress.NextTarget(Game.State, LocationService.Locations);
                 var isNextTarget = nextTarget?.Id == selectedCoven.Id;
-                var conversionDef = ConversionData.Find(selectedCoven.Id);
+                var conversionDef = Conversions.Find(selectedCoven.Id);
                 var hasCovenInContinent = HasCovenInContinent(selectedCoven.Continent);
 
                 if (!isConverted)
