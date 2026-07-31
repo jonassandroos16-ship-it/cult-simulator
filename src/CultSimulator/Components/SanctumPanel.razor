@@ -1,10 +1,18 @@
 @using CultSimulator.Game
 @inject GameService Game
+@inject WorldLocationService Locations
 @implements IDisposable
 
 <div class="panel glass-panel rounded-[20px] p-5">
     <h2 class="panel-title">The Sanctum</h2>
     <p class="text-xs text-slate-400 mb-3 leading-relaxed">Manage your cult's inner circle. Hire Acolytes for passive Faith, upgrade Sermon Power for stronger preaching, and Promote Acolytes into named Disciples with unique traits. Disciples can be appointed to the High Council for powerful bonuses, or sacrificed for rituals once unlocked.</p>
+    @if (Game.State.ActiveCoven.BaseMultiplier > 1.0)
+    {
+        <div class="mb-3 p-2.5 rounded-[12px] text-xs flex items-center gap-2" style="background: rgba(167,139,250,0.08); border: 1px solid rgba(167,139,250,0.2);">
+            <span class="text-amber-400">✨</span>
+            <span class="text-violet-300">@activeCovenName faith bonus: <span class="text-amber-200 font-display font-semibold">×@Game.State.ActiveCoven.BaseMultiplier.ToString("F2")</span> applied to all acolyte, sermon, and map faith</span>
+        </div>
+    }
     <div class="flex flex-col gap-3">
         <div class="acolyte-block p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
             <div class="flex items-center justify-between">
@@ -164,6 +172,7 @@
     private OccultState occult => Game.State.Occult;
     private bool hasSanguineAutomata => TechTree.HasTech(occult, TechId.SanguineAutomata);
     private double sermonProgress => (DateTime.UtcNow.Ticks / 10000000.0) % 1.0;
+    private string activeCovenName { get { var loc = Locations.Find(Game.State.ActiveCovenId); return loc?.Name ?? Game.State.ActiveCovenId; } }
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
     private void AppointFromSelect(CouncilRole role, string? minionId) { if (!string.IsNullOrEmpty(minionId)) Game.AppointCouncil(role, minionId); }
