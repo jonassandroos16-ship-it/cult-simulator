@@ -88,4 +88,16 @@ public static class CovenProgress
         }
         return true;
     }
+
+    public static bool HasCovenInContinent(GameState state, ImmutableArray<WorldLocationDef> locations, string continent)
+    {
+        if (continent == "europe") return true;
+        return state.Covens.Any(c => c.Converted &&
+            string.Equals(locations.FirstOrDefault(l => l.Id == c.Id)?.Continent, continent, StringComparison.OrdinalIgnoreCase));
+    }
+
+    public static bool CanConvertInContinent(GameState state, ImmutableArray<WorldLocationDef> locations, string continent)
+    {
+        return HasCovenInContinent(state, locations, continent);
+    }
 }
