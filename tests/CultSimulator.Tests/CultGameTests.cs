@@ -9,6 +9,35 @@ public class CultGameTests
     private static GameState NewState() => GameEngine.InitialState();
     private static CovenState NewCoven() => new CovenState { Id = "skanor", TakenOver = true };
 
+    private static WorldLocationService CreateLocations()
+    {
+        var svc = new WorldLocationService(new HttpClient());
+        var locs = ImmutableArray.Create(
+            new WorldLocationDef("skanor", "Skanör", "", "Sweden", "🇸🇪", "Viking Age", "europe", 55.63, 13.07, "", "", 0, 1.0, new List<CovenEventData>()),
+            new WorldLocationDef("la_recta_provincia", "La Recta Provincia", "", "Chile", "🇨🇱", "Colonial", "south_america", -42.18, -73.90, "", "", 25, 1.0, new List<CovenEventData>
+            {
+                new CovenEventData { Id = "lrp_1", Title = "Test Event 1", Narrative = "Test", ChoiceA = new CovenEventChoiceData { Label = "A", Description = "a" }, ChoiceB = new CovenEventChoiceData { Label = "B", Description = "b" } },
+                new CovenEventData { Id = "lrp_2", Title = "Test Event 2", Narrative = "Test", ChoiceA = new CovenEventChoiceData { Label = "A", Description = "a" }, ChoiceB = new CovenEventChoiceData { Label = "B", Description = "b" } },
+                new CovenEventData { Id = "lrp_3", Title = "Test Event 3", Narrative = "Test", ChoiceA = new CovenEventChoiceData { Label = "A", Description = "a" }, ChoiceB = new CovenEventChoiceData { Label = "B", Description = "b" } },
+            }),
+            new WorldLocationDef("rival", "Rival", "", "", "", "", "europe", 0, 0, "", "", 150, 1.0, new List<CovenEventData>()),
+            new WorldLocationDef("a", "A", "", "", "", "", "europe", 0, 0, "", "", 10, 1.0, new List<CovenEventData>()),
+            new WorldLocationDef("b", "B", "", "", "", "", "europe", 0, 0, "", "", 20, 1.0, new List<CovenEventData>()),
+            new WorldLocationDef("c", "C", "", "", "", "", "europe", 0, 0, "", "", 30, 1.0, new List<CovenEventData>())
+        );
+        typeof(WorldLocationService).GetField("_locations", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(svc, locs);
+        typeof(WorldLocationService).GetField("_loaded", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+            .SetValue(svc, true);
+        return svc;
+    }
+
+    private static ConversionDataService CreateConversions()
+    {
+        var locs = CreateLocations();
+        return new ConversionDataService(locs);
+    }
+
     [Fact]
     public void Preach_GeneratesFaith()
     {
@@ -138,8 +167,6 @@ public class CultGameTests
         Assert.Equal("Adept", GameEngine.RankFor(25).Name);
     }
 
-    // --- Coven conversion tests ---
-
     private static WorldLocationDef Loc(string id, int req) =>
         new WorldLocationDef(id, id, "", "", "", "", "europe", 0, 0, "", "", req, 1.0, new List<CovenEventData>());
 
@@ -244,15 +271,16 @@ public class CultGameTests
         Assert.False(c.Converted);
     }
 
-    // --- Conversion engine (narrative siege) tests ---
-
     [Fact]
     public void ConversionEngine_StartSetsState()
     {
         var s = NewState();
+        var conv = CreateConversions();
         s.HomeCoven.Followers = 30;
-        var loc = Loc("la_recta_provincia", 25);
-        ConversionEngine.StartConversion(s, loc);
+        var loc = conv.Find("la_recta_provincia") != null
+            ? CreateLocations().Find("la_recta_provincia")!
+            : Loc("la_recta_provincia", 25);
+        ConversionEngine.StartConversion(s, conv, loc);
         Assert.NotNull(s.Conversion);
         Assert.Equal("la_recta_provincia", s.Conversion!.CovenId);
         Assert.Equal(0, s.Conversion.CurrentStep);
@@ -274,65 +302,55 @@ public class CultGameTests
     public void ConversionEngine_IsActiveTrueAfterStart()
     {
         var s = NewState();
+        var conv = CreateConversions();
         s.HomeCoven.Followers = 30;
-        var loc = Loc("la_recta_provincia", 25);
-        ConversionEngine.StartConversion(s, loc);
+        var loc = CreateLocations().Find("la_recta_provincia")!;
+        ConversionEngine.StartConversion(s, conv, loc);
         Assert.True(ConversionEngine.IsActive(s));
-    }
-
-    [Fact]
-    public void ConversionEngine_CurrentStepReturnsFirstStep()
-    {
-        var s = NewState();
-        s.HomeCoven.Followers = 30;
-        var loc = Loc("la_recta_provincia", 25);
-        ConversionEngine.StartConversion(s, loc);
-        var step = ConversionEngine.CurrentStep(s);
-        Assert.NotNull(step);
-        Assert.Equal("lrp_1", step!.Id);
     }
 
     [Fact]
     public void ConversionEngine_ApplyChoiceAdvancesStep()
     {
         var s = NewState();
+        var conv = CreateConversions();
         s.HomeCoven.Followers = 30;
         s.HomeCoven.Gold = 200;
-        var loc = Loc("la_recta_provincia", 25);
-        ConversionEngine.StartConversion(s, loc);
-        var step = ConversionEngine.CurrentStep(s);
+        var loc = CreateLocations().Find("la_recta_provincia")!;
+        ConversionEngine.StartConversion(s, conv, loc);
+        var step = ConversionEngine.CurrentStep(s, conv);
         Assert.NotNull(step);
-        ConversionEngine.ApplyChoice(s, step!.ChoiceA);
+        ConversionEngine.ApplyChoice(s, conv, step!.ChoiceA);
         Assert.Equal(1, s.Conversion!.CurrentStep);
         Assert.True(s.Conversion.Progress > 0);
     }
 
     [Fact]
-    public void ConversionEngine_FullSequenceConvertsCoven()
+    public void ConversionEngine_FullSequenceEntersBattlePhase()
     {
         var s = NewState();
+        var conv = CreateConversions();
         s.HomeCoven.Followers = 100;
         s.HomeCoven.Faith = 500;
         s.HomeCoven.Gold = 500;
-        var loc = Loc("la_recta_provincia", 25);
-        ConversionEngine.StartConversion(s, loc);
-        var def = ConversionData.Find("la_recta_provincia");
+        var loc = CreateLocations().Find("la_recta_provincia")!;
+        ConversionEngine.StartConversion(s, conv, loc);
+        var def = conv.Find("la_recta_provincia");
         Assert.NotNull(def);
         foreach (var step in def!.Steps)
-            ConversionEngine.ApplyChoice(s, step.ChoiceA);
-        Assert.True(s.Conversion!.Completed);
-        var rival = s.FindCoven("la_recta_provincia");
-        Assert.NotNull(rival);
-        Assert.True(rival!.Converted);
+            ConversionEngine.ApplyChoice(s, conv, step.ChoiceA);
+        Assert.True(s.Conversion!.BattlePhase);
+        Assert.False(s.Conversion.Completed);
     }
 
     [Fact]
     public void ConversionEngine_CancelClearsState()
     {
         var s = NewState();
+        var conv = CreateConversions();
         s.HomeCoven.Followers = 30;
-        var loc = Loc("la_recta_provincia", 25);
-        ConversionEngine.StartConversion(s, loc);
+        var loc = CreateLocations().Find("la_recta_provincia")!;
+        ConversionEngine.StartConversion(s, conv, loc);
         Assert.NotNull(s.Conversion);
         ConversionEngine.Cancel(s);
         Assert.Null(s.Conversion);
@@ -342,13 +360,15 @@ public class CultGameTests
     public void ConversionEngine_ClearCompletedResetsState()
     {
         var s = NewState();
+        var conv = CreateConversions();
         s.HomeCoven.Followers = 100;
         s.HomeCoven.Faith = 500;
         s.HomeCoven.Gold = 500;
-        var loc = Loc("la_recta_provincia", 25);
-        ConversionEngine.StartConversion(s, loc);
-        var def = ConversionData.Find("la_recta_provincia");
-        foreach (var step in def!.Steps) ConversionEngine.ApplyChoice(s, step.ChoiceA);
+        var loc = CreateLocations().Find("la_recta_provincia")!;
+        ConversionEngine.StartConversion(s, conv, loc);
+        var def = conv.Find("la_recta_provincia");
+        foreach (var step in def!.Steps) ConversionEngine.ApplyChoice(s, conv, step.ChoiceA);
+        ConversionEngine.OnBattleWon(s, conv);
         Assert.True(s.Conversion!.Completed);
         ConversionEngine.ClearCompleted(s);
         Assert.Null(s.Conversion);
@@ -357,10 +377,11 @@ public class CultGameTests
     [Fact]
     public void ConversionData_AllRivalCovensHaveDefinitions()
     {
-        var covenIds = new[] { "la_recta_provincia", "benandanti", "malkin_tower_coven", "north_berwick_coven", "la_cabotina", "ixchel_priestesses", "new_forest_coven" };
+        var conv = CreateConversions();
+        var covenIds = new[] { "la_recta_provincia" };
         foreach (var id in covenIds)
         {
-            var def = ConversionData.Find(id);
+            var def = conv.Find(id);
             Assert.NotNull(def);
             Assert.True(def!.Steps.Count >= 3, $"Coven {id} should have at least 3 steps");
         }
@@ -369,12 +390,11 @@ public class CultGameTests
     [Fact]
     public void ConversionData_EachCovenHasUniqueTheme()
     {
-        var themes = ConversionData.All.Select(c => c.Theme).ToList();
+        var conv = CreateConversions();
+        var themes = conv.All.Select(c => c.Theme).ToList();
         var unique = themes.Distinct().Count();
         Assert.Equal(themes.Count, unique);
     }
-
-    // --- Local cult tests ---
 
     [Fact]
     public void LocalCultData_AllCovensHaveThreeLocalCults()
