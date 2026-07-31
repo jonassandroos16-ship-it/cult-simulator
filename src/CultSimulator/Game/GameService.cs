@@ -6,6 +6,7 @@ public class GameService
 {
     private readonly IJSRuntime _js;
     private readonly WorldLocationService _locations;
+    private readonly ConversionDataService _conversions;
     private GameState _state;
     private Timer? _tickTimer, _eventTimer, _occultTimer, _saveDebounceTimer, _periodicSaveTimer, _localCultTimer;
     private bool _eventPending;
@@ -37,7 +38,13 @@ public class GameService
     public LocalCultDef? SpawnedLocalCultDef =>
         SpawnedLocalCultId == null ? null : LocalCultData.Find(SpawnedLocalCultId);
 
-    public GameService(IJSRuntime js, WorldLocationService locations) { _js = js; _locations = locations; _state = GameEngine.InitialState(); }
+    public GameService(IJSRuntime js, WorldLocationService locations, ConversionDataService conversions)
+    {
+        _js = js;
+        _locations = locations;
+        _conversions = conversions;
+        _state = GameEngine.InitialState();
+    }
 
     public async Task InitAsync()
     {
@@ -218,7 +225,7 @@ public class GameService
         if (loc == null) return false;
         if (!ConversionEngine.CanStartConversion(_state, loc)) return false;
         if (!CovenProgress.HasCovenInContinent(_state, _locations.Locations, loc.Continent)) return false;
-        return true;
+        return _conversions.Find(covenId) != null;
     }
 
     public void StartConversion(string covenId)
@@ -240,34 +247,104 @@ public class GameService
             NotifyChanged();
             return;
         }
-        if (ConversionEngine.DefinitionFor(covenId) == null)
+        var def = _conversions.Find(covenId);
+        if (def == null)
         {
             PopupTitle = "No Conversion Available";
-            PopupMessage = "This coven cannot be converted through the narrative siege system yet. Try expanding your reach to other covens first.";
+            PopupMessage = "This coven has no conversion sequence. It may not have event data yet.";
             NotifyChanged();
             return;
         }
-        ConversionEngine.StartConversion(_state, loc);
+        ConversionEngine.StartConversion(_state, _conversions, loc);
         NotifyChanged();
     }
 
     public string? ApplyConversionChoice(ConversionChoice choice)
     {
-        var outcome = ConversionEngine.ApplyChoice(_state, choice);
-        if (_state.Conversion != null && _state.Conversion.Completed)
-        {
-            var loc = _locations.Find(_state.Conversion.CovenId);
-            if (loc != null) ConvertedCovenName = loc.Name;
-        }
+        var outcome = ConversionEngine.ApplyChoice(_state, _conversions, choice);
         NotifyChanged();
         return outcome;
+    }
+
+    public bool IsConversionBattlePhase => _state.Conversion?.BattlePhase == true && !_state.Conversion.Completed;
+    public string? ConversionBattleContinent => _state.Conversion != null
+        ? _locations.Find(_state.Conversion.CovenId)?.Continent
+        : null;
+    public BattleState? ConversionBattle
+    {
+        get
+        {
+            var continent = ConversionBattleContinent;
+            if (continent == null) return null;
+            return _state.BattleSystem?.GetBattle(continent);
+        }
+    }
+
+    public void StartConversionBattle()
+    {
+        if (_state.Conversion == null || !_state.Conversion.BattlePhase) return;
+        var continent = ConversionBattleContinent;
+        if (continent == null) return;
+        var battle = BattleEngine.GetOrCreateBattle(_state, _locations, continent);
+        if (battle.Phase == BattlePhase.NoThreat || battle.Phase == BattlePhase.Cooldown)
+        {
+            battle.Phase = BattlePhase.Deploy;
+            battle.Status = BattleStatus.Active;
+            battle.RivalHp = battle.RivalMaxHp;
+            battle.PlayerHp = battle.PlayerMaxHp;
+            battle.DeployedSquad.Clear();
+        }
+        NotifyChanged();
+    }
+
+    public (bool success, string message) DeployConversionAgents(AgentType type, int count)
+    {
+        var continent = ConversionBattleContinent;
+        if (continent == null) return (false, "No conversion battle active.");
+        return DeployAgents(continent, type, count);
+    }
+
+    public (bool success, string message) StartConversionBattleFight()
+    {
+        var continent = ConversionBattleContinent;
+        if (continent == null) return (false, "No conversion battle active.");
+        return StartBattle(continent);
+    }
+
+    public void CheckConversionBattle()
+    {
+        if (_state.Conversion == null || !_state.Conversion.BattlePhase || _state.Conversion.Completed) return;
+        var continent = ConversionBattleContinent;
+        if (continent == null) return;
+        var battle = _state.BattleSystem?.GetBattle(continent);
+        if (battle == null) return;
+
+        if (battle.Status == BattleStatus.Victory)
+        {
+            ConversionEngine.OnBattleWon(_state, _conversions);
+            if (_state.Conversion != null && _state.Conversion.Completed)
+            {
+                var loc = _locations.Find(_state.Conversion.CovenId);
+                if (loc != null) ConvertedCovenName = loc.Name;
+            }
+            NotifyChanged();
+        }
+        else if (battle.Status == BattleStatus.Defeat)
+        {
+            battle.Phase = BattlePhase.Deploy;
+            battle.Status = BattleStatus.Active;
+            battle.RivalHp = battle.RivalMaxHp;
+            battle.PlayerHp = battle.PlayerMaxHp;
+            battle.DeployedSquad.Clear();
+            NotifyChanged();
+        }
     }
 
     public void CancelConversion() { ConversionEngine.Cancel(_state); NotifyChanged(); }
     public void DismissConversionComplete() { ConversionEngine.ClearCompleted(_state); ConvertedCovenName = null; NotifyChanged(); }
     public bool IsConversionActive => ConversionEngine.IsActive(_state);
-    public ConversionStep? CurrentConversionStep => ConversionEngine.CurrentStep(_state);
-    public ConversionDef? ActiveConversion => _state.Conversion == null ? null : ConversionData.Find(_state.Conversion.CovenId);
+    public ConversionStep? CurrentConversionStep => ConversionEngine.CurrentStep(_state, _conversions);
+    public ConversionDef? ActiveConversion => _state.Conversion == null ? null : _conversions.Find(_state.Conversion.CovenId);
     public double ConversionProgressValue => _state.Conversion?.Progress ?? 0.0;
 
     public IReadOnlyList<LocalCultInstance> ActiveLocalCultsForCurrentCoven =>
@@ -305,11 +382,7 @@ public class GameService
         NotifyChanged();
     }
 
-    public void CancelLocalCultReward()
-    {
-        PendingLocalCultId = null;
-        NotifyChanged();
-    }
+    public void CancelLocalCultReward() { PendingLocalCultId = null; NotifyChanged(); }
 
     public LocalCultDef? PendingLocalCultDef =>
         PendingLocalCultId == null ? null : LocalCultData.Find(PendingLocalCultId);
