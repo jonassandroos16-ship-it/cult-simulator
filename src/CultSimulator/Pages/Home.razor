@@ -57,7 +57,7 @@ else
         else if (activeTab == "battle") { <BattlePanel OnViewMap="SwitchToBattleMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
     </div>
-    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><RankUpModal /><VictoryScreen /><ContinentStoryScreen />
+    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><OfflineReportPopup /><RankUpModal /><VictoryScreen /><ContinentStoryScreen />
 }
 
 @code {
