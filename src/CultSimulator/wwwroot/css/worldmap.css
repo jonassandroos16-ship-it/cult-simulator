@@ -48,7 +48,6 @@
     color: var(--gold-soft) !important;
 }
 
-/* Map mode tab buttons (World / Local / Ley Lines) */
 .map-tab-button {
     display: inline-flex;
     align-items: center;
@@ -108,6 +107,11 @@
 
 .coven-marker.next-target {
     animation: target-pulse 1.6s ease-in-out infinite;
+}
+
+.coven-marker.locked {
+    opacity: 0.4;
+    filter: grayscale(0.7);
 }
 
 @keyframes target-pulse {
@@ -334,15 +338,15 @@
 
 .conversion-abandon:hover { color: var(--danger); }
 
-/* ---- Ley Line map markers ---- */
+/* ---- Shadow War map markers ---- */
 
-.ley-line-marker {
-    width: 40px;
-    height: 40px;
+.shadow-war-marker {
+    width: 44px;
+    height: 44px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     background: radial-gradient(circle, rgba(30, 27, 50, 0.9) 0%, rgba(10, 10, 26, 0.95) 100%);
     border: 2px solid rgba(100, 100, 120, 0.4);
     border-radius: 50%;
@@ -352,61 +356,81 @@
     position: relative;
 }
 
-.ley-line-marker.conquered {
+.shadow-war-marker.controlled {
     background: radial-gradient(circle, rgba(16, 185, 129, 0.7) 0%, rgba(6, 78, 59, 0.95) 100%);
     border-color: rgba(52, 211, 153, 0.6);
     box-shadow: 0 0 14px rgba(52, 211, 153, 0.4);
 }
 
-.ley-line-marker.conquered.veiled {
-    background: radial-gradient(circle, rgba(124, 58, 237, 0.6) 0%, rgba(46, 16, 101, 0.95) 100%);
-    border-color: rgba(167, 139, 250, 0.5);
-    box-shadow: 0 0 12px rgba(167, 139, 250, 0.35);
+.shadow-war-marker.infiltrating {
+    background: radial-gradient(circle, rgba(245, 158, 11, 0.6) 0%, rgba(120, 53, 15, 0.95) 100%);
+    border-color: rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
 }
 
-.ley-line-marker.available {
-    animation: ley-line-pulse 2s ease-in-out infinite;
+.shadow-war-marker.recon {
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.6) 0%, rgba(30, 58, 138, 0.95) 100%);
+    border-color: rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.35);
 }
 
-@keyframes ley-line-pulse {
-    0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.3), 0 0 0 0 rgba(245, 158, 11, 0.3); }
-    50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.6), 0 0 0 6px rgba(245, 158, 11, 0); }
+.shadow-war-marker.alerted {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.7) 0%, rgba(127, 29, 29, 0.95) 100%);
+    border-color: rgba(239, 68, 68, 0.6);
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
 }
 
-.ley-line-marker:hover {
+.shadow-war-marker.investigated {
+    background: radial-gradient(circle, rgba(251, 146, 60, 0.6) 0%, rgba(154, 52, 18, 0.95) 100%);
+    border-color: rgba(251, 146, 60, 0.5);
+    box-shadow: 0 0 12px rgba(251, 146, 60, 0.35);
+}
+
+.shadow-war-marker.rival-controlled {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.8) 0%, rgba(76, 5, 25, 0.95) 100%);
+    border-color: rgba(239, 68, 68, 0.7);
+    box-shadow: 0 0 16px rgba(239, 68, 68, 0.5);
+}
+
+.shadow-war-marker.locked {
+    opacity: 0.3;
+    filter: grayscale(0.8);
+}
+
+.shadow-war-marker:hover {
     transform: scale(1.2);
     border-color: var(--gold-warm);
     box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
 }
 
-.ley-line-marker.expanded {
+.shadow-war-marker.expanded {
     transform: scale(1.25);
     border-color: var(--gold);
     box-shadow: 0 0 24px rgba(251, 191, 36, 0.7);
 }
 
-.ley-line-marker-icon { line-height: 1; }
+.shadow-war-marker-icon { line-height: 1; }
 
-.ley-line-marker-target {
+.shadow-war-marker-badge {
     position: absolute;
-    top: -8px;
-    right: -6px;
+    top: -6px;
+    right: -4px;
     font-size: 0.85rem;
-    filter: drop-shadow(0 0 4px rgba(245, 158, 11, 0.8));
+    filter: drop-shadow(0 0 4px rgba(0, 0, 0, 0.8));
 }
 
-.ley-line-marker-label {
+.shadow-war-marker-label {
     position: absolute;
-    bottom: -30px;
+    bottom: -28px;
     left: 50%;
     transform: translateX(-50%);
     white-space: nowrap;
     font-family: var(--font-display);
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 600;
     color: var(--gold-pale);
     background: rgba(5, 3, 8, 0.85);
-    padding: 0.2rem 0.6rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 6px;
     border: 1px solid var(--panel-border);
     pointer-events: none;
@@ -414,97 +438,83 @@
     transition: opacity 0.3s ease;
 }
 
-.ley-line-marker.expanded .ley-line-marker-label { opacity: 1; }
+.shadow-war-marker.expanded .shadow-war-marker-label { opacity: 1; }
 
-/* Ley Line connection polylines */
-.ley-line-connection {
-    filter: drop-shadow(0 0 4px rgba(167, 139, 250, 0.4));
-    animation: ley-line-flow 3s ease-in-out infinite;
+/* ---- Rival cult markers (offset from institutions) ---- */
+
+.rival-marker {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    background: radial-gradient(circle, rgba(127, 29, 29, 0.8) 0%, rgba(76, 5, 25, 0.95) 100%);
+    border: 2px solid rgba(239, 68, 68, 0.6);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.4);
+    position: relative;
+    animation: rival-pulse 2.5s ease-in-out infinite;
 }
 
-@keyframes ley-line-flow {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 0.8; }
+.rival-marker.at-war {
+    border-color: rgba(239, 68, 68, 0.9);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
 }
 
-/* Great Seal triangle overlays */
-.ley-line-seal {
-    animation: seal-glow 4s ease-in-out infinite;
+.rival-marker.expanding {
+    border-color: rgba(251, 146, 60, 0.7);
+    box-shadow: 0 0 16px rgba(251, 146, 60, 0.4);
 }
 
-@keyframes seal-glow {
-    0%, 100% { fillOpacity: 0.06; }
-    50% { fillOpacity: 0.15; }
+@keyframes rival-pulse {
+    0%, 100% { box-shadow: 0 0 14px rgba(239, 68, 68, 0.4), 0 0 0 0 rgba(239, 68, 68, 0.3); }
+    50% { box-shadow: 0 0 22px rgba(239, 68, 68, 0.7), 0 0 0 8px rgba(239, 68, 68, 0); }
 }
 
-.ley-line-seal-label .seal-label {
+.rival-marker:hover {
+    transform: scale(1.2);
+    border-color: var(--gold-warm);
+}
+
+.rival-marker-icon { line-height: 1; }
+
+.rival-marker-label {
+    position: absolute;
+    bottom: -26px;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
     font-family: var(--font-display);
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: #fbbf24;
-    text-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-    background: rgba(5, 3, 8, 0.7);
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #fca5a5;
+    background: rgba(5, 3, 8, 0.85);
     padding: 0.15rem 0.5rem;
     border-radius: 6px;
-    border: 1px solid rgba(251, 191, 36, 0.3);
-    text-align: center;
-    white-space: nowrap;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-/* Ley Line popup (reuses coven-popup styles) */
-.ley-line-popup {
+.rival-marker:hover .rival-marker-label { opacity: 1; }
+
+.rival-marker-power {
     position: absolute;
-    top: 1rem;
-    right: 1rem;
-    z-index: 1000;
-    max-width: 320px;
-    background: linear-gradient(135deg, rgba(46, 16, 101, 0.95), rgba(15, 10, 36, 0.95));
-    border: 1px solid rgba(167, 139, 250, 0.25);
-    border-radius: 16px;
-    padding: 1.5rem;
-    backdrop-filter: blur(16px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-    animation: fade-in 0.3s ease;
+    top: -8px;
+    right: -6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    color: #fca5a5;
+    background: rgba(76, 5, 25, 0.9);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    border: 1px solid rgba(239, 68, 68, 0.4);
 }
 
-@media (max-width: 640px) {
-    .ley-line-popup {
-        top: auto;
-        bottom: 1rem;
-        right: 0.5rem;
-        left: 0.5rem;
-        max-width: none;
-    }
-}
-
-/* Ley Lines tab phase badges */
-.ley-line-phase-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.3rem 0.8rem;
-    border-radius: 999px;
-    font-family: var(--font-display);
-    font-size: 0.65rem;
-    font-weight: 600;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-}
-
-.ley-line-phase-badge.active {
-    background: linear-gradient(135deg, var(--violet-deep), var(--violet-void));
-    color: var(--gold-pale);
-    border: 1px solid rgba(167, 139, 250, 0.4);
-    box-shadow: 0 0 10px rgba(124, 58, 237, 0.2);
-}
-
-.ley-line-phase-badge.locked {
-    background: rgba(15, 10, 36, 0.5);
-    color: rgba(100, 100, 120, 0.6);
-    border: 1px solid rgba(100, 100, 120, 0.2);
-}
-
-/* Shortcut button to map view */
 .ley-line-shortcut-btn {
     display: inline-flex;
     align-items: center;
@@ -527,4 +537,76 @@
     border-color: rgba(167, 139, 250, 0.6);
     color: var(--gold-pale);
     box-shadow: 0 0 12px rgba(124, 58, 237, 0.2);
+}
+
+/* ---- Battle panel styles ---- */
+
+.battle-agent-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.battle-agent-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.battle-agent-card.selected {
+    border-color: var(--gold-warm) !important;
+    box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+}
+
+.battle-agent-card.deployed {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.battle-theater-card {
+    transition: all 0.2s ease;
+}
+
+.battle-theater-card:hover {
+    border-color: rgba(167, 139, 250, 0.4);
+}
+
+.battle-theater-card.active {
+    border-color: rgba(245, 158, 11, 0.4);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+.battle-progress-bar {
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(15, 10, 36, 0.6);
+}
+
+.battle-progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.3s ease;
+}
+
+.battle-log-entry {
+    animation: fade-in 0.3s ease;
+}
+
+@keyframes fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.territory-loss-toast {
+    position: fixed;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    max-width: 480px;
+    animation: toast-slide-in 0.4s ease;
+}
+
+@keyframes toast-slide-in {
+    from { opacity: 0; transform: translate(-50%, -20px); }
+    to { opacity: 1; transform: translate(-50%, 0); }
 }
