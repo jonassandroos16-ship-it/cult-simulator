@@ -114,8 +114,8 @@ public static class GameEngine
             if (!coven.TakenOver) continue;
             var (faith, gold) = TickIncome(coven);
             coven.Faith += faith; coven.Gold += gold;
-            OccultEngine.Tick(state, coven, 1.0);
         }
+        OccultEngine.Tick(state, 1.0);
         ShadowWarEngine.Tick(state.ShadowWarOrInit, state, locations, 1.0);
         RivalCultEngine.Tick(state, locations, 1.0);
         BattleEngine.Tick(state, locations, 1.0);
