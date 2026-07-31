@@ -4,11 +4,20 @@ namespace CultSimulator.Game;
 
 public static class GameEngine
 {
+    public static double CovenBaseMultiplier(GameState state, string covenId)
+    {
+        var coven = state.FindCoven(covenId);
+        if (coven != null && coven.BaseMultiplier > 0)
+            return coven.BaseMultiplier;
+        return 1.0;
+    }
+
     public static double PreachMultiplier(CovenState s)
     {
         double mult = 1.0 + s.Followers * GameBalance.PreachFollowerScaling;
         if (s.HasUpgrade(UpgradeId.Hymnal)) mult *= 2.0;
         if (s.HasUpgrade(UpgradeId.Ascendance)) mult *= 1.5;
+        mult *= s.BaseMultiplier > 0 ? s.BaseMultiplier : 1.0;
         return mult;
     }
 
@@ -56,6 +65,7 @@ public static class GameEngine
         gold += s.Buildings.GetValueOrDefault(BuildingType.Cathedral) * GameBalance.CathedralGoldPerSec;
         faith *= FaithMultiplier(s);
         gold *= GoldMultiplier(s);
+        faith *= s.BaseMultiplier > 0 ? s.BaseMultiplier : 1.0;
         return (faith, gold);
     }
 
@@ -98,6 +108,7 @@ public static class GameEngine
 
     public static void TickAllCovens(GameState state, WorldLocationService locations)
     {
+        SyncBaseMultipliers(state, locations);
         foreach (var coven in state.Covens)
         {
             if (!coven.TakenOver) continue;
@@ -108,6 +119,23 @@ public static class GameEngine
         ShadowWarEngine.Tick(state.ShadowWarOrInit, state, locations, 1.0);
         RivalCultEngine.Tick(state, locations, 1.0);
         BattleEngine.Tick(state, locations, 1.0);
+    }
+
+    /// <summary>
+    /// Copies BaseMultiplier from each coven's WorldLocationDef into its
+    /// CovenState. Called during ticks so newly-converted covens pick up
+    /// their multiplier automatically. Safe to call every tick — it's a
+    /// simple field copy that only changes when a coven is first converted.
+    /// </summary>
+    public static void SyncBaseMultipliers(GameState state, WorldLocationService locations)
+    {
+        foreach (var coven in state.Covens)
+        {
+            if (!coven.Converted) continue;
+            var loc = locations.Find(coven.Id);
+            if (loc != null)
+                coven.BaseMultiplier = loc.BaseMultiplier;
+        }
     }
 
     public static (double faith, double gold) ApplyOfflineIncome(GameState state, long elapsedMs)
@@ -162,7 +190,7 @@ public static class GameEngine
     public static void BuyBank(CovenState s) { int owned = s.Buildings.GetValueOrDefault(BuildingType.Bank); int cost = BankBuildingCost(owned); if (s.Gold < cost) return; s.Gold -= cost; s.Buildings[BuildingType.Bank] = owned + 1; }
     public static void BuyUpgrade(CovenState s, UpgradeId id) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; s.Upgrades.Add(id); }
 
-    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, Occult = new OccultState { ArmyPower = 50 } } }, ShadowWar = ShadowWarEngine.CreateInitialState(), StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, BaseMultiplier = 1.0, Occult = new OccultState { ArmyPower = 50 } } }, ShadowWar = ShadowWarEngine.CreateInitialState(), StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
 
     public static double FaithMultiplier(GameState s) => FaithMultiplier(s.ActiveCoven);
     public static double GoldMultiplier(GameState s) => GoldMultiplier(s.ActiveCoven);

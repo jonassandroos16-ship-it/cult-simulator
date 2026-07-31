@@ -9,6 +9,7 @@ public static class OccultEngine
         double mult = CultistHierarchy.TapPowerMult(o) * Grimoire.TapPowerBonus(o) * o.ElixirTapMult * GrandSacrifice.GlobalProductionMult(state);
         if (o.IsFrenzyActive) mult *= OccultBalance.FrenzyMultiplier;
         if (o.IsWhisperChoirActive) mult *= 3.0;
+        mult *= state.ActiveCoven.BaseMultiplier > 0 ? state.ActiveCoven.BaseMultiplier : 1.0;
         return basePower * mult;
     }
 
@@ -19,6 +20,7 @@ public static class OccultEngine
         double mult = CultistHierarchy.TapPowerMult(o) * Grimoire.TapPowerBonus(o) * o.ElixirTapMult * GrandSacrifice.GlobalProductionMult(state);
         if (o.IsFrenzyActive) mult *= OccultBalance.FrenzyMultiplier;
         if (o.IsWhisperChoirActive) mult *= 3.0;
+        mult *= coven.BaseMultiplier > 0 ? coven.BaseMultiplier : 1.0;
         return basePower * mult;
     }
 
@@ -44,16 +46,17 @@ public static class OccultEngine
     public static bool CanHireAcolyte(GameState state) => state.ActiveCoven.Faith >= AcolyteHireCost(state) && state.Occult.Acolytes < CultistHierarchy.AcolyteCap(state.Occult, state.ActiveCoven);
     public static bool HireAcolyte(GameState state) { if (!CanHireAcolyte(state)) return false; state.ActiveCoven.Faith -= AcolyteHireCost(state); state.Occult.Acolytes++; return true; }
 
-    public static double AcolyteFaithPerSec(GameState state) => AcolyteFaithPerSec(state.Occult, GrandSacrifice.GlobalProductionMult(state));
+    public static double AcolyteFaithPerSec(GameState state) => AcolyteFaithPerSec(state.Occult, GrandSacrifice.GlobalProductionMult(state), state.ActiveCoven.BaseMultiplier);
 
     public static double AcolytePassivePerSec(GameState state) => AcolyteFaithPerSec(state);
 
-    private static double AcolyteFaithPerSec(OccultState o, double globalMult)
+    private static double AcolyteFaithPerSec(OccultState o, double globalMult, double baseMultiplier)
     {
-        double baseRate = o.Acolytes * 0.1;
-        double mult = globalMult * Grimoire.GlobalProductionMult(o);
-        if (TechTree.HasTech(o, TechId.SanguineAutomata)) baseRate += o.Acolytes * 0.05;
-        return baseRate * mult;
+        double mult = (baseMultiplier > 0 ? baseMultiplier : 1.0);
+        double baseRate = o.Acolytes * 0.1 * mult;
+        double totalMult = globalMult * Grimoire.GlobalProductionMult(o);
+        if (TechTree.HasTech(o, TechId.SanguineAutomata)) baseRate += o.Acolytes * 0.05 * mult;
+        return baseRate * totalMult;
     }
 
     public static double TotalFaithPerSec(GameState state) => TotalFaithPerSecForCoven(state, state.ActiveCoven);
@@ -61,16 +64,17 @@ public static class OccultEngine
     public static double TotalFaithPerSecForCoven(GameState state, CovenState coven)
     {
         var o = coven.Occult;
-        double total = AcolyteFaithPerSecForCoven(o, state);
+        double total = AcolyteFaithPerSecForCoven(o, state, coven.BaseMultiplier);
         return total;
     }
 
-    private static double AcolyteFaithPerSecForCoven(OccultState o, GameState state)
+    private static double AcolyteFaithPerSecForCoven(OccultState o, GameState state, double baseMultiplier)
     {
-        double baseRate = o.Acolytes * 0.1;
-        double mult = GrandSacrifice.GlobalProductionMult(state) * Grimoire.GlobalProductionMult(o);
-        if (TechTree.HasTech(o, TechId.SanguineAutomata)) baseRate += o.Acolytes * 0.05;
-        return baseRate * mult;
+        double mult = (baseMultiplier > 0 ? baseMultiplier : 1.0);
+        double baseRate = o.Acolytes * 0.1 * mult;
+        double totalMult = GrandSacrifice.GlobalProductionMult(state) * Grimoire.GlobalProductionMult(o);
+        if (TechTree.HasTech(o, TechId.SanguineAutomata)) baseRate += o.Acolytes * 0.05 * mult;
+        return baseRate * totalMult;
     }
 
     public static double TotalMapFaithPerSec(GameState state) => TotalMapFaithPerSecForCoven(state.Occult, state);
@@ -83,6 +87,7 @@ public static class OccultEngine
         baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult * GrandSacrifice.GlobalProductionMult(state);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
+        baseFaith *= state.ActiveCoven.BaseMultiplier > 0 ? state.ActiveCoven.BaseMultiplier : 1.0;
         return baseFaith;
     }
 

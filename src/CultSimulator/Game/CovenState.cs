@@ -26,6 +26,14 @@ public class CovenState
     /// </summary>
     public bool TakenOver { get => Converted; set => Converted = value; }
 
+    /// <summary>
+    /// Base faith multiplier for this coven, sourced from the coven's
+    /// WorldLocationDef.BaseMultiplier. Multiplies all faith generation
+    /// (passive income, preaching, acolytes, map nodes). Defaults to 1.0
+    /// for the home coven and for older saves that lack the field.
+    /// </summary>
+    public double BaseMultiplier { get; set; } = 1.0;
+
     public bool HasUpgrade(UpgradeId id) => Upgrades.Contains(id);
 
     /// <summary>
