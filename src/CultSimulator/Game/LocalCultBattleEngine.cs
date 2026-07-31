@@ -128,9 +128,8 @@ public static class LocalCultBattleEngine
                 battle.Status = LocalCultBattleStatus.Defeat;
                 battle.PlayerHp = battle.PlayerMaxHp;
                 battle.RivalHp = battle.RivalMaxHp;
-                ReturnDeployedAgents(state, battle);
                 battle.DeployedSquad.Clear();
-                AppendLog(battle, "Defeat! Your agents were repelled. Regroup and try again.");
+                AppendLog(battle, "Defeat! Your agents were lost in battle. Recruit new ones to try again.");
             }
         }
     }
@@ -188,16 +187,6 @@ public static class LocalCultBattleEngine
         var instance = state.ActiveLocalCults.FirstOrDefault(i => i.CultId == battle.CultId);
         if (instance != null) state.ActiveLocalCults.Remove(instance);
         ClearBattle(state, battle.CultId);
-    }
-
-    private static void ReturnDeployedAgents(GameState state, LocalCultBattleState battle)
-    {
-        var sw = ShadowWarEngine.EnsureInitialized(state);
-        foreach (var slot in battle.DeployedSquad)
-        {
-            sw.RecruitedAgents.TryGetValue(slot.Type, out int cur);
-            sw.RecruitedAgents[slot.Type] = cur + slot.Count;
-        }
     }
 
     private static void AppendLog(LocalCultBattleState battle, string message)
