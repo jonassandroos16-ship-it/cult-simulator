@@ -8,7 +8,7 @@ public class GameService
     private readonly WorldLocationService _locations;
     private readonly ConversionDataService _conversions;
     private GameState _state;
-    private Timer? _tickTimer, _eventTimer, _occultTimer, _saveDebounceTimer, _periodicSaveTimer, _localCultTimer;
+    private Timer? _tickTimer, _eventTimer, _occultTimer, _periodicSaveTimer, _localCultTimer;
     private bool _eventPending;
     private DateTime _lastOccultTick;
     private DateTime _lastSave = DateTime.UtcNow;
@@ -78,7 +78,7 @@ public class GameService
 
     public void StartTimers()
     {
-        _tickTimer?.Dispose(); _eventTimer?.Dispose(); _occultTimer?.Dispose(); _saveDebounceTimer?.Dispose(); _periodicSaveTimer?.Dispose(); _localCultTimer?.Dispose();
+        _tickTimer?.Dispose(); _eventTimer?.Dispose(); _occultTimer?.Dispose(); _periodicSaveTimer?.Dispose(); _localCultTimer?.Dispose();
         _tickTimer = new Timer(_ => Tick(), null, 1000, 1000);
         _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
         _lastOccultTick = DateTime.UtcNow;
@@ -267,9 +267,11 @@ public class GameService
     }
 
     public bool IsConversionBattlePhase => _state.Conversion?.BattlePhase == true && !_state.Conversion.Completed;
+
     public string? ConversionBattleContinent => _state.Conversion != null
         ? _locations.Find(_state.Conversion.CovenId)?.Continent
         : null;
+
     public BattleState? ConversionBattle
     {
         get
@@ -285,6 +287,7 @@ public class GameService
         if (_state.Conversion == null || !_state.Conversion.BattlePhase) return;
         var continent = ConversionBattleContinent;
         if (continent == null) return;
+
         var battle = BattleEngine.GetOrCreateBattle(_state, _locations, continent);
         if (battle.Phase == BattlePhase.NoThreat || battle.Phase == BattlePhase.Cooldown)
         {
