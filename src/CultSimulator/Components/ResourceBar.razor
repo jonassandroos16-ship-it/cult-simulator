@@ -21,7 +21,14 @@
         <div class="resource-stat flex items-baseline gap-1.5"><span class="resource-icon text-xl">💰</span><span class="resource-value font-display text-xl font-semibold text-amber-100">@NumberFormat.Fmt(activeCoven.Gold)</span><span class="resource-label text-[0.7rem] text-violet-300 tracking-[0.15em] uppercase">Gold</span></div>
         @if (Game.State.EldritchFavor > 0) { <div class="resource-stat flex items-baseline gap-1.5"><span class="resource-icon text-xl">🌟</span><span class="resource-value font-display text-xl font-semibold text-amber-200">@NumberFormat.Fmt(Game.State.EldritchFavor)</span><span class="resource-label text-[0.7rem] text-amber-400 tracking-[0.15em] uppercase">Favor</span></div> }
     </div>
-    <div class="income-display flex gap-6 mt-2 text-xs"><span class="income-faith text-emerald-400">+@NumberFormat.Fmt(totalIncome.faith)/s ✨</span><span class="income-gold text-amber-500">+@NumberFormat.Fmt(totalIncome.gold)/s 💰</span></div>
+    <div class="income-display flex gap-6 mt-2 text-xs items-center flex-wrap">
+        <span class="income-faith text-emerald-400">+@NumberFormat.Fmt(totalIncome.faith)/s ✨</span>
+        <span class="income-gold text-amber-500">+@NumberFormat.Fmt(totalIncome.gold)/s 💰</span>
+        @if (activeCoven.BaseMultiplier > 1.0)
+        {
+            <span class="coven-multiplier-badge px-2.5 py-1 rounded-full text-[0.7rem] font-display tracking-[0.1em] uppercase" style="background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);">×@activeCoven.BaseMultiplier.ToString("F2") Coven Faith Bonus</span>
+        }
+    </div>
 </div>
 
 @code {

@@ -26,6 +26,10 @@
     </div>
     <div class="preach-info text-center">
         <p class="preach-yield text-sm text-violet-300 tracking-[0.05em]">+@NumberFormat.Fmt(GameEngine.PreachMultiplier(Game.State)) Faith per sermon</p>
+        @if (activeCoven.BaseMultiplier > 1.0)
+        {
+            <p class="text-[0.7rem] text-amber-400 mt-1">Includes ×@activeCoven.BaseMultiplier.ToString("F2") @activeCovenName faith bonus</p>
+        }
     </div>
     <button class="recruit-button flex items-center gap-2 px-6 py-3 rounded-full font-body text-sm cursor-pointer transition-all duration-200
                   disabled:opacity-40 disabled:cursor-not-allowed"
@@ -77,6 +81,7 @@
     private double glowSize => 10 + glowIntensity * 50;
     private double glowOpacity => 0.15 + glowIntensity * 0.5;
     private string glowColor => glowIntensity > 0.7 ? "rgba(245,158,11,0.8)" : "rgba(167,139,250,0.4)";
+    private string activeCovenName { get { var loc = Locations.Find(Game.State.ActiveCovenId); return loc?.Name ?? Game.State.ActiveCovenId; } }
 
     private string preachIcon
     {
