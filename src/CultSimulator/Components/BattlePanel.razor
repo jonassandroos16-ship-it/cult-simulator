@@ -60,7 +60,7 @@
                     <p class="text-[9px] text-slate-500 mb-1.5 leading-tight">@agentDef.Description</p>
                     <div class="flex items-center gap-1.5">
                         <input type="number" min="1" max="20" @bind="@recruitCounts[agentDef.Type]" class="w-12 px-1 py-0.5 rounded text-xs text-center" style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: var(--gold-pale);" />
-                        <button class="flex-1 px-2 py-1 rounded text-[0.65rem] font-medium text-amber-100 transition-colors hover:opacity-80 disabled:opacity-40" style="background: rgba(120,53,15,0.4);" disabled="@(Game.State.ActiveCoven.Faith < agentDef.FaithCost * rc)" @onclick="() => DoRecruit(agentDef.Type)">@agentDef.FaithCost ✨</button>
+                        <button class="flex-1 px-2 py-1 rounded text-[0.65rem] font-medium text-amber-100 transition-colors hover:opacity-80 disabled:opacity-40" style="background: rgba(120,53,15,0.4);" disabled="@(sw.AvailableAgents < agentDef.AgentCost * rc)" @onclick="() => DoRecruit(agentDef.Type)">@agentDef.AgentCost 🕵️</button>
                     </div>
                 </div>
             }
