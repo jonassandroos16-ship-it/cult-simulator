@@ -28,224 +28,134 @@
         </div>
     </div>
 }
-else if (Game.IsConversionActive && Game.IsConversionBattlePhase)
+
+@if (IsOpen)
 {
-    var battle = Game.ConversionBattle;
-    var sw = Game.ShadowWar;
-
-    <div class="event-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 animate-fade-in"
-         style="background: rgba(5,3,8,0.88); backdrop-filter: blur(8px);">
-        <div class="conversion-modal relative rounded-3xl p-6 sm:p-10 max-w-lg w-full overflow-hidden animate-modal-rise"
-             style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.25);">
-
-            <div class="conversion-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
-                 style="background: radial-gradient(circle at center, rgba(239,68,68,0.12) 0%, transparent 60%);"></div>
+    <div class="event-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
+         style="background: rgba(5,3,8,0.85); backdrop-filter: blur(8px);"
+         @onclick="HandleOverlayClick">
+        <div class="event-modal relative rounded-3xl p-8 max-w-lg w-full overflow-hidden animate-modal-rise"
+             style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.25);"
+             @onclick:stopPropagation="true">
+            <div class="event-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
+                 style="background: radial-gradient(circle at center, rgba(124,58,237,0.18) 0%, transparent 60%);"></div>
 
             <div class="relative">
-                <div class="text-center mb-2">
-                    <span class="font-display text-[0.65rem] font-semibold tracking-[0.25em] uppercase text-rose-400">⚔️ Final Battle</span>
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="font-display text-sm font-semibold tracking-[0.3em] uppercase text-violet-300">Conversion Op</h2>
+                    <button class="text-slate-400 hover:text-slate-200 transition-colors text-2xl leading-none" @onclick="Close">×</button>
                 </div>
-                <p class="text-sm leading-7 text-violet-200 mb-4 text-center">The coven's defenders must be broken before they will submit. Deploy your agents and crush their resistance.</p>
 
-                @if (battle != null)
+                @if (Target != null)
                 {
-                    <div class="mb-3">
-                        <div class="flex justify-between text-[10px] text-slate-400 mb-0.5"><span>Your Forces</span><span>@Math.Ceiling(battle.PlayerHp) / @battle.PlayerMaxHp</span></div>
-                        <div class="battle-progress-bar"><div class="battle-progress-fill" style="width: @(battle.PlayerHp / battle.PlayerMaxHp * 100)%; background: var(--gold-warm);"></div></div>
-                    </div>
-                    <div class="mb-3">
-                        <div class="flex justify-between text-[10px] text-slate-400 mb-0.5"><span>Coven Defenders</span><span>@Math.Ceiling(battle.RivalHp) / @battle.RivalMaxHp</span></div>
-                        <div class="battle-progress-bar"><div class="battle-progress-fill" style="width: @(battle.RivalHp / battle.RivalMaxHp * 100)%; background: var(--danger);"></div></div>
+                    <div class="mb-4 p-4 rounded-[16px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                        <div class="flex items-center gap-3">
+                            <span class="text-2xl">@Target.Icon</span>
+                            <div>
+                                <div class="font-display text-base font-semibold text-amber-100">@Target.Name</div>
+                                <div class="text-xs text-slate-400">@Target.Continent • Defense: @Target.Defense.ToString("F0")</div>
+                            </div>
+                        </div>
                     </div>
 
-                    @if (battle.Phase == BattlePhase.Deploy)
-                    {
-                        <div class="grid grid-cols-3 gap-1.5 mb-3">
+                    <div class="mb-4">
+                        <p class="text-xs text-slate-400 mb-3 leading-relaxed">
+                            Choose agents to deploy. Each unit consumes from your Recruited pool (see Battle panel).
+                            Initiates are cheap; Zealots hit harder; Infiltrators reduce suspicion.
+                        </p>
+                        <div class="grid grid-cols-3 gap-2 mb-3">
                             @foreach (var agentDef in BattleData.AgentTypes)
                             {
                                 <button class="battle-agent-card p-2 rounded-[8px] text-center @(convSelectedAgent == agentDef.Type ? "selected" : "")"
                                         style="background: rgba(5,3,8,0.4); border: 1px solid @(convSelectedAgent == agentDef.Type ? "var(--gold-warm)" : "var(--panel-border)");"
                                         @onclick="() => convSelectedAgent = agentDef.Type">
-                                    <div class="text-lg">@agentDef.Icon</div>
-                                    <div class="text-[9px] text-slate-400">@agentDef.Name</div>
+                                    <div class="text-lg mb-0.5">@agentDef.Icon</div>
+                                    <div class="text-[0.65rem] font-medium text-amber-200">@agentDef.Name</div>
+                                    <div class="text-[0.55rem] text-slate-400 mt-0.5">ATK @agentDef.Attack / DEF @agentDef.Defense</div>
                                 </button>
                             }
                         </div>
-                        <div class="flex items-center gap-2 mb-3">
-                            <input type="number" min="1" max="50" @bind="convDeployCount" class="w-14 px-2 py-1 rounded text-xs text-center" style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: var(--gold-pale);" />
-                            <button class="flex-1 px-3 py-1.5 rounded text-xs font-medium text-violet-100 transition-colors hover:opacity-80 disabled:opacity-40"
-                                    style="background: rgba(76,29,149,0.4);"
-                                    disabled="@(sw.AvailableAgents < convDeployCount)"
-                                    @onclick="ConvDeploy">Deploy</button>
-                            <button class="px-3 py-1.5 rounded text-xs font-medium text-amber-100 transition-colors hover:opacity-80 disabled:opacity-40"
-                                    style="background: rgba(120,53,15,0.4);"
-                                    disabled="@(battle.TotalDeployed == 0)"
-                                    @onclick="ConvStartBattle">Start Battle</button>
+                        <div class="flex items-center gap-3">
+                            <label class="text-xs text-violet-300 min-w-[60px]">Amount</label>
+                            <input type="number" min="1" max="100" class="form-input w-24 text-sm rounded-[8px] px-2 py-1.5"
+                                   style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit;"
+                                   @bind="convDeployCount" @bind:event="oninput" />
                         </div>
+                    </div>
 
-                        @if (battle.TotalDeployed > 0)
-                        {
-                            <div class="text-[10px] text-slate-400 mb-2">Deployed: @foreach (var d in battle.DeployedSquad) { <span class="mr-2">@BattleData.AgentDef(d.Type)?.Icon ×@d.Count</span> }</div>
-                        }
-                    }
-                    else if (battle.Phase == BattlePhase.Fighting)
-                    {
-                        <p class="text-xs text-rose-300 text-center mb-2 animate-pulse">⚔️ Battle in progress...</p>
-                        @if (battle.Log.Count > 0)
-                        {
-                            <div class="max-h-20 overflow-y-auto text-[9px] text-slate-400 leading-relaxed mb-2" style="background: rgba(5,3,8,0.4); border-radius: 6px; padding: 0.4rem;">
-                                @foreach (var entry in battle.Log.TakeLast(4).Reverse())
-                                {
-                                    <div class="battle-log-entry">@entry</div>
-                                }
-                            </div>
-                        }
-                    }
-
-                    <div class="text-center mt-4">
-                        <button class="conversion-abandon text-[0.7rem] text-violet-400 hover:text-rose-400 transition-colors cursor-pointer tracking-[0.15em] uppercase"
-                                @onclick="Abandon">
-                            Abandon Siege
-                        </button>
+                    <div class="mb-5 p-3 rounded-[12px] text-xs" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                        <div class="grid grid-cols-2 gap-1 text-slate-300">
+                            <div>Target Defense</div><div class="text-amber-200 text-right">@Target.Defense.ToString("F1")</div>
+                            <div>Conver. Progress</div><div class="text-emerald-300 text-right">@conversionPct%</div>
+                            <div>Detection Risk</div><div class="@(detectionClass) text-right">@detectionPct%</div>
+                        </div>
                     </div>
                 }
-                else
+
+                @if (!string.IsNullOrEmpty(convMessage))
                 {
-                    <p class="text-sm text-amber-300 text-center mb-3">Preparing the battlefield...</p>
-                    <button class="event-choice w-full p-3 rounded-[14px] cursor-pointer transition-all duration-200 text-center"
-                            style="background: rgba(76,29,149,0.4); border: 1px solid var(--panel-border);"
-                            @onclick="ConvStartBattleSetup">
-                        <span class="font-display text-sm text-amber-100 font-medium">Begin the Battle</span>
-                    </button>
+                    <div class="mb-4 p-2 rounded-[10px] text-xs text-center @(convSuccess ? "text-emerald-300" : "text-red-300")"
+                         style="background: rgba(15,10,36,0.5); border: 1px solid @(convSuccess ? "rgba(52,211,153,0.3)" : "rgba(239,68,68,0.3)");">
+                        @convMessage
+                    </div>
                 }
-            </div>
-        </div>
-    </div>
-}
-else if (Game.IsConversionActive && Game.CurrentConversionStep != null)
-{
-    var step = Game.CurrentConversionStep;
-    var def = Game.ActiveConversion;
-    var totalSteps = def?.Steps.Count ?? 1;
-    var stepNum = (Game.State.Conversion?.CurrentStep ?? 0) + 1;
-    var progress = Game.ConversionProgressValue;
 
-    <div class="event-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-8 animate-fade-in"
-         style="background: rgba(5,3,8,0.88); backdrop-filter: blur(8px);">
-        <div class="conversion-modal relative rounded-3xl p-6 sm:p-10 max-w-lg w-full overflow-hidden animate-modal-rise"
-             style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.25);">
-
-            <div class="conversion-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
-                 style="background: radial-gradient(circle at center, rgba(167,139,250,0.10) 0%, transparent 60%);"></div>
-
-            @if (showOutcome && !string.IsNullOrWhiteSpace(lastOutcome))
-            {
-                <div class="relative text-center">
-                    <div class="text-2xl mb-3">@(lastOutcome!.Contains("−") ? "⚔️" : "✨")</div>
-                    <h2 class="font-display text-sm font-semibold tracking-[0.3em] uppercase text-violet-300 mb-4">Outcome</h2>
-                    <p class="text-sm leading-7 text-amber-100 mb-6 px-2">@lastOutcome</p>
-                    <button class="event-choice w-full p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-center hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                <div class="flex gap-3">
+                    <button class="event-choice flex-1 p-3 rounded-[12px] cursor-pointer text-center transition-all duration-200 hover:-translate-y-0.5"
                             style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
-                            @onclick="ContinueAfterOutcome">
-                        <span class="choice-label font-display text-base text-amber-100 font-medium">Continue</span>
+                            @onclick="Close">
+                        <span class="text-sm text-slate-300">Cancel</span>
+                    </button>
+                    <button class="event-choice flex-1 p-3 rounded-[12px] cursor-pointer text-center transition-all duration-200 hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
+                            style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                            @onclick="ConvDeploy">
+                        <span class="text-sm text-amber-100 font-medium">Deploy Agents</span>
                     </button>
                 </div>
-            }
-            else
-            {
-                <div class="relative">
-                    @if (def != null)
-                    {
-                        <div class="text-center mb-2">
-                            <span class="font-display text-[0.65rem] font-semibold tracking-[0.25em] uppercase text-violet-400">@(def.Theme)</span>
-                        </div>
-                    }
-
-                    <div class="conversion-step-indicator flex items-center justify-center gap-1.5 mb-4">
-                        @for (var i = 0; i < totalSteps; i++)
-                        {
-                            <div class="step-dot @(i < stepNum - 1 ? "completed" : (i == stepNum - 1 ? "current" : ""))"></div>
-                        }
-                    </div>
-
-                    <div class="text-center mb-1">
-                        <span class="font-display text-[0.65rem] tracking-[0.2em] uppercase text-violet-400">Step @stepNum of @totalSteps</span>
-                    </div>
-
-                    <h2 class="conversion-title font-display text-xl sm:text-2xl font-semibold text-amber-100 tracking-[0.08em] mb-4 text-center">@step.Title</h2>
-
-                    <div class="conversion-progress-row flex items-center justify-between text-[0.7rem] text-violet-300 mb-1.5">
-                        <span>Siege Progress</span>
-                        <span class="text-amber-200">@(Math.Round(progress * 100))%</span>
-                    </div>
-                    <div class="rank-progress h-2 bg-white/[0.06] rounded-full overflow-hidden mb-5">
-                        <div class="h-full rounded-full transition-all duration-500"
-                             style="width: @(progress * 100)%; background: linear-gradient(90deg, var(--violet-deep), var(--gold-warm));"></div>
-                    </div>
-
-                    <p class="conversion-narrative text-sm leading-7 text-violet-200 mb-6">@step.Narrative</p>
-
-                    <div class="event-choices flex flex-col gap-3 relative">
-                        <button class="event-choice flex flex-col gap-1 p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
-                                style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
-                                @onclick="() => Choose(step.ChoiceA)">
-                            <span class="choice-label font-display text-base text-amber-100 font-medium">@step.ChoiceA.Label</span>
-                            <span class="choice-desc text-xs text-amber-200">@step.ChoiceA.Description</span>
-                        </button>
-                        <button class="event-choice flex flex-col gap-1 p-4 rounded-[14px] cursor-pointer transition-all duration-200 text-left hover:-translate-y-0.5 hover:bg-amber-500/10 hover:border-amber-500/30"
-                                style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
-                                @onclick="() => Choose(step.ChoiceB)">
-                            <span class="choice-label font-display text-base text-amber-100 font-medium">@step.ChoiceB.Label</span>
-                            <span class="choice-desc text-xs text-amber-200">@step.ChoiceB.Description</span>
-                        </button>
-                    </div>
-
-                    <div class="mt-4 text-center">
-                        <button class="conversion-abandon text-[0.7rem] text-violet-400 hover:text-rose-400 transition-colors cursor-pointer tracking-[0.15em] uppercase"
-                                @onclick="Abandon">
-                            Abandon Siege
-                        </button>
-                    </div>
-                </div>
-            }
+            </div>
         </div>
     </div>
 }
 
 @code {
-    private bool showOutcome = false;
-    private string? lastOutcome;
-    private AgentType convSelectedAgent = AgentType.Acolyte;
-    private int convDeployCount = 3;
+    [Parameter] public bool IsOpen { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+    [Parameter] public WorldLocationDef? Target { get; set; }
 
-    protected override void OnInitialized() => Game.OnChange += StateChanged;
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (Game.IsConversionBattlePhase && Game.ConversionBattle == null)
-        {
-            Game.StartConversionBattle();
-        }
-        if (Game.IsConversionBattlePhase)
-        {
-            Game.CheckConversionBattle();
-        }
-        await base.OnAfterRenderAsync(firstRender);
-    }
-    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+    private string convMessage = "";
+    private bool convSuccess = false;
+    private int convDeployCount = 1;
+    private AgentType convSelectedAgent = AgentType.Initiate;
 
-    private void Choose(ConversionChoice choice)
+    private int conversionPct => Target != null
+        ? (int)Math.Round(Game.GetConversionProgress(Target.Id) / Target.Defense * 100)
+        : 0;
+    private int detectionPct => Target != null
+        ? (int)Math.Round(Game.GetConversionDetection(Target.Id) * 100)
+        : 0;
+    private string detectionClass => detectionPct > 70 ? "text-red-300" : detectionPct > 40 ? "text-amber-300" : "text-emerald-300";
+
+    protected override void OnInitialized()
     {
-        lastOutcome = Game.ApplyConversionChoice(choice);
-        if (Game.ConversionCompletePending) { showOutcome = false; }
-        else { showOutcome = !string.IsNullOrWhiteSpace(lastOutcome); }
+        Game.OnChange += StateHasChanged;
     }
+
+    public void Dispose()
+    {
+        Game.OnChange -= StateHasChanged;
+    }
+
+    private void HandleOverlayClick() => Close();
+
+    private void Close() { convMessage = ""; OnClose.InvokeAsync(); }
+
+    private void DismissComplete() { Game.DismissConversionComplete(); }
 
     private void ConvDeploy() { Game.DeployConversionAgents(convSelectedAgent, convDeployCount); }
-    private void ConvStartBattle() { Game.StartConversionBattleFight(); }
-    private void ConvStartBattleSetup() { Game.StartConversionBattle(); }
-    private void ContinueAfterOutcome() { showOutcome = false; lastOutcome = null; }
-    private void Abandon() { Game.CancelConversion(); showOutcome = false; lastOutcome = null; }
-    private void DismissComplete() { Game.DismissConversionComplete(); showOutcome = false; lastOutcome = null; }
 
-    public void Dispose() => Game.OnChange -= StateChanged;
+    private void ConversionDone(bool success, string msg)
+    {
+        convSuccess = success;
+        convMessage = msg;
+    }
 }
