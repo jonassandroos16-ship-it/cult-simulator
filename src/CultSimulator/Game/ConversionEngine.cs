@@ -7,15 +7,12 @@ namespace CultSimulator.Game;
 /// </summary>
 public static class ConversionEngine
 {
-    /// <summary>True if a conversion is currently in progress.</summary>
     public static bool IsActive(GameState state) =>
         state.Conversion != null && !state.Conversion.Completed;
 
-    /// <summary>The conversion definition for the active or requested coven.</summary>
-    public static ConversionDef? DefinitionFor(string covenId) =>
-        ConversionData.Find(covenId);
+    public static ConversionDef? DefinitionFor(ConversionDataService data, string covenId) =>
+        data.Find(covenId);
 
-    /// <summary>True if the player meets the follower threshold to begin a conversion.</summary>
     public static bool CanStartConversion(GameState state, WorldLocationDef loc)
     {
         if (loc.Id == "skanor") return false;
@@ -24,11 +21,10 @@ public static class ConversionEngine
         return CovenProgress.TotalFollowers(state) >= loc.FollowersRequired;
     }
 
-    /// <summary>Begins a new conversion sequence for the given coven.</summary>
-    public static void StartConversion(GameState state, WorldLocationDef loc)
+    public static void StartConversion(GameState state, ConversionDataService data, WorldLocationDef loc)
     {
         if (!CanStartConversion(state, loc)) return;
-        var def = DefinitionFor(loc.Id);
+        var def = data.Find(loc.Id);
         if (def == null) return;
 
         state.Conversion = new ConversionState
@@ -37,30 +33,27 @@ public static class ConversionEngine
             CurrentStep = 0,
             Progress = 0.0,
             Completed = false,
-            LastOutcome = null
+            LastOutcome = null,
+            BattlePhase = false,
+            BattleWon = false
         };
     }
 
-    /// <summary>The current step definition, or null if the sequence is finished.</summary>
-    public static ConversionStep? CurrentStep(GameState state)
+    public static ConversionStep? CurrentStep(GameState state, ConversionDataService data)
     {
         if (state.Conversion == null || state.Conversion.Completed) return null;
-        var def = DefinitionFor(state.Conversion.CovenId);
+        if (state.Conversion.BattlePhase) return null;
+        var def = data.Find(state.Conversion.CovenId);
         if (def == null) return null;
         if (state.Conversion.CurrentStep >= def.Steps.Count) return null;
         return def.Steps[state.Conversion.CurrentStep];
     }
 
-    /// <summary>
-    /// Applies the player's choice for the current step, advances progress,
-    /// and advances to the next step. If the final step is completed, the
-    /// coven is marked as converted and the resource sacrifice is applied.
-    /// Returns an optional outcome message.
-    /// </summary>
-    public static string? ApplyChoice(GameState state, ConversionChoice choice)
+    public static string? ApplyChoice(GameState state, ConversionDataService data, ConversionChoice choice)
     {
         if (state.Conversion == null || state.Conversion.Completed) return null;
-        var def = DefinitionFor(state.Conversion.CovenId);
+        if (state.Conversion.BattlePhase) return null;
+        var def = data.Find(state.Conversion.CovenId);
         if (def == null) return null;
         if (state.Conversion.CurrentStep >= def.Steps.Count) return null;
 
@@ -73,16 +66,26 @@ public static class ConversionEngine
         state.Conversion.CurrentStep++;
 
         if (state.Conversion.CurrentStep >= def.Steps.Count)
-            FinalizeConversion(state, def);
+            EnterBattlePhase(state);
 
         return outcome;
     }
 
-    /// <summary>
-    /// Completes the conversion: applies the resource sacrifice to the home
-    /// coven and marks the rival coven as converted. This replaces the old
-    /// instant Takeover logic.
-    /// </summary>
+    private static void EnterBattlePhase(GameState state)
+    {
+        if (state.Conversion == null) return;
+        state.Conversion.BattlePhase = true;
+    }
+
+    public static void OnBattleWon(GameState state, ConversionDataService data)
+    {
+        if (state.Conversion == null || !state.Conversion.BattlePhase) return;
+        state.Conversion.BattleWon = true;
+        var def = data.Find(state.Conversion.CovenId);
+        if (def != null)
+            FinalizeConversion(state, def);
+    }
+
     private static void FinalizeConversion(GameState state, ConversionDef def)
     {
         var home = state.HomeCoven;
@@ -115,13 +118,11 @@ public static class ConversionEngine
         state.Conversion!.Completed = true;
     }
 
-    /// <summary>Cancels an in-progress conversion, clearing the state without converting.</summary>
     public static void Cancel(GameState state)
     {
         state.Conversion = null;
     }
 
-    /// <summary>Clears the conversion state after the player has seen the completion screen.</summary>
     public static void ClearCompleted(GameState state)
     {
         if (state.Conversion != null && state.Conversion.Completed)
