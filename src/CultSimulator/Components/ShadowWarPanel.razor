@@ -1,210 +1,89 @@
 @using CultSimulator.Game
 @inject GameService Game
-@inject WorldLocationService LocationService
 @implements IDisposable
 
 <div class="panel glass-panel rounded-[20px] p-5">
     <div class="flex items-center justify-between mb-4">
-        <h2 class="panel-title">🕯️ The Shadow War</h2>
-        <button class="ley-line-shortcut-btn" @onclick="OnViewMap">
-            <span>🗺️</span> View on Map
-        </button>
-    </div>
-    <p class="text-sm text-violet-300 mb-3">Your cult does not fight openly — it seeps into society. Train acolytes into sleeper agents, then deploy them to infiltrate real-world institutions across the globe.</p>
-    <div class="mb-4 p-3 rounded-[12px] text-xs leading-relaxed text-slate-300" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
-        <p class="text-amber-300 font-medium mb-1">How it works</p>
-        <p class="mb-1">1. <span class="text-slate-200">Recon</span> — send 1–3 agents to scout an institution. There's a risk they get detected.</p>
-        <p class="mb-1">2. <span class="text-slate-200">Infiltrate</span> — send waves of agents to wear down its defense. Watch the detection meter — if it hits 100%, agents are lost and heat rises.</p>
-        <p class="mb-1">3. <span class="text-slate-200">Control</span> — once defense reaches zero, the institution is yours and grants a permanent bonus.</p>
-        <p class="mb-1">🏰 <span class="text-emerald-300">Coven Support:</span> Each converted coven in the same continent as an institution reduces detection and recon risk by 5% (up to 40%).</p>
-        <p>🌑 <span class="text-rose-300">Rival Cults:</span> Once you control 3 institutions, rival cults emerge and compete for territory. Defend your institutions or lose them.</p>
-    </div>
-
-    <!-- Resource summary -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-        <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="text-xs text-cyan-400 uppercase tracking-wider">Agents</div>
-            <div class="font-display text-lg text-amber-100">@((int)sw.AvailableAgents) / @((int)sw.TotalAgents)</div>
-            <div class="text-[10px] text-slate-400">+@ShadowWarEngine.AgentProductionPerSec(sw, Game.State).ToString("F2")/s</div>
-        </div>
-        <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="text-xs text-emerald-400 uppercase tracking-wider">Strength</div>
-            <div class="font-display text-lg text-amber-100">×@ShadowWarEngine.AgentStrength(sw, Game.State).ToString("F2")</div>
-        </div>
-        <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="text-xs text-rose-400 uppercase tracking-wider">Heat</div>
-            <div class="font-display text-lg text-amber-100">@((int)sw.Heat)</div>
-            <div class="text-[10px] text-slate-400">-@((0.3 + ShadowWarEngine.SuspicionDecay(sw)).ToString("F1"))/s</div>
-        </div>
-        <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="text-xs text-slate-400 uppercase tracking-wider">Controlled</div>
-            <div class="font-display text-lg text-amber-100">@sw.TotalControlled / @ShadowWarData.Institutions.Length</div>
-            <div class="text-[10px] text-slate-400">@ShadowWarEngine.ControlledTerritories(sw).Count territories</div>
+        <h2 class="panel-title">Shadow War</h2>
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full" style="background: rgba(15,10,36,0.6); border: 1px solid rgba(167,139,250,0.3);">
+            <span class="text-lg">🕵️</span>
+            <span class="font-display text-lg font-semibold text-amber-100">@NumberFormat.Fmt(occult.Agents)</span>
+            <span class="text-[0.65rem] text-violet-400 tracking-wide uppercase">Agents</span>
         </div>
     </div>
 
-    @if (rivalCount > 0)
+    <div class="mb-4 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+        <p class="text-violet-300">Recruit shadow agents to wage covert war against rival cults and inquisitors. Agents passively generate Faith, Army Power, and suppress Suspicion — but each costs Agent currency to recruit.</p>
+        <p class="text-slate-400 text-xs mt-2">Agents accumulate passively at @OccultBalance.AgentBasePerSec/s. Each agent type has different strengths. Costs scale with how many you already hold.</p>
+    </div>
+
+    @if (totalAgentCount > 0)
     {
-        <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(127,29,29,0.15); border: 1px solid rgba(239,68,68,0.3);">
-            <div class="text-xs text-rose-400 uppercase tracking-wider mb-2">⚠️ Rival Cults Active</div>
-            <div class="flex flex-col gap-2">
-                @foreach (var (def, state) in RivalCultEngine.ActiveRivals(Game.State))
-                {
-                    <div class="flex items-center justify-between text-xs">
-                        <div class="flex items-center gap-2">
-                            <span class="text-base">@def.Icon</span>
-                            <span class="text-amber-100 font-medium">@def.Name</span>
-                            <span class="text-slate-400">· @state.Status</span>
-                        </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-rose-300">Power: @((int)state.Power)</span>
-                            <span class="text-slate-400">Holds: @state.ControlledInstitutions.Count</span>
-                        </div>
-                    </div>
-                }
+        <div class="flex flex-col gap-3 mb-4">
+            <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <span class="text-xs font-display tracking-[0.15em] uppercase text-violet-300">Active Agents</span>
+                <span class="font-display text-sm text-amber-100">@totalAgentCount</span>
             </div>
+            <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <span class="text-xs font-display tracking-[0.15em] uppercase text-violet-300">Agent Faith Bonus</span>
+                <span class="font-display text-sm text-emerald-400">+@NumberFormat.Fmt(ShadowWarEngine.TotalAgentFaithPerSec(occult))/s</span>
+            </div>
+            @if (ShadowWarEngine.TotalAgentSuspicionPerSec(occult) < 0)
+            {
+                <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(52,211,153,0.2);">
+                    <span class="text-xs font-display tracking-[0.15em] uppercase text-violet-300">Suspicion Suppressed</span>
+                    <span class="font-display text-sm text-emerald-400">@NumberFormat.Fmt(ShadowWarEngine.TotalAgentSuspicionPerSec(occult))/s</span>
+                </div>
+            }
+            @if (ShadowWarEngine.TotalAgentArmyPowerPerSec(occult) > 0)
+            {
+                <div class="flex items-center justify-between p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                    <span class="text-xs font-display tracking-[0.15em] uppercase text-violet-300">Agent Army Power</span>
+                    <span class="font-display text-sm text-amber-100">+@NumberFormat.Fmt(ShadowWarEngine.TotalAgentArmyPowerPerSec(occult))/s</span>
+                </div>
+            }
         </div>
     }
 
-    <!-- Territory grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        @foreach (var territory in ShadowWarData.Territories)
+    <div class="flex flex-col gap-2.5">
+        @foreach (var def in OccultData.Agents)
         {
-            var controlled = ShadowWarEngine.IsTerritoryControlled(sw, territory.Id);
-            var insts = ShadowWarData.InstitutionsForTerritory(territory.Id);
-            var controlledCount = insts.Count(i => sw.GetInstitution(i.Id)?.Status == InstitutionStatus.Controlled);
-            <div class="rounded-[14px] p-3" style="background: rgba(15,10,36,0.5); border: 1px solid @(controlled ? "rgba(52,211,153,0.3)" : "var(--panel-border)");">
-                <div class="flex items-center justify-between mb-2">
+            var count = ShadowWarEngine.AgentCount(occult, def.Type);
+            var cost = ShadowWarEngine.AgentRecruitCost(occult, def);
+            var canRecruit = occult.Agents >= cost && count < OccultBalance.MaxAgentsPerType;
+            <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] @(count > 0 ? "border-violet-400/20 bg-violet-400/5" : "")" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                <div class="text-3xl flex-shrink-0">@def.Icon</div>
+                <div class="flex-1 flex flex-col gap-0.5">
                     <div class="flex items-center gap-2">
-                        <span class="text-xl">@territory.Icon</span>
-                        <div>
-                            <div class="text-sm font-semibold text-amber-100">@territory.Name</div>
-                            <div class="text-[10px] text-slate-400">@controlledCount / @insts.Count controlled</div>
-                        </div>
+                        <span class="font-display text-base text-amber-100 font-medium">@def.Name</span>
+                        @if (count > 0)
+                        {
+                            <span class="text-[0.65rem] px-2 py-0.5 rounded-full bg-violet-500/20 text-violet-300 border border-violet-500/30">×@count</span>
+                        }
                     </div>
-                    @if (controlled)
-                    {
-                        <span class="text-[10px] font-medium text-emerald-400 px-2 py-0.5 rounded" style="background: rgba(16,185,129,0.15);">BONUS</span>
-                    }
+                    <span class="text-[0.7rem] text-slate-400">@def.EffectDescription</span>
+                    <div class="flex gap-3 mt-0.5">
+                        @if (def.FaithPerSec > 0) { <span class="text-[0.65rem] text-emerald-400">+@def.FaithPerSec/s faith</span> }
+                        @if (def.SuspicionPerSec < 0) { <span class="text-[0.65rem] text-emerald-400">@def.SuspicionPerSec/s suspicion</span> }
+                        @if (def.ArmyPowerPerSec > 0) { <span class="text-[0.65rem] text-amber-300">+@def.ArmyPowerPerSec/s army</span> }
+                    </div>
                 </div>
-                <div class="text-[10px] text-slate-500 mb-1 px-2 py-1 rounded" style="background: rgba(5,3,8,0.4);">@territory.BonusLabel</div>
-                @{ var tc = ShadowWarEngine.CovensInContinent(Game.State, LocationService, territory.Id); }
-                @if (tc > 0)
-                {
-                    <div class="text-[10px] text-emerald-400 mb-2 px-2 py-0.5 rounded" style="background: rgba(16,185,129,0.08);">🏰 @tc covens · -@((int)(ShadowWarEngine.CovenContinentBonus(tc) * 100))% risk</div>
-                }
-                else
-                {
-                    <div class="text-[10px] text-slate-600 mb-2 px-2 py-0.5">No coven support yet</div>
-                }
-                <div class="flex flex-col gap-1.5">
-                    @foreach (var def in insts)
-                    {
-                        var inst = sw.GetInstitution(def.Id);
-                        if (inst == null) continue;
-                        var rivalHeld = rivalCount > 0 && Game.State.RivalCultsOrInit.Rivals.Any(r => r.ControlledInstitutions.Contains(def.Id));
-                        <div class="text-left p-2 rounded-[10px] @GetStatusClass(inst.Status) @(rivalHeld ? "border-rose-700/40 bg-rose-950/20" : "")">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-1.5">
-                                    <span>@GetTypeIcon(def.Type)</span>
-                                    <div>
-                                        <div class="text-xs font-medium text-amber-100">@def.Name</div>
-                                        <div class="text-[9px] text-slate-400 uppercase">@GetStatusLabel(inst.Status)@(rivalHeld ? " · 🔴 Rival Held" : "")</div>
-                                    </div>
-                                </div>
-                                <div class="text-[9px] text-slate-500">T@((int)def.Tier + 1)</div>
-                            </div>
-                            @if (inst.Status == InstitutionStatus.Recon)
-                            {
-                                <div class="mt-1 h-1 rounded-full bg-stone-800 overflow-hidden">
-                                    <div class="h-full bg-blue-500 transition-all" style="width: @(inst.ReconProgress)%"></div>
-                                </div>
-                            }
-                            @if (inst.Status == InstitutionStatus.Infiltrating || inst.Status == InstitutionStatus.Recon)
-                            {
-                                <div class="mt-1 h-1 rounded-full bg-stone-800 overflow-hidden">
-                                    <div class="h-full bg-amber-500 transition-all" style="width: @((def.Defense - inst.DefenseRemaining) / def.Defense * 100)%"></div>
-                                </div>
-                                <div class="mt-1 h-1 rounded-full bg-stone-800 overflow-hidden">
-                                    <div class="h-full bg-red-500 transition-all" style="width: @inst.Detection%"></div>
-                                </div>
-                            }
-                            @if (inst.Status == InstitutionStatus.Investigated)
-                            {
-                                <div class="mt-1 h-1 rounded-full bg-stone-800 overflow-hidden">
-                                    <div class="h-full bg-orange-500 transition-all" style="width: @inst.InvestigationDefense%"></div>
-                                </div>
-                            }
-                            <div class="mt-1 flex items-center justify-between text-[9px] text-slate-400">
-                                <span>⚔️ @inst.AssignedAgents agents</span>
-                                @if (inst.Status == InstitutionStatus.Controlled)
-                                {
-                                    <span class="text-emerald-400 font-medium">@def.RewardLabel</span>
-                                }
-                            </div>
-                        </div>
-                    }
+                <div class="flex-shrink-0">
+                    <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                            style="background: linear-gradient(135deg, #7c3aed, #4c1d95); border: none; color: #fef3c7;"
+                            disabled="@(!canRecruit)"
+                            @onclick="() => Game.RecruitAgent(def.Type)">
+                        <span>🕵️ @NumberFormat.Fmt(cost)</span>
+                    </button>
                 </div>
             </div>
         }
     </div>
-
-    <!-- Progress bar -->
-    <div class="mt-4 p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-        <div class="text-xs text-slate-400 uppercase tracking-wider mb-2">Path to Global Domination</div>
-        <div class="flex flex-wrap gap-1.5">
-            @foreach (var def in ShadowWarData.Institutions)
-            {
-                var inst = sw.GetInstitution(def.Id);
-                var isControlled = inst?.Status == InstitutionStatus.Controlled;
-                var isInvestigated = inst?.Status == InstitutionStatus.Investigated;
-                var isRivalHeld = rivalCount > 0 && Game.State.RivalCultsOrInit.Rivals.Any(r => r.ControlledInstitutions.Contains(def.Id));
-                <div class="h-3 w-3 rounded-full transition-colors @(isRivalHeld ? "bg-rose-500" : isControlled ? "bg-emerald-500" : isInvestigated ? "bg-orange-500" : "bg-stone-700")" title="@def.Name"></div>
-            }
-        </div>
-        <div class="mt-1.5 text-[10px] text-slate-500">@sw.TotalControlled / @ShadowWarData.Institutions.Length institutions controlled</div>
-    </div>
 </div>
 
 @code {
-    [Parameter] public EventCallback OnViewMap { get; set; }
-
-    private ShadowWarState sw => Game.ShadowWar;
-    private int rivalCount => RivalCultEngine.ActiveRivals(Game.State).Count;
-
-    private string GetStatusClass(InstitutionStatus s) => s switch
-    {
-        InstitutionStatus.Locked => "opacity-40",
-        InstitutionStatus.Controlled => "border border-emerald-700/40 bg-emerald-950/20",
-        InstitutionStatus.Investigated => "border border-orange-700/40 bg-orange-950/20",
-        InstitutionStatus.Alerted => "border border-red-700/40 bg-red-950/20",
-        InstitutionStatus.Infiltrating => "border border-amber-700/40 bg-amber-950/20",
-        InstitutionStatus.Recon => "border border-blue-700/40 bg-blue-950/20",
-        _ => "border border-stone-700/40 bg-stone-900/40"
-    };
-
-    private string GetStatusLabel(InstitutionStatus s) => s switch
-    {
-        InstitutionStatus.Locked => "Locked",
-        InstitutionStatus.Unlocked => "Available",
-        InstitutionStatus.Recon => "Recon",
-        InstitutionStatus.Infiltrating => "Infiltrating",
-        InstitutionStatus.Controlled => "Controlled",
-        InstitutionStatus.Alerted => "Alerted",
-        InstitutionStatus.Investigated => "Under Investigation",
-        _ => ""
-    };
-
-    private string GetTypeIcon(InstitutionType t) => t switch
-    {
-        InstitutionType.Police => "🚔",
-        InstitutionType.Media => "📡",
-        InstitutionType.Government => "🏛️",
-        InstitutionType.Military => "⚔️",
-        InstitutionType.Finance => "💰",
-        InstitutionType.Intelligence => "🕵️",
-        _ => ""
-    };
+    private OccultState occult => Game.State.Occult;
+    private int totalAgentCount => ShadowWarEngine.TotalAgentCount(occult);
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
