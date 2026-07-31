@@ -46,14 +46,14 @@ public static class OccultData
         new MinionTraitDef("fleshspeaker", "Fleshspeaker", "+50 Acolyte cap, +5% suspicion", 1.0, 1.05, 1.0));
 
     public static readonly ImmutableArray<CauldronRecipeDef> Recipes = ImmutableArray.Create(
-        new CauldronRecipeDef(CauldronRecipeId.CrimsonElixir, "Crimson Elixir", "🧪", new() { { MaterialKind.GraveDust, 3 } }, "+100% sermon power for 60s", false),
-        new CauldronRecipeDef(CauldronRecipeId.VoidTincture, "Void Tincture", "💧", new() { { MaterialKind.DemonBile, 3 } }, "+50% Faith generation for 60s", false),
-        new CauldronRecipeDef(CauldronRecipeId.MindPhiltre, "Mind Philtre", "🧠", new() { { MaterialKind.AstralMercury, 3 } }, "-50% Suspicion for 60s", false),
-        new CauldronRecipeDef(CauldronRecipeId.FleshBrew, "Flesh Brew", "🥕", new() { { MaterialKind.GraveDust, 1 }, { MaterialKind.DemonBile, 1 }, { MaterialKind.AstralMercury, 1 } }, "+100 Acolytes instantly", false),
-        new CauldronRecipeDef(CauldronRecipeId.BloodForge, "Blood Forge", "🍷", new() { { MaterialKind.GraveDust, 5 }, { MaterialKind.DemonBile, 2 } }, "Forge a random Blood artifact", true),
-        new CauldronRecipeDef(CauldronRecipeId.VoidForge, "Void Forge", "🔮", new() { { MaterialKind.DemonBile, 5 }, { MaterialKind.AstralMercury, 2 } }, "Forge a random Void artifact", true),
-        new CauldronRecipeDef(CauldronRecipeId.MindForge, "Mind Forge", "👁️", new() { { MaterialKind.AstralMercury, 5 }, { MaterialKind.GraveDust, 2 } }, "Forge a random Mind artifact", true),
-        new CauldronRecipeDef(CauldronRecipeId.FleshForge, "Flesh Forge", "🧟", new() { { MaterialKind.GraveDust, 3 }, { MaterialKind.DemonBile, 3 }, { MaterialKind.AstralMercury, 3 } }, "Forge a random Flesh artifact", true));
+        new CauldronRecipeDef(CauldronRecipeId.CrimsonElixir, "Crimson Elixir", "🧪", 10, "+100% sermon power for 60s", false),
+        new CauldronRecipeDef(CauldronRecipeId.VoidTincture, "Void Tincture", "💧", 10, "+50% Faith generation for 60s", false),
+        new CauldronRecipeDef(CauldronRecipeId.MindPhiltre, "Mind Philtre", "🧠", 10, "-50% Suspicion for 60s", false),
+        new CauldronRecipeDef(CauldronRecipeId.FleshBrew, "Flesh Brew", "🥕", 15, "+100 Acolytes instantly", false),
+        new CauldronRecipeDef(CauldronRecipeId.BloodForge, "Blood Forge", "🍷", 30, "Forge a random Blood artifact", true),
+        new CauldronRecipeDef(CauldronRecipeId.VoidForge, "Void Forge", "🔮", 30, "Forge a random Void artifact", true),
+        new CauldronRecipeDef(CauldronRecipeId.MindForge, "Mind Forge", "👁️", 30, "Forge a random Mind artifact", true),
+        new CauldronRecipeDef(CauldronRecipeId.FleshForge, "Flesh Forge", "🧟", 40, "Forge a random Flesh artifact", true));
 
     public static readonly ImmutableArray<MapNodeDef> MapNodes = ImmutableArray.Create(
         new MapNodeDef("skanor_runestone", "Viking Runestone", "🪨", 150, 10, 0.5, 0.2, 55.63, 13.07, "Stora Köpinge, Skåne", new() { { MaterialKind.AstralMercury, 1 } }, "skanor"),
