@@ -63,10 +63,17 @@ public class GameService
         _locations.SyncFootholds(_state);
         EnsureHomeCoven();
         ApplyOfflineIncome();
+        RestorePendingFoothold();
         NotifyChanged();
     }
 
     private void EnsureHomeCoven() { if (_state.Covens.Count == 0) { _state.Covens.Add(new CovenState { Id = "skanor", Converted = true }); _state.ActiveCovenId = "skanor"; } }
+
+    private void RestorePendingFoothold()
+    {
+        if (!string.IsNullOrEmpty(_state.PendingContinentStory))
+            PendingFoothold = ContinentFootholds.ForCompleted(_state.PendingContinentStory);
+    }
 
     private void ApplyOfflineIncome()
     {
