@@ -11,8 +11,8 @@ public static class OccultData
         new TechDef(TechId.ExsanguinationEngine, "Exsanguination Engine", "⚙️", 10000, TechBranch.BloodFlesh, "Unlocks 15s Frenzy mode (10x sermon) via minion sacrifice", new[] { TechId.AutophagousCult }),
         new TechDef(TechId.WhispersInTheDark, "Whispers in the Dark", "🗣️", 100, TechBranch.MindCoercion, "-15% global Suspicion generation"),
         new TechDef(TechId.InquisitorsBlindfold, "Inquisitor's Blindfold", "👁️", 500, TechBranch.MindCoercion, "Infiltrators auto-suppress raids", new[] { TechId.WhispersInTheDark }),
-        new TechDef(TechId.LeyLineWeaving, "Ley Line Weaving", "📐", 2500, TechBranch.MindCoercion, "+25% Great Seal multiplier", new[] { TechId.InquisitorsBlindfold }),
-        new TechDef(TechId.MassHysteria, "Mass Hysteria", "😱", 15000, TechBranch.MindCoercion, "Tapping map regions generates Faith directly for 30s", new[] { TechId.LeyLineWeaving }),
+        new TechDef(TechId.ShadowTactics, "Shadow Tactics", "📐", 2500, TechBranch.MindCoercion, "+25% agent strength in Shadow War", new[] { TechId.InquisitorsBlindfold }),
+        new TechDef(TechId.MassHysteria, "Mass Hysteria", "😱", 15000, TechBranch.MindCoercion, "Tapping map regions generates Faith directly for 30s", new[] { TechId.ShadowTactics }),
         new TechDef(TechId.SecondSocket, "Second Socket", "🔮", 200, TechBranch.VoidAstral, "Unlocks Grimoire Slot 2"),
         new TechDef(TechId.TransmutationCrucible, "Transmutation Crucible", "⚗️", 750, TechBranch.VoidAstral, "Unlocks Cauldron crafting", new[] { TechId.SecondSocket }),
         new TechDef(TechId.ThirdSocket, "Third Socket", "🔯", 5000, TechBranch.VoidAstral, "Unlocks Grimoire Slot 3", new[] { TechId.TransmutationCrucible }),
@@ -30,7 +30,7 @@ public static class OccultData
         new ArtifactDef("void_mirror", "Mirror of Null", "🪞", ArtifactSuit.Void, "+15% Acolyte passive"),
         new ArtifactDef("mind_eye", "Third Eye", "👁️", ArtifactSuit.Mind, "+20% Scholar Faith output"),
         new ArtifactDef("mind_tongue", "Whispering Tongue", "👅", ArtifactSuit.Mind, "-15% Inquisitor raid chance"),
-        new ArtifactDef("mind_crown", "Crown of Madness", "👑", ArtifactSuit.Mind, "+30% Great Seal multiplier"),
+        new ArtifactDef("mind_crown", "Crown of Madness", "👑", ArtifactSuit.Mind, "+25% agent combat strength"),
         new ArtifactDef("flesh_golem", "Flesh Golem", "🧟", ArtifactSuit.Flesh, "+50 Acolyte cap"),
         new ArtifactDef("flesh_graft", "Sinew Graft", "🩠", ArtifactSuit.Flesh, "+15% all production"),
         new ArtifactDef("flesh_seed", "Seed of Flesh", "🌱", ArtifactSuit.Flesh, "+5% global multiplier per socketed artifact"));
@@ -56,46 +56,30 @@ public static class OccultData
         new CauldronRecipeDef(CauldronRecipeId.FleshForge, "Flesh Forge", "🧟", new() { { MaterialKind.GraveDust, 3 }, { MaterialKind.DemonBile, 3 }, { MaterialKind.AstralMercury, 3 } }, "Forge a random Flesh artifact", true));
 
     public static readonly ImmutableArray<MapNodeDef> MapNodes = ImmutableArray.Create(
-        // Skanör (Skåne, Sweden) — 55.41, 12.88
         new MapNodeDef("skanor_runestone", "Viking Runestone", "🪨", 150, 10, 0.5, 0.2, 55.63, 13.07, "Stora Köpinge, Skåne", new() { { MaterialKind.AstralMercury, 1 } }, "skanor"),
         new MapNodeDef("skanor_bog", "Ageröd Bog Sacrifice", "🔦", 500, 30, 0.8, 0.3, 56.01, 12.74, "Ageröd Mosse, Skåne", new() { { MaterialKind.GraveDust, 2 } }, "skanor"),
         new MapNodeDef("skanor_mound", "Kivik Royal Mound", "⛰️", 1500, 100, 1.5, 0.5, 55.31, 14.23, "Kivik Grave Mound, Skåne", new() { { MaterialKind.AstralMercury, 2 }, { MaterialKind.GraveDust, 1 } }, "skanor"),
-
-        // La Recta Provincia (Chiloé, Chile) — -42.5, -73.8
         new MapNodeDef("chiloe_cave", "Warlock's Cave of Chiloé", "🦇", 200, 15, 0.5, 0.2, -42.18, -73.90, "Huiliche Cave, Chiloé", new() { { MaterialKind.GraveDust, 1 } }, "la_recta_provincia"),
         new MapNodeDef("chiloe_forest", "Ancient Alder Grove", "🌲", 600, 40, 0.8, 0.3, -42.65, -73.85, "Tepual Forest, Chiloé", new() { { MaterialKind.AstralMercury, 2 } }, "la_recta_provincia"),
         new MapNodeDef("chiloe_island", "Isla de las Almas", "👻", 1800, 120, 1.5, 0.5, -43.10, -73.50, "Isla Chaullín, Chiloé", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.AstralMercury, 1 } }, "la_recta_provincia"),
-
-        // Benandanti (Friuli, Italy) — 46.05, 13.0
         new MapNodeDef("friuli_oak", "Sacred Oak of the Benandanti", "🌳", 180, 12, 0.5, 0.2, 46.07, 13.10, "Cividale del Friuli", new() { { MaterialKind.AstralMercury, 1 } }, "benandanti"),
         new MapNodeDef("friuli_crossroads", "Crossroads of the Night Battles", "⚔️", 550, 35, 0.8, 0.3, 46.20, 12.90, "Gemona del Friuli", new() { { MaterialKind.GraveDust, 2 } }, "benandanti"),
         new MapNodeDef("friuli_church", "Rovine della Chiesa Stregata", "⛪", 1600, 110, 1.5, 0.5, 45.90, 13.20, "Aquileia Basilica Ruins", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "benandanti"),
-
-        // Malkin Tower Coven (Lancashire, England) — 53.87, -2.31
         new MapNodeDef("malkin_tower", "Malkin Tower Ruins", "🏚️", 150, 10, 0.5, 0.2, 53.87, -2.31, "Malkin Tower, Lancashire", new() { { MaterialKind.GraveDust, 1 } }, "malkin_tower_coven"),
         new MapNodeDef("pendle_hill", "Pendle Hill Summit", "🏔️", 500, 35, 0.8, 0.3, 53.87, -2.30, "Pendle Hill, Lancashire", new() { { MaterialKind.AstralMercury, 2 } }, "malkin_tower_coven"),
         new MapNodeDef("lancaster_court", "Lancaster Assizes Dungeon", "⛓️", 1700, 120, 1.5, 0.5, 54.05, -2.80, "Lancaster Castle Dungeon", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "malkin_tower_coven"),
-
-        // North Berwick Coven (East Lothian, Scotland) — 56.0, -2.72
         new MapNodeDef("berwick_kirk", "St. Andrew's Auld Kirk", "⛪", 160, 12, 0.5, 0.2, 56.05, -2.72, "North Berwick Kirk", new() { { MaterialKind.GraveDust, 1 } }, "north_berwick_coven"),
         new MapNodeDef("berwick_hill", "Berwick Law Hillfort", "⛰️", 550, 38, 0.8, 0.3, 56.04, -2.69, "North Berwick Law", new() { { MaterialKind.AstralMercury, 2 } }, "north_berwick_coven"),
         new MapNodeDef("berwick_cove", "Cove of the Storm Witches", "🌊", 1650, 115, 1.5, 0.5, 56.00, -2.75, "Milsey Bay, North Berwick", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.AstralMercury, 1 } }, "north_berwick_coven"),
-
-        // La Cabotina (Triora, Liguria, Italy) — 43.98, 7.7
         new MapNodeDef("triora_cabotina", "La Cabotina Witch House", "🏚️", 150, 10, 0.5, 0.2, 43.98, 7.71, "Triora, Liguria", new() { { MaterialKind.GraveDust, 1 } }, "la_cabotina"),
         new MapNodeDef("triora_megalith", "Argenten Megalith Stone", "🗿", 550, 35, 0.8, 0.3, 44.02, 7.65, "Argenten Valley, Liguria", new() { { MaterialKind.AstralMercury, 2 } }, "la_cabotina"),
         new MapNodeDef("triora_gorge", "Gorge of the accused", "⛰️", 1700, 120, 1.5, 0.5, 43.95, 7.75, "Argentina River Gorge", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "la_cabotina"),
-
-        // Ixchel Priestesses (Cozumel/Yucatán, Mexico) — 20.5, -86.95
         new MapNodeDef("cozumel_cenote", "Sacred Cenote of Ixchel", "💧", 200, 15, 0.5, 0.2, 20.50, -86.95, "San Gervasio Cenote, Cozumel", new() { { MaterialKind.AstralMercury, 1 } }, "ixchel_priestesses"),
         new MapNodeDef("yucatan_pyramid", "Moon Pyramid of Ixchel", "🏜️", 600, 40, 0.8, 0.3, 20.68, -88.57, "Chichen Itza Outskirts", new() { { MaterialKind.GraveDust, 2 } }, "ixchel_priestesses"),
         new MapNodeDef("yucatan_temple", "Tulum Cliffside Temple", "🛕", 1800, 130, 1.5, 0.5, 20.21, -87.46, "Tulum Ruins, Quintana Roo", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.AstralMercury, 1 } }, "ixchel_priestesses"),
-
-        // New Forest Coven (Hampshire, England) — 50.85, -1.6
         new MapNodeDef("newforest_altar", "Bronze Age Sacrificial Altar", "🗿", 150, 10, 0.5, 0.2, 50.85, -1.60, "New Forest Bronze Altar", new() { { MaterialKind.GraveDust, 1 } }, "new_forest_coven"),
         new MapNodeDef("newforest_standing", "Stonestanding Circle", "🪨", 550, 35, 0.8, 0.3, 50.88, -1.55, "New Forest Standing Stones", new() { { MaterialKind.AstralMercury, 2 } }, "new_forest_coven"),
-        new MapNodeDef("newforest_barrows", "Dark Barrow Burial Mounds", "⚰️", 1700, 120, 1.5, 0.5, 50.82, -1.65, "New Forest Barrows", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "new_forest_coven")
-    );
+        new MapNodeDef("newforest_barrows", "Dark Barrow Burial Mounds", "⚰️", 1700, 120, 1.5, 0.5, 50.82, -1.65, "New Forest Barrows", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "new_forest_coven"));
 
     public static readonly ImmutableArray<PromotedRole> PromotedRoles = ImmutableArray.Create(PromotedRole.Zealot, PromotedRole.Scholar, PromotedRole.Infiltrator);
     public static readonly ImmutableArray<CouncilRole> CouncilRoles = ImmutableArray.Create(CouncilRole.Inquisitor, CouncilRole.Archon, CouncilRole.HighPriest);

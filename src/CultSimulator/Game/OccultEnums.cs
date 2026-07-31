@@ -11,7 +11,7 @@ public enum TechId
     // Branch 2: Mind & Coercion
     WhispersInTheDark,
     InquisitorsBlindfold,
-    LeyLineWeaving,
+    ShadowTactics,
     MassHysteria,
 
     // Branch 3: Void & Astral

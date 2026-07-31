@@ -62,7 +62,6 @@ public static class OccultEngine
     {
         var o = coven.Occult;
         double total = AcolyteFaithPerSecForCoven(o, state);
-        total *= WorldMapSystem.GreatSealMultiplier(o);
         return total;
     }
 
