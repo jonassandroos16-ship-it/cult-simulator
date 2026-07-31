@@ -5,11 +5,11 @@ namespace CultSimulator.Game;
 public static class BattleData
 {
     public static readonly ImmutableArray<AgentTypeDef> AgentTypes = ImmutableArray.Create(
-        new AgentTypeDef(AgentType.Acolyte, "Acolyte", "🧙",
+        new AgentTypeDef(AgentType.Initiate, "Initiate", "🧙",
             "Basic agent. Cheap and expendable. Low attack but decent defense.",
             Attack: 2.0, Defense: 3.0, Stealth: 1.0, AgentCost: 5),
         new AgentTypeDef(AgentType.Zealot, "Zealot", "⚔️",
-            "Fanatical warrior. High attack, low stealth. Recruit from promoted Zealots.",
+            "Fanatical warrior. High attack, low stealth. Recruit Zealots in the Sanctum first.",
             Attack: 6.0, Defense: 4.0, Stealth: 0.3, AgentCost: 20),
         new AgentTypeDef(AgentType.Infiltrator, "Infiltrator", "🗡️",
             "Stealth operative. Low attack but high stealth — reduces rival counterattack damage.",

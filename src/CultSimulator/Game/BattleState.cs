@@ -4,7 +4,7 @@ namespace CultSimulator.Game;
 
 public class DeployedAgent
 {
-    public AgentType Type { get; set; } = AgentType.Acolyte;
+    public AgentType Type { get; set; } = AgentType.Initiate;
     public int Count { get; set; }
 }
 

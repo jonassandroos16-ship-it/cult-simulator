@@ -2,7 +2,7 @@ namespace CultSimulator.Game;
 
 public enum AgentType
 {
-    Acolyte,
+    Initiate,
     Zealot,
     Infiltrator
 }
