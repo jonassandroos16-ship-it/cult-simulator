@@ -159,27 +159,37 @@ public class GameService
         NotifyChanged();
     }
     public void SetNodeStance(string nodeId, NodeStance stance) { WorldMapSystem.SetStance(_state.Occult, nodeId, stance); NotifyChanged(); }
-    public bool ConnectLeyLine(string nodeA, string nodeB)
-    {
-        if (!WorldMapSystem.CanConnectLeyLine(_state.Occult, nodeA, nodeB))
-        {
-            PopupTitle = "Cannot Connect";
-            PopupMessage = "Both nodes must be conquered to connect them.";
-            NotifyChanged();
-            return false;
-        }
-        if (_state.Occult.LeyLines.Any(l => l.Contains(nodeA) && l.Contains(nodeB)))
-        {
-            PopupTitle = "Already Connected";
-            PopupMessage = "These two nodes are already linked by a Ley Line.";
-            NotifyChanged();
-            return false;
-        }
-        var ok = WorldMapSystem.ConnectLeyLine(_state.Occult, nodeA, nodeB);
-        NotifyChanged();
-        return ok;
-    }
     public void CraftRecipe(CauldronRecipeId id) { Cauldron.Craft(_state.Occult, id); NotifyChanged(); }
+
+    public (bool success, string message) RecruitAgent(AgentType type, int count)
+    {
+        var r = BattleEngine.RecruitAgent(_state, type, count);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) DeployAgents(string continentId, AgentType type, int count)
+    {
+        var r = BattleEngine.DeployAgents(_state, continentId, type, count);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) WithdrawBattleAgents(string continentId)
+    {
+        var r = BattleEngine.WithdrawAgents(_state, continentId);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) StartBattle(string continentId)
+    {
+        var r = BattleEngine.StartBattle(_state, continentId);
+        NotifyChanged();
+        return r;
+    }
+    public bool IsBattleTheaterActive(string continentId) => BattleEngine.IsTheaterActive(_state, _locations, continentId);
+    public bool HasCovenInContinent(string continentId) => BattleEngine.HasCovenInContinent(_state, _locations, continentId);
+    public BattleState? GetBattle(string continentId) => BattleEngine.GetOrCreateBattle(_state, _locations, continentId);
+    public List<TerritoryLossEvent> RecentTerritoryLosses => BattleEngine.GetRecentLosses(_state);
+
     public void ActivateFrenzy() { OccultEngine.ActivateFrenzy(_state.Occult); NotifyChanged(); }
     public void ActivateMassHysteria() { OccultEngine.ActivateMassHysteria(_state.Occult); NotifyChanged(); }
     public void SacrificeAcolyte() { OccultEngine.SacrificeAcolyte(_state); NotifyChanged(); }
@@ -202,12 +212,26 @@ public class GameService
     public void ConfirmName(string name) { _state.CultName = name.Trim(); NotifyChanged(); }
     public void MarkStoryShown() { _state.StoryShown = true; NotifyChanged(); }
 
-    public bool CanConvert(string covenId) { var loc = _locations.Find(covenId); return loc != null && ConversionEngine.CanStartConversion(_state, loc); }
+    public bool CanConvert(string covenId)
+    {
+        var loc = _locations.Find(covenId);
+        if (loc == null) return false;
+        if (!ConversionEngine.CanStartConversion(_state, loc)) return false;
+        if (!CovenProgress.HasCovenInContinent(_state, _locations.Locations, loc.Continent)) return false;
+        return true;
+    }
 
     public void StartConversion(string covenId)
     {
         var loc = _locations.Find(covenId);
         if (loc == null) return;
+        if (!CovenProgress.HasCovenInContinent(_state, _locations.Locations, loc.Continent))
+        {
+            PopupTitle = "No Foothold";
+            PopupMessage = $"You need a coven in {loc.Continent} before you can convert covens there. Expand to a neighboring continent first.";
+            NotifyChanged();
+            return;
+        }
         if (!ConversionEngine.CanStartConversion(_state, loc))
         {
             var needed = loc.FollowersRequired - CovenProgress.TotalFollowers(_state);
@@ -294,7 +318,6 @@ public class GameService
     public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
     public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
 
-    // ── Shadow War ──
     public ShadowWarState ShadowWar => _state.ShadowWarOrInit;
     public bool ShadowWarVictory => ShadowWar.VictoryAchieved;
 
