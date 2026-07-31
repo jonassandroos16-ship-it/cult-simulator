@@ -18,6 +18,7 @@ public class GameState
     public Dictionary<string, JsonElement>? ExtensionData { get; set; }
     public ConversionState? Conversion { get; set; }
     public List<LocalCultInstance> ActiveLocalCults { get; set; } = new();
+    public List<LocalCultBattleState>? LocalCultBattles { get; set; }
     public ShadowWarState? ShadowWar { get; set; }
 
     [JsonIgnore]
@@ -33,17 +34,7 @@ public class GameState
     [JsonIgnore]
     public BattleSystemState BattleSystemOrInit => BattleSystem ??= BattleEngine.CreateInitialState();
 
-    /// <summary>
-    /// Ids of foothold covens revealed by completing the previous continent.
-    /// Each entry unlocks the next continent so the player can expand into it.
-    /// </summary>
     public List<string> RevealedFootholds { get; set; } = new();
-
-    /// <summary>
-    /// Continent whose completion story is currently pending display.
-    /// Set when a continent is fully conquered; cleared after the player
-    /// dismisses the story beat and the foothold is granted.
-    /// </summary>
     public string? PendingContinentStory { get; set; }
 
     [JsonIgnore]

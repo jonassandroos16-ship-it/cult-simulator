@@ -1,21 +1,14 @@
 namespace CultSimulator.Game;
 
-public record TechDef(
-    TechId Id, string Name, string Icon, int FaithCost,
-    TechBranch Branch, string EffectDescription,
-    TechId[]? Prerequisites = null);
-
 public record ArtifactDef(
-    string Id, string Name, string Icon,
-    ArtifactSuit Suit, string EffectDescription);
-
-public record MinionTraitDef(
-    string Id, string Name, string Description,
-    double RaidPowerMult, double SuspicionMult, double FaithMult);
+    string Id, string Name, string Icon, ArtifactSuit Suit,
+    string EffectDescription, double TapPowerBonus,
+    double FaithBonus, double SuspicionReductionBonus,
+    double GlobalProductionMult);
 
 public record CauldronRecipeDef(
     CauldronRecipeId Id, string Name, string Icon,
-    Dictionary<MaterialKind, int> Materials,
+    int AgentCost,
     string EffectDescription, bool IsPermanent);
 
 public record MapNodeDef(
@@ -24,5 +17,5 @@ public record MapNodeDef(
     double FaithPerSec, double SuspicionPerSec,
     double Latitude, double Longitude,
     string LocationName,
-    Dictionary<MaterialKind, int>? Materials = null,
-    string CovenId = "global");
+    string CovenId,
+    Dictionary<MaterialKind, int>? Materials);

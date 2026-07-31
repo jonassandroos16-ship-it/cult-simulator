@@ -1,39 +1,46 @@
 namespace CultSimulator.Game;
 
+/// <summary>
+/// Redesigned Cauldron: crafts elixirs and forges artifacts using
+/// Shadow War agents as currency instead of Materials (which were
+/// tied to the removed Ley Line system). Each recipe costs a flat
+/// number of agents from the player's agent pool.
+/// </summary>
 public static class Cauldron
 {
     public static bool IsUnlocked(OccultState o) => TechTree.HasTech(o, TechId.TransmutationCrucible);
 
-    public static bool HasMaterials(OccultState o, CauldronRecipeDef recipe)
+    public static bool CanCraft(GameState state, CauldronRecipeDef recipe)
     {
-        foreach (var (material, amount) in recipe.Materials) if (o.Materials.GetValueOrDefault(material) < amount) return false;
-        return true;
+        if (!IsUnlocked(state.Occult)) return false;
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        return sw.AvailableAgents >= recipe.AgentCost;
     }
 
-    public static bool CanCraft(OccultState o, CauldronRecipeDef recipe) => IsUnlocked(o) && HasMaterials(o, recipe);
-
-    public static bool ConsumeMaterials(OccultState o, CauldronRecipeDef recipe)
-    {
-        if (!HasMaterials(o, recipe)) return false;
-        foreach (var (material, amount) in recipe.Materials) o.Materials[material] -= amount;
-        return true;
-    }
-
-    public static (bool success, string? artifactId) Craft(OccultState o, CauldronRecipeId id)
+    public static (bool success, string? artifactId) Craft(GameState state, CauldronRecipeId id)
     {
         var recipe = OccultData.Recipe(id);
-        if (!CanCraft(o, recipe)) return (false, null);
-        ConsumeMaterials(o, recipe);
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        if (!CanCraft(state, recipe)) return (false, null);
+
+        sw.TotalAgents -= recipe.AgentCost;
+
         if (recipe.IsPermanent)
         {
-            var suit = id switch { CauldronRecipeId.BloodForge => ArtifactSuit.Blood, CauldronRecipeId.VoidForge => ArtifactSuit.Void, CauldronRecipeId.MindForge => ArtifactSuit.Mind, CauldronRecipeId.FleshForge => ArtifactSuit.Flesh, _ => ArtifactSuit.Blood };
-            var unowned = OccultData.Artifacts.Where(a => a.Suit == suit && !Grimoire.OwnsArtifact(o, a.Id)).ToList();
+            var suit = id switch {
+                CauldronRecipeId.BloodForge => ArtifactSuit.Blood,
+                CauldronRecipeId.VoidForge => ArtifactSuit.Void,
+                CauldronRecipeId.MindForge => ArtifactSuit.Mind,
+                CauldronRecipeId.FleshForge => ArtifactSuit.Flesh,
+                _ => ArtifactSuit.Blood
+            };
+            var unowned = OccultData.Artifacts.Where(a => a.Suit == suit && !Grimoire.OwnsArtifact(state.Occult, a.Id)).ToList();
             if (unowned.Count == 0) return (false, null);
             var chosen = unowned[Random.Shared.Next(unowned.Count)];
-            Grimoire.AddArtifact(o, chosen.Id);
+            Grimoire.AddArtifact(state.Occult, chosen.Id);
             return (true, chosen.Id);
         }
-        ApplyElixir(o, id);
+        ApplyElixir(state.Occult, id);
         return (true, null);
     }
 
