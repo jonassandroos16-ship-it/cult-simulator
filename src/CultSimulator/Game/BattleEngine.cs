@@ -79,11 +79,11 @@ public static class BattleEngine
     {
         var def = BattleData.AgentDef(type);
         if (def == null) return (false, "Unknown agent type.");
-        int totalCost = def.FaithCost * count;
-        if (state.ActiveCoven.Faith < totalCost)
-            return (false, $"Need {totalCost} faith to recruit {count} {def.Name}(s).");
-
+        int totalCost = def.AgentCost * count;
         var sw = state.ShadowWarOrInit;
+        if (sw.AvailableAgents < totalCost)
+            return (false, $"Need {totalCost} agents to recruit {count} {def.Name}(s).");
+
         if (type == AgentType.Zealot)
         {
             int availableZealots = state.Occult.Minions.Count(m => m.Role == PromotedRole.Zealot);
@@ -99,7 +99,7 @@ public static class BattleEngine
                 return (false, $"Only {availableInfiltrators - deployedInfiltrators} Infiltrator(s) available. Promote more in the Sanctum.");
         }
 
-        state.ActiveCoven.Faith -= totalCost;
+        sw.TotalAgents -= totalCost;
         sw.TotalAgents += count;
         return (true, $"Recruited {count} {def.Name}(s).");
     }
