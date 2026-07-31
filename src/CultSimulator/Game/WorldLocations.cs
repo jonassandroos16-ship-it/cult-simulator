@@ -21,4 +21,6 @@ public record WorldLocationDef(
     string Lore,
     int FollowersRequired,
     double BaseMultiplier,
-    List<CovenEventData> Events);
+    List<CovenEventData> Events,
+    string Icon = "🏛️",
+    double Defense = 100.0);
