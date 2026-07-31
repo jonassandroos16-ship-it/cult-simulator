@@ -152,7 +152,7 @@ public class GameService
     public void HireAcolyte() { OccultEngine.HireAcolyte(_state); NotifyChanged(); }
     public void PromoteMinion() { CultistHierarchy.Promote(_state.Occult); NotifyChanged(); }
     public void SacrificeMinion(string minionId) { CultistHierarchy.Sacrifice(_state, minionId); NotifyChanged(); }
-    public void AppointCouncil(CouncilRole role, string minionId) { CultistHierarchy.AppointCouncil(_state, role, minionId); NotifyChanged(); }
+    public void AppointCouncil(CouncilRole role, string minionId) { CultistHierarchy.AppointCouncil(_state.Occult, role, minionId); NotifyChanged(); }
     public void RemoveCouncil(CouncilRole role) { CultistHierarchy.RemoveCouncil(_state.Occult, role); NotifyChanged(); }
     public void UnlockTech(TechId id) { TechTree.Unlock(_state, id); NotifyChanged(); }
     public void SocketArtifact(string artifactId) { Grimoire.Socket(_state.Occult, artifactId); NotifyChanged(); }
@@ -386,6 +386,18 @@ public class GameService
     public bool IsConversionActive => ConversionEngine.IsActive(_state);
     public ConversionStep? CurrentConversionStep => ConversionEngine.CurrentStep(_state, _conversions);
     public ConversionDef? ActiveConversion => _state.Conversion == null ? null : _conversions.Find(_state.Conversion.CovenId);
+    public double GetConversionProgress(string covenId)
+    {
+        if (_state.Conversion?.CovenId != covenId) return 0.0;
+        return _state.Conversion.Progress;
+    }
+
+    public double GetConversionDetection(string covenId)
+    {
+        if (_state.Conversion?.CovenId != covenId) return 0.0;
+        return _state.Conversion.Progress > 0 ? Math.Min(1.0, _state.Conversion.Progress / 100.0 * 0.5) : 0.0;
+    }
+
     public double ConversionProgressValue => _state.Conversion?.Progress ?? 0.0;
 
     public IReadOnlyList<LocalCultInstance> ActiveLocalCultsForCurrentCoven =>
