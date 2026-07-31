@@ -1,0 +1,52 @@
+@using CultSimulator.Game
+@inject GameService Game
+
+@if (Game.ContinentStoryPending && Game.PendingFoothold is { } foothold)
+{
+    var theme = ContinentThemes.For(foothold.Continent);
+    <div class="story-screen fixed inset-0 z-[95] flex items-center justify-center p-6 animate-fade-in"
+         style="background: radial-gradient(ellipse at center, rgba(5,3,8,0.92) 0%, rgba(5,3,8,0.97) 70%); backdrop-filter: blur(12px);">
+        <div class="story-card relative max-w-lg w-full text-center overflow-hidden rounded-3xl p-10 animate-modal-rise"
+             style="background: linear-gradient(135deg, @(theme.AltarMid)cc, @(theme.AltarCore)ee); border: 1px solid @(theme.PanelBorder);">
+            <div class="story-glow absolute -top-1/3 -left-1/3 w-[160%] h-[160%] pointer-events-none animate-slow-rotate-20"
+                 style="background: radial-gradient(circle at center, @(theme.AccentColor)22 0%, transparent 60%);"></div>
+            <div class="story-content relative">
+                <div class="story-emblem text-5xl mb-4">@theme.Icon</div>
+                <div class="text-[0.7rem] font-display tracking-[0.3em] uppercase mb-2" style="color: @(theme.AccentColor); opacity: 0.7;">
+                    Continent Conquered
+                </div>
+                <h1 class="story-title font-display text-2xl font-semibold tracking-[0.1em] mb-5" style="color: @(theme.GoldPale);">
+                    @foothold.StoryTitle
+                </h1>
+                <div class="story-body text-sm leading-7 mb-7 space-y-3" style="color: @(theme.AccentColor); opacity: 0.85;">
+                    @foreach (var para in foothold.StoryBody.Split("\n\n"))
+                    {
+                        <p>@para</p>
+                    }
+                </div>
+                <div class="foothold-reveal mb-6 p-4 rounded-2xl"
+                     style="background: rgba(0,0,0,0.25); border: 1px solid @(theme.AccentColor)33;">
+                    <div class="text-[0.65rem] font-display tracking-[0.25em] uppercase mb-2" style="color: @(theme.AccentColor); opacity: 0.6;">
+                        New Foothold Established
+                    </div>
+                    <div class="text-2xl mb-1">@foothold.CountryFlag</div>
+                    <div class="font-display text-base font-semibold" style="color: @(theme.GoldPale);">@foothold.Name</div>
+                    <div class="text-xs mt-1" style="color: @(theme.AccentColor); opacity: 0.7;">@foothold.Location</div>
+                    <div class="text-[0.7rem] mt-2 italic" style="color: @(theme.AccentColor); opacity: 0.6;">@foothold.Summary</div>
+                </div>
+                <button class="story-confirm w-full py-3.5 border-none rounded-xl font-display font-semibold text-sm tracking-[0.2em] cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+                        style="background: linear-gradient(135deg, @(theme.AccentColor), @(theme.AltarCore)); color: var(--void-deep);"
+                        @onclick="Continue">
+                    Claim the Foothold
+                </button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private void Continue()
+    {
+        Game.GrantContinentFoothold();
+    }
+}

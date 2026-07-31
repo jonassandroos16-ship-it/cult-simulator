@@ -1,17 +1,12 @@
-using System.Net.Http.Json;
 using System.Collections.Immutable;
 
 namespace CultSimulator.Game;
 
-/// <summary>
-/// Loads coven data from JSON files in wwwroot/data/covens/.
-/// Each coven is a separate JSON file listed in manifest.json.
-/// </summary>
 public class WorldLocationService
 {
     private readonly HttpClient _http;
     private ImmutableArray<WorldLocationDef> _locations = ImmutableArray<WorldLocationDef>.Empty;
-    private bool _loaded;
+    private bool _loaded = false;
 
     public WorldLocationService(HttpClient http) => _http = http;
 
@@ -53,5 +48,28 @@ public class WorldLocationService
         }
         catch { /* manifest missing */ }
         _loaded = true;
+    }
+
+    /// <summary>
+    /// Merges revealed foothold covens into the loaded locations so the map
+    /// and progression logic see them. Called after load and after each
+    /// foothold reveal. Idempotent — footholds already present are skipped.
+    /// </summary>
+    public void SyncFootholds(GameState state)
+    {
+        if (!_loaded) return;
+        var existing = new HashSet<string>(_locations.Select(l => l.Id));
+        var toAdd = new List<WorldLocationDef>();
+        foreach (var id in state.RevealedFootholds)
+        {
+            if (existing.Contains(id)) continue;
+            var foothold = ContinentFootholds.ForCompletedContinent.Values
+                .FirstOrDefault(f => f.CovenId == id);
+            if (foothold == null) continue;
+            toAdd.Add(ContinentFootholds.ToLocation(foothold));
+            existing.Add(id);
+        }
+        if (toAdd.Count > 0)
+            _locations = _locations.AddRange(toAdd);
     }
 }
