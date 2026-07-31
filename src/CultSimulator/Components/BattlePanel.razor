@@ -32,6 +32,33 @@
         </div>
     </div>
 
+    <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+        <div class="text-xs text-amber-400 uppercase tracking-wider mb-2">Your Forces</div>
+        <div class="grid grid-cols-3 gap-3">
+            @foreach (var agentDef in BattleData.AgentTypes)
+            {
+                var total = BattleEngine.TotalUnitsOfType(Game.State, agentDef.Type);
+                var deployed = BattleEngine.CountDeployedAgents(Game.State, agentDef.Type);
+                var available = total - deployed;
+                <div class="p-2.5 rounded-[10px] text-center" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
+                    <div class="text-2xl mb-1">@agentDef.Icon</div>
+                    <div class="text-xs font-medium text-amber-100">@agentDef.Name</div>
+                    <div class="font-display text-lg text-emerald-400 mt-0.5">@total</div>
+                    <div class="text-[9px] text-slate-400">
+                        @if (deployed > 0)
+                        {
+                            <span class="text-amber-500">@available free · @deployed deployed</span>
+                        }
+                        else
+                        {
+                            <span>all available</span>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
     @if (recentLosses.Count > 0)
     {
         <div class="mb-4 p-3 rounded-[14px]" style="background: rgba(127,29,29,0.15); border: 1px solid rgba(239,68,68,0.3);">

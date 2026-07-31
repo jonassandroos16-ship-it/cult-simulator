@@ -104,13 +104,30 @@ public static class BattleEngine
         return (true, $"Recruited {count} {def.Name}(s).");
     }
 
-    private static int CountDeployedAgents(GameState state, AgentType type)
+    public static int CountDeployedAgents(GameState state, AgentType type)
     {
         if (state.BattleSystem == null) return 0;
         return state.BattleSystem.Battles
             .SelectMany(b => b.DeployedSquad)
             .Where(d => d.Type == type)
             .Sum(d => d.Count);
+    }
+
+    public static int TotalUnitsOfType(GameState state, AgentType type)
+    {
+        var sw = state.ShadowWarOrInit;
+        return type switch
+        {
+            AgentType.Acolyte => (int)Math.Floor(sw.TotalAgents),
+            AgentType.Zealot => state.Occult.Minions.Count(m => m.Role == PromotedRole.Zealot),
+            AgentType.Infiltrator => state.Occult.Minions.Count(m => m.Role == PromotedRole.Infiltrator),
+            _ => 0
+        };
+    }
+
+    public static int AvailableUnitsOfType(GameState state, AgentType type)
+    {
+        return TotalUnitsOfType(state, type) - CountDeployedAgents(state, type);
     }
 
     public static (bool success, string message) DeployAgents(GameState state, string continentId, AgentType type, int count)
