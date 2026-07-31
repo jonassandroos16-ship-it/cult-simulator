@@ -45,7 +45,7 @@ public static class Cauldron
             case CauldronRecipeId.CrimsonElixir: o.ElixirTapMult = 2.0; break;
             case CauldronRecipeId.VoidTincture: o.ElixirFaithMult = 1.5; break;
             case CauldronRecipeId.MindPhiltre: o.ElixirSuspicionMult = 0.5; break;
-            case CauldronRecipeId.FleshBrew: o.Acolytes += 100; break;
+            case CauldronRecipeId.FleshBrew: o.Initiates += 100; break;
         }
     }
 
