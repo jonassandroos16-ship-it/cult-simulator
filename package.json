@@ -4,6 +4,7 @@
   "private": true,
   "description": "Cult Simulator - Tailwind CSS build",
   "scripts": {
+    "build": "tailwindcss -i ./src/CultSimulator/wwwroot/css/tailwind-input.css -o ./src/CultSimulator/wwwroot/css/tailwind.css --minify",
     "build:css": "tailwindcss -i ./src/CultSimulator/wwwroot/css/tailwind-input.css -o ./src/CultSimulator/wwwroot/css/tailwind.css --minify",
     "watch:css": "tailwindcss -i ./src/CultSimulator/wwwroot/css/tailwind-input.css -o ./src/CultSimulator/wwwroot/css/tailwind.css --watch"
   },
