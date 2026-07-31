@@ -24,10 +24,5 @@ public record MapNodeDef(
     double FaithPerSec, double SuspicionPerSec,
     double Latitude, double Longitude,
     string LocationName,
-    Dictionary<MaterialKind, int>? Materials = null);
-
-public record AgentDef(
-    AgentType Type, string Name, string Icon,
-    int AgentCost, string EffectDescription,
-    double FaithPerSec, double SuspicionPerSec,
-    double ArmyPowerPerSec);
+    Dictionary<MaterialKind, int>? Materials = null,
+    string CovenId = "global");

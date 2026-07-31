@@ -32,18 +32,10 @@ public class MapNodeState
     public double RaidTimer { get; set; }
 }
 
-public class ShadowAgent
-{
-    public AgentType Type { get; set; }
-    public int Count { get; set; }
-}
-
 public class OccultState
 {
     public double LifetimeFaith { get; set; }
     public int SermonPowerLevel { get; set; }
-    public double EldritchFavor { get; set; }
-    public int GrandSacrificeCount { get; set; }
     public int Acolytes { get; set; }
     public List<Minion> Minions { get; set; } = new();
     public List<CovenMember> HighCouncil { get; set; } = new();
@@ -53,8 +45,6 @@ public class OccultState
     public List<MapNodeState> MapNodes { get; set; } = new();
     public double Suspicion { get; set; }
     public double ArmyPower { get; set; }
-    public double Agents { get; set; }
-    public List<ShadowAgent> ShadowAgents { get; set; } = new();
     public Dictionary<MaterialKind, int> Materials { get; set; } = new();
     public double FrenzyTimer { get; set; }
     public double MassHysteriaTimer { get; set; }
@@ -65,7 +55,6 @@ public class OccultState
     public double ElixirFaithMult { get; set; } = 1.0;
     public double ElixirSuspicionMult { get; set; } = 1.0;
     public double ElixirTimer { get; set; }
-    public List<string[]> LeyLines { get; set; } = new();
 
     [JsonIgnore]
     public bool IsFrenzyActive => FrenzyTimer > 0;

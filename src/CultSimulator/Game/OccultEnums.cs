@@ -11,7 +11,7 @@ public enum TechId
     // Branch 2: Mind & Coercion
     WhispersInTheDark,
     InquisitorsBlindfold,
-    LeyLineWeaving,
+    ShadowTactics,
     MassHysteria,
 
     // Branch 3: Void & Astral
@@ -51,12 +51,3 @@ public enum CauldronRecipeId
 }
 
 public enum MaterialKind { GraveDust, DemonBile, AstralMercury }
-
-public enum AgentType
-{
-    Scout,
-    Saboteur,
-    Diplomat,
-    Warmonger,
-    Corrupter
-}
