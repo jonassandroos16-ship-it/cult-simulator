@@ -42,9 +42,22 @@ window.initWorldMap = function(containerId, locations, dotNetHelper, options) {
     }).addTo(worldMap);
 
     locations.forEach(function(loc) {
+        var cls = 'coven-marker';
+        if (loc.takenOver) cls += ' taken-over';
+        if (loc.isNextTarget) cls += ' next-target';
+        if (loc.isActive) cls += ' active-coven';
+        if (loc.locked) cls += ' locked';
+        var badge = loc.isNextTarget ? '<span class="coven-marker-target">🎯</span>' : '';
+        if (loc.locked) badge = '<span class="coven-marker-target">🔒</span>';
+        var html = '<div class="' + cls + '" data-id="' + loc.id + '">' +
+                   '<span class="coven-marker-flag">' + loc.flag + '</span>' +
+                   badge +
+                   '<span class="coven-marker-label">' + loc.name + '</span>' +
+                   '</div>';
+
         const icon = L.divIcon({
             className: 'coven-marker-wrapper',
-            html: buildMarkerHtml(loc),
+            html: html,
             iconSize: [36, 36],
             iconAnchor: [18, 18]
         });
@@ -65,19 +78,6 @@ window.initWorldMap = function(containerId, locations, dotNetHelper, options) {
         if (worldMap) worldMap.invalidateSize();
     }, 200);
 };
-
-function buildMarkerHtml(loc) {
-    var cls = 'coven-marker';
-    if (loc.takenOver) cls += ' taken-over';
-    if (loc.isNextTarget) cls += ' next-target';
-    if (loc.isActive) cls += ' active-coven';
-    var badge = loc.isNextTarget ? '<span class="coven-marker-target">🎯</span>' : '';
-    return '<div class="' + cls + '" data-id="' + loc.id + '">' +
-           '<span class="coven-marker-flag">' + loc.flag + '</span>' +
-           badge +
-           '<span class="coven-marker-label">' + loc.name + '</span>' +
-           '</div>';
-}
 
 function expandMarker(id) {
     covenMarkers.forEach(function(m) {
@@ -108,174 +108,6 @@ window.destroyWorldMap = function() {
     }
 };
 
-// ---- Ley Line map mode ----
-let leyLineLayer = null;
-let leyLineMarkers = [];
-let leyLineConnections = [];
-let leyLineSeals = [];
-
-window.initLeyLineMap = function(containerId, nodes, connections, seals, dotNetHelper, options) {
-    if (worldMap) {
-        worldMap.remove();
-        worldMap = null;
-        covenMarkers = [];
-        expandedMarkerId = null;
-    }
-    leyLineLayer = null;
-    leyLineMarkers = [];
-    leyLineConnections = [];
-    leyLineSeals = [];
-
-    dotNetRef = dotNetHelper || null;
-
-    const container = document.getElementById(containerId);
-    if (!container) return;
-
-    var opts = options || {};
-
-    worldMap = L.map(container, {
-        center: opts.center || [30, 10],
-        zoom: opts.zoom || 2,
-        minZoom: opts.minZoom || 2,
-        maxZoom: 18,
-        zoomControl: true,
-        scrollWheelZoom: true,
-        touchZoom: true,
-        tap: true,
-        worldCopyJump: true,
-        attributionControl: true
-    });
-
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap &copy; CARTO',
-        subdomains: 'abcd',
-        maxZoom: 19
-    }).addTo(worldMap);
-
-    leyLineLayer = L.layerGroup().addTo(worldMap);
-
-    if (connections) {
-        connections.forEach(function(conn) {
-            var nodeA = nodes.find(function(n) { return n.id === conn[0]; });
-            var nodeB = nodes.find(function(n) { return n.id === conn[1]; });
-            if (nodeA && nodeB) {
-                var line = L.polyline([[nodeA.lat, nodeA.lng], [nodeB.lat, nodeB.lng]], {
-                    color: '#a78bfa',
-                    weight: 2,
-                    opacity: 0.6,
-                    className: 'ley-line-connection'
-                }).addTo(leyLineLayer);
-                leyLineConnections.push(line);
-            }
-        });
-    }
-
-    if (seals) {
-        seals.forEach(function(seal) {
-            var points = seal.nodeIds.map(function(id) {
-                var n = nodes.find(function(nn) { return nn.id === id; });
-                return n ? [n.lat, n.lng] : null;
-            }).filter(Boolean);
-            if (points.length === 3) {
-                var polygon = L.polygon(points, {
-                    color: '#fbbf24',
-                    weight: 1,
-                    opacity: 0.5,
-                    fillColor: '#fbbf24',
-                    fillOpacity: 0.08,
-                    className: 'ley-line-seal',
-                    dashArray: '4,4'
-                }).addTo(leyLineLayer);
-                leyLineSeals.push(polygon);
-
-                var lat = (points[0][0] + points[1][0] + points[2][0]) / 3;
-                var lng = (points[0][1] + points[1][1] + points[2][1]) / 3;
-                L.marker([lat, lng], {
-                    icon: L.divIcon({
-                        className: 'ley-line-seal-label',
-                        html: '<div class="seal-label">×' + seal.multiplier.toFixed(2) + '</div>',
-                        iconSize: [60, 24],
-                        iconAnchor: [30, 12]
-                    }),
-                    interactive: false
-                }).addTo(leyLineLayer);
-            }
-        });
-    }
-
-    if (nodes) {
-        nodes.forEach(function(node) {
-            var html = buildLeyLineMarkerHtml(node);
-            var icon = L.divIcon({
-                className: 'ley-line-marker-wrapper',
-                html: html,
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
-
-            var marker = L.marker([node.lat, node.lng], { icon: icon }).addTo(worldMap);
-
-            marker.on('click', function() {
-                expandLeyLineMarker(node.id);
-                if (dotNetRef) {
-                    dotNetRef.invokeMethodAsync('SelectLeyLineNode', node.id);
-                }
-            });
-
-            leyLineMarkers.push({ id: node.id, marker: marker, node: node });
-        });
-    }
-
-    setTimeout(function() {
-        if (worldMap) worldMap.invalidateSize();
-    }, 200);
-};
-
-function buildLeyLineMarkerHtml(node) {
-    var cls = 'ley-line-marker';
-    if (node.conquered) cls += ' conquered';
-    if (node.canConquer) cls += ' available';
-    if (node.veiled) cls += ' veiled';
-    var badge = node.canConquer && !node.conquered ? '<span class="ley-line-marker-target">⚡</span>' : '';
-    return '<div class="' + cls + '" data-id="' + node.id + '">' +
-           '<span class="ley-line-marker-icon">' + node.icon + '</span>' +
-           badge +
-           '<span class="ley-line-marker-label">' + node.name + '</span>' +
-           '</div>';
-}
-
-function expandLeyLineMarker(id) {
-    leyLineMarkers.forEach(function(m) {
-        var el = m.marker.getElement();
-        if (el) {
-            var inner = el.querySelector('.ley-line-marker');
-            if (inner) inner.classList.remove('expanded');
-        }
-    });
-
-    var found = leyLineMarkers.find(function(m) { return m.id === id; });
-    if (found) {
-        var el = found.marker.getElement();
-        if (el) {
-            var inner = el.querySelector('.ley-line-marker');
-            if (inner) inner.classList.add('expanded');
-        }
-    }
-    expandedMarkerId = id;
-}
-
-window.destroyLeyLineMap = function() {
-    if (worldMap) {
-        worldMap.remove();
-        worldMap = null;
-        leyLineLayer = null;
-        leyLineMarkers = [];
-        leyLineConnections = [];
-        leyLineSeals = [];
-        expandedMarkerId = null;
-    }
-};
-
 // ---- Shadow War map mode ----
 let shadowWarLayer = null;
 let shadowWarMarkers = [];
@@ -286,7 +118,6 @@ window.initShadowWarMap = function(containerId, institutions, rivals, dotNetHelp
         worldMap.remove();
         worldMap = null;
         covenMarkers = [];
-        leyLineMarkers = [];
         expandedMarkerId = null;
     }
     shadowWarLayer = null;
@@ -355,7 +186,11 @@ window.initShadowWarMap = function(containerId, institutions, rivals, dotNetHelp
                 iconAnchor: [20, 20]
             });
 
-            var marker = L.marker([rival.lat, rival.lng], { icon: icon }).addTo(worldMap);
+            // Offset rival markers so they don't overlap institution markers
+            var offsetLat = rival.lat + 3;
+            var offsetLng = rival.lng + 5;
+
+            var marker = L.marker([offsetLat, offsetLng], { icon: icon }).addTo(worldMap);
             shadowWarRivalMarkers.push({ id: rival.id, marker: marker, rival: rival });
         });
     }

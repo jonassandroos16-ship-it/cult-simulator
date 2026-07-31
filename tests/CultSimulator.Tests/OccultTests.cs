@@ -173,18 +173,6 @@ public class OccultTests
     }
 
     [Fact]
-    public void LeyLine_RequiresTwoConqueredNodes()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 100000; state.Occult.ArmyPower = 10000;
-        Assert.False(WorldMapSystem.CanConnectLeyLine(state.Occult, "skanor_runestone", "skanor_bog"));
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        Assert.False(WorldMapSystem.CanConnectLeyLine(state.Occult, "skanor_runestone", "skanor_bog"));
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_bog"));
-        Assert.True(WorldMapSystem.CanConnectLeyLine(state.Occult, "skanor_runestone", "skanor_bog"));
-    }
-
-    [Fact]
     public void Cauldron_LockedWithoutTech()
     {
         var o = NewOccult();
