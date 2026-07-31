@@ -14,6 +14,7 @@ public static class SaveLoad
         {
             var state = JsonSerializer.Deserialize<GameState>(json, JsonOptions);
             if (state == null) return GameEngine.InitialState();
+            if (!IsValid(state)) return GameEngine.InitialState();
             Migrate(state);
             return state;
         }
@@ -23,29 +24,46 @@ public static class SaveLoad
         }
     }
 
-    public static (GameState state, bool loaded) LoadGameWithBackup(string? primary, string? backup)
+    /// <summary>
+    /// Tries each save slot (primary, backup, backup2) and returns the first
+    /// that deserializes and validates. Returns a fresh initial state only if
+    /// all three are missing or corrupt.
+    /// </summary>
+    public static (GameState state, bool loaded) LoadGameWithBackup(string? primary, string? backup, string? backup2)
     {
-        if (!string.IsNullOrWhiteSpace(primary))
+        foreach (var (json, slot) in new[] { (primary, "primary"), (backup, "backup"), (backup2, "backup2") })
         {
+            if (string.IsNullOrWhiteSpace(json)) continue;
             try
             {
-                var s = JsonSerializer.Deserialize<GameState>(primary, JsonOptions);
-                if (s != null) { Migrate(s); return (s, true); }
-            }
-            catch { }
-        }
-
-        if (!string.IsNullOrWhiteSpace(backup))
-        {
-            try
-            {
-                var s = JsonSerializer.Deserialize<GameState>(backup, JsonOptions);
-                if (s != null) { Migrate(s); return (s, true); }
+                var s = JsonSerializer.Deserialize<GameState>(json, JsonOptions);
+                if (s != null && IsValid(s)) { Migrate(s); return (s, true); }
             }
             catch { }
         }
 
         return (GameEngine.InitialState(), false);
+    }
+
+    /// <summary>
+    /// Lightweight structural validation to reject truncated or corrupted saves.
+    /// </summary>
+    public static bool IsValid(GameState state)
+    {
+        if (state.Covens == null) return false;
+        if (state.Covens.Count == 0) return false;
+        if (string.IsNullOrEmpty(state.ActiveCovenId)) return false;
+        var active = state.Covens.FirstOrDefault(c => c.Id == state.ActiveCovenId);
+        if (active == null) return false;
+        if (active.Occult == null) return false;
+        foreach (var c in state.Covens)
+        {
+            if (string.IsNullOrEmpty(c.Id)) return false;
+            if (c.Buildings == null) return false;
+            if (c.Upgrades == null) return false;
+            if (c.Occult == null) return false;
+        }
+        return true;
     }
 
     private static void Migrate(GameState state)
