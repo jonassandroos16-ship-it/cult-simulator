@@ -1,39 +1,27 @@
-// World map management using Leaflet.js
-// Handles map initialization, coven markers, and mobile pinch-zoom
+// ─── World Map (Coven Takeover) ───
 
-let worldMap = null;
-let covenMarkers = [];
-let expandedMarkerId = null;
-let dotNetRef = null;
+var worldMap = null;
+var worldMapLayer = null;
+var worldMapMarkers = [];
+var expandedMarkerId = null;
+var shadowWarLayer = null;
+var shadowWarMarkers = [];
+var shadowWarRivalMarkers = [];
 
-window.initWorldMap = function(containerId, locations, dotNetHelper, options) {
-    if (worldMap) {
-        worldMap.remove();
-        worldMap = null;
-        covenMarkers = [];
-        expandedMarkerId = null;
-    }
-
-    dotNetRef = dotNetHelper || null;
-
-    const container = document.getElementById(containerId);
-    if (!container) return;
+window.initWorldMap = function(containerId, locations, dotNetRef, options) {
+    if (worldMap) worldMap.remove();
 
     var opts = options || {};
-    var initialZoom = opts.zoom || 2;
+    var zoom = opts.zoom || 3;
+    var minZoom = opts.minZoom || 2;
+    var center = opts.center || [20, 10];
 
-    worldMap = L.map(container, {
-        center: opts.center || [30, 0],
-        zoom: initialZoom,
-        minZoom: opts.minZoom || 2,
-        maxZoom: 18,
+    worldMap = L.map(containerId, {
         zoomControl: true,
-        scrollWheelZoom: true,
-        touchZoom: true,
-        tap: true,
-        worldCopyJump: true,
-        attributionControl: true
-    });
+        minZoom: minZoom,
+        maxBounds: [[-85, -180], [85, 180]],
+        worldCopyJump: true
+    }).setView(center, zoom);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO',
@@ -41,37 +29,28 @@ window.initWorldMap = function(containerId, locations, dotNetHelper, options) {
         maxZoom: 19
     }).addTo(worldMap);
 
+    worldMapLayer = L.layerGroup().addTo(worldMap);
+    worldMapMarkers = [];
+
     locations.forEach(function(loc) {
-        var cls = 'coven-marker';
-        if (loc.takenOver) cls += ' taken-over';
-        if (loc.isNextTarget) cls += ' next-target';
-        if (loc.isActive) cls += ' active-coven';
-        if (loc.locked) cls += ' locked';
-        var badge = loc.isNextTarget ? '<span class="coven-marker-target">🎯</span>' : '';
-        if (loc.locked) badge = '<span class="coven-marker-target">🔒</span>';
-        var html = '<div class="' + cls + '" data-id="' + loc.id + '">' +
-                   '<span class="coven-marker-flag">' + loc.flag + '</span>' +
-                   badge +
-                   '<span class="coven-marker-label">' + loc.name + '</span>' +
-                   '</div>';
-
-        const icon = L.divIcon({
-            className: 'coven-marker-wrapper',
+        if (!loc.lat || !loc.lng) return;
+        var html = buildMarkerHtml(loc);
+        var icon = L.divIcon({
             html: html,
-            iconSize: [36, 36],
-            iconAnchor: [18, 18]
+            className: 'coven-marker-wrapper',
+            iconSize: [44, 44],
+            iconAnchor: [22, 22]
         });
-
-        const marker = L.marker([loc.lat, loc.lng], { icon: icon }).addTo(worldMap);
+        var marker = L.marker([loc.lat, loc.lng], { icon: icon }).addTo(worldMapLayer);
 
         marker.on('click', function() {
-            expandMarker(loc.id);
             if (dotNetRef) {
                 dotNetRef.invokeMethodAsync('SelectCoven', loc.id);
             }
+            expandMarker(loc.id);
         });
 
-        covenMarkers.push({ id: loc.id, marker: marker, loc: loc });
+        worldMapMarkers.push({ id: loc.id, marker: marker, loc: loc });
     });
 
     setTimeout(function() {
@@ -79,20 +58,32 @@ window.initWorldMap = function(containerId, locations, dotNetHelper, options) {
     }, 200);
 };
 
+function buildMarkerHtml(loc) {
+    var cls = 'coven-marker';
+    if (loc.takenOver) cls += ' taken-over';
+    if (loc.isNextTarget) cls += ' next-target';
+    if (loc.isActive) cls += ' active-coven';
+    if (loc.locked) cls += ' locked';
+    return '<div class="' + cls + '" data-id="' + loc.id + '">' +
+           '<span class="coven-marker-flag">' + (loc.flag || '📍') + '</span>' +
+           '<span class="coven-marker-label">' + loc.name + '</span>' +
+           '</div>';
+}
+
 function expandMarker(id) {
-    covenMarkers.forEach(function(m) {
-        const el = m.marker.getElement();
+    worldMapMarkers.forEach(function(m) {
+        var el = m.marker.getElement();
         if (el) {
-            const inner = el.querySelector('.coven-marker');
+            var inner = el.querySelector('.coven-marker');
             if (inner) inner.classList.remove('expanded');
         }
     });
 
-    const found = covenMarkers.find(function(m) { return m.id === id; });
+    var found = worldMapMarkers.find(function(m) { return m.id === id; });
     if (found) {
-        const el = found.marker.getElement();
+        var el = found.marker.getElement();
         if (el) {
-            const inner = el.querySelector('.coven-marker');
+            var inner = el.querySelector('.coven-marker');
             if (inner) inner.classList.add('expanded');
         }
     }
@@ -103,46 +94,28 @@ window.destroyWorldMap = function() {
     if (worldMap) {
         worldMap.remove();
         worldMap = null;
-        covenMarkers = [];
+        worldMapLayer = null;
+        worldMapMarkers = [];
         expandedMarkerId = null;
     }
 };
 
-// ---- Shadow War map mode ----
-let shadowWarLayer = null;
-let shadowWarMarkers = [];
-let shadowWarRivalMarkers = [];
+// ─── Shadow War Map (Institutions + Rivals) ───
 
-window.initShadowWarMap = function(containerId, institutions, rivals, dotNetHelper, options) {
-    if (worldMap) {
-        worldMap.remove();
-        worldMap = null;
-        covenMarkers = [];
-        expandedMarkerId = null;
-    }
-    shadowWarLayer = null;
-    shadowWarMarkers = [];
-    shadowWarRivalMarkers = [];
-
-    dotNetRef = dotNetHelper || null;
-
-    const container = document.getElementById(containerId);
-    if (!container) return;
+window.initShadowWarMap = function(containerId, institutions, rivals, dotNetRef, options) {
+    if (worldMap) worldMap.remove();
 
     var opts = options || {};
+    var zoom = opts.zoom || 2;
+    var minZoom = opts.minZoom || 2;
+    var center = opts.center || [30, 10];
 
-    worldMap = L.map(container, {
-        center: opts.center || [30, 10],
-        zoom: opts.zoom || 2,
-        minZoom: opts.minZoom || 2,
-        maxZoom: 18,
+    worldMap = L.map(containerId, {
         zoomControl: true,
-        scrollWheelZoom: true,
-        touchZoom: true,
-        tap: true,
-        worldCopyJump: true,
-        attributionControl: true
-    });
+        minZoom: minZoom,
+        maxBounds: [[-85, -180], [85, 180]],
+        worldCopyJump: true
+    }).setView(center, zoom);
 
     L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO',
@@ -151,24 +124,26 @@ window.initShadowWarMap = function(containerId, institutions, rivals, dotNetHelp
     }).addTo(worldMap);
 
     shadowWarLayer = L.layerGroup().addTo(worldMap);
+    shadowWarMarkers = [];
+    shadowWarRivalMarkers = [];
 
     if (institutions) {
         institutions.forEach(function(inst) {
+            if (!inst.lat || !inst.lng) return;
             var html = buildShadowWarMarkerHtml(inst);
             var icon = L.divIcon({
-                className: 'shadow-war-marker-wrapper',
                 html: html,
-                iconSize: [44, 44],
-                iconAnchor: [22, 22]
+                className: 'shadow-war-marker-wrapper',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
             });
-
-            var marker = L.marker([inst.lat, inst.lng], { icon: icon }).addTo(worldMap);
+            var marker = L.marker([inst.lat, inst.lng], { icon: icon }).addTo(shadowWarLayer);
 
             marker.on('click', function() {
-                expandShadowWarMarker(inst.id);
                 if (dotNetRef) {
                     dotNetRef.invokeMethodAsync('SelectInstitution', inst.id);
                 }
+                expandShadowWarMarker(inst.id);
             });
 
             shadowWarMarkers.push({ id: inst.id, marker: marker, inst: inst });
@@ -180,8 +155,8 @@ window.initShadowWarMap = function(containerId, institutions, rivals, dotNetHelp
             if (!rival.lat || !rival.lng) return;
             var html = buildRivalMarkerHtml(rival);
             var icon = L.divIcon({
-                className: 'rival-marker-wrapper',
                 html: html,
+                className: 'rival-marker-wrapper',
                 iconSize: [40, 40],
                 iconAnchor: [20, 20]
             });
@@ -191,6 +166,13 @@ window.initShadowWarMap = function(containerId, institutions, rivals, dotNetHelp
             var offsetLng = rival.lng + 5;
 
             var marker = L.marker([offsetLat, offsetLng], { icon: icon }).addTo(worldMap);
+
+            marker.on('click', function() {
+                if (dotNetRef) {
+                    dotNetRef.invokeMethodAsync('SelectRival', rival.id);
+                }
+            });
+
             shadowWarRivalMarkers.push({ id: rival.id, marker: marker, rival: rival });
         });
     }
