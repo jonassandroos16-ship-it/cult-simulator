@@ -2,37 +2,39 @@
 @inject GameService Game
 @implements IDisposable
 
-<div class="panel upgrades-panel glass-panel rounded-[20px] p-5">
-    <h2 class="panel-title">Sacred Rites</h2>
-    <p class="text-xs text-slate-400 mb-3 leading-relaxed">Permanent upgrades that enhance your cult. New rites unlock as your follower count grows. Some rites cost both Faith and Gold.</p>
-    <div class="upgrade-list flex flex-col gap-2.5">
-        @foreach (var def in GameData.Upgrades.Where(u => !GameData.BankUpgrades.Contains(u.Id)))
-        {
-            var owned = activeCoven.HasUpgrade(def.Id);
-            var unlocked = GameEngine.UpgradeUnlocked(activeCoven, def);
-            var affordable = GameEngine.CanAfford(activeCoven, def.FaithCost, def.GoldCost);
-            <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] transition-all duration-200 @(owned ? "border-emerald-400/20 bg-emerald-400/5" : "") @(!unlocked ? "opacity-40" : "")"
-                 style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                <div class="upgrade-icon text-3xl flex-shrink-0">@def.Icon</div>
-                <div class="upgrade-info flex-1 flex flex-col gap-0.5">
-                    <span class="upgrade-name font-display text-base text-amber-100 font-medium">@def.Name</span>
-                    <span class="upgrade-effect text-xs text-violet-300">@def.EffectDescription</span>
-                    @if (!unlocked) { <span class="upgrade-lock text-[0.7rem] text-slate-400">Unlocks at @def.UnlockFollowers followers</span> }
+<div class="upgrades-panel flex flex-col gap-4">
+    <div class="panel glass-panel rounded-[20px] p-5">
+        <h2 class="panel-title">Upgrades</h2>
+        <div class="upgrade-list flex flex-col gap-2.5">
+            @foreach (var def in GameData.Upgrades.Where(u => !GameData.BankUpgrades.Contains(u.Id)))
+            {
+                var owned = activeCoven.HasUpgrade(def.Id);
+                var unlocked = GameEngine.UpgradeUnlocked(activeCoven, def);
+                var affordable = GameEngine.CanBuyUpgrade(activeCoven, def);
+                <div class="upgrade-item flex items-center gap-3.5 p-3.5 rounded-[14px] transition-all duration-200 @(owned ? "border-emerald-400/20 bg-emerald-400/5" : "") @(!unlocked ? "opacity-40" : "")"
+                     style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                    <div class="upgrade-icon text-3xl flex-shrink-0">@def.Icon</div>
+                    <div class="upgrade-info flex-1 flex flex-col gap-0.5">
+                        <span class="upgrade-name font-display text-base text-amber-100 font-medium">@def.Name</span>
+                        <span class="upgrade-effect text-xs text-violet-300">@def.EffectDescription</span>
+                        @if (!unlocked) { <span class="upgrade-lock text-[0.7rem] text-slate-400">Unlocks at @def.UnlockFollowers followers</span> }
+                    </div>
+                    <div class="upgrade-action flex-shrink-0">
+                        @if (owned) { <span class="learned-badge text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-emerald-400 px-3 py-1.5 border border-emerald-400/30 rounded-full">Learned</span> }
+                        else if (!unlocked) { <span class="locked-badge text-xl">🔒</span> }
+                        else {
+                            <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
+                                    style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
+                                    disabled="@(!affordable)" @onclick="() => Game.BuyUpgrade(def.Id)">
+                                <span>@NumberFormat.Fmt(def.FaithCost) ✨</span>
+                                @if (def.GoldCost > 0) { <span> @NumberFormat.Fmt(def.GoldCost) 💰</span> }
+                                @if (def.AgentCost > 0) { <span> @def.AgentCost 🗂️</span> }
+                            </button>
+                        }
+                    </div>
                 </div>
-                <div class="upgrade-action flex-shrink-0">
-                    @if (owned) { <span class="learned-badge text-[0.7rem] font-semibold tracking-[0.15em] uppercase text-emerald-400 px-3 py-1.5 border border-emerald-400/30 rounded-full">Learned</span> }
-                    else if (!unlocked) { <span class="locked-badge text-xl">🔒</span> }
-                    else {
-                        <button class="upgrade-buy flex items-center gap-1.5 px-3.5 py-2 rounded-full font-body font-semibold text-xs cursor-pointer transition-transform duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
-                                style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
-                                disabled="@(!affordable)" @onclick="() => Game.BuyUpgrade(def.Id)">
-                            <span>@NumberFormat.Fmt(def.FaithCost) ✨</span>
-                            @if (def.GoldCost > 0) { <span> @NumberFormat.Fmt(def.GoldCost) 💰</span> }
-                        </button>
-                    }
-                </div>
-            </div>
-        }
+            }
+        </div>
     </div>
 </div>
 
@@ -40,8 +42,6 @@
     private CovenState activeCoven => Game.State.ActiveCoven;
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
-
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
-
     public void Dispose() => Game.OnChange -= StateChanged;
 }
