@@ -29,7 +29,11 @@ window.setupAutoSave = function (dotNetRef) {
 
   // pagehide is the reliable cross-browser event for page close / tab close.
   // We use it to write the cached save synchronously.
-  window.addEventListener("pagehide", writeCachedSave, { once: true });
+  window.addEventListener("pagehide", () => {
+    writeCachedSave();
+    // Also trigger a cloud save via .NET if the runtime is still alive.
+    try { dotNetRef.invokeMethodAsync("SaveOnExit"); } catch (e) {}
+  }, { once: true });
 
   // visibilitychange fires when the tab is hidden (mobile background, tab switch).
   // Write synchronously here too, since mobile browsers may kill the page

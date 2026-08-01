@@ -8,12 +8,15 @@ public class GameService
     private readonly IJSRuntime _js;
     private readonly WorldLocationService _locations;
     private readonly ConversionDataService _conversions;
+    private readonly CloudSaveService _cloud;
     private GameState _state;
     private Timer? _tickTimer, _eventTimer, _occultTimer, _periodicSaveTimer, _localCultTimer;
     private bool _eventPending;
     private DateTime _lastOccultTick;
     private DateTime _lastSave = DateTime.UtcNow;
+    private DateTime _lastCloudSave = DateTime.UtcNow;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private string? _saveId;
 
     public GameState State => _state;
     public WorldLocationService Locations => _locations;
@@ -47,31 +50,55 @@ public class GameService
     public LocalCultDef? SpawnedLocalCultDef =>
         SpawnedLocalCultId == null ? null : LocalCultData.Find(SpawnedLocalCultId);
 
-    public GameService(IJSRuntime js, WorldLocationService locations, ConversionDataService conversions)
+    public GameService(IJSRuntime js, WorldLocationService locations, ConversionDataService conversions, CloudSaveService cloud)
     {
         _js = js;
         _locations = locations;
         _conversions = conversions;
+        _cloud = cloud;
         _state = GameEngine.InitialState();
     }
 
     public async Task InitAsync()
     {
         await _locations.LoadAsync();
+        _saveId = await _cloud.GetOrCreateSaveIdAsync(_js);
+        bool loadedFromCloud = false;
         try
         {
             var primary = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
             var backup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
             var backup2 = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey2);
             var (loaded, success) = SaveLoad.LoadGameWithBackup(primary, backup, backup2);
-            _state = loaded;
-            LoadSucceeded = success;
+            if (success)
+            {
+                _state = loaded;
+                LoadSucceeded = true;
+            }
+            else if (_saveId != null)
+            {
+                var cloudJson = await _cloud.LoadFromCloudAsync(_saveId);
+                if (!string.IsNullOrWhiteSpace(cloudJson))
+                {
+                    var (cloudLoaded, cloudOk) = SaveLoad.LoadGameWithBackup(cloudJson, null, null);
+                    if (cloudOk)
+                    {
+                        _state = cloudLoaded;
+                        LoadSucceeded = true;
+                        loadedFromCloud = true;
+                    }
+                    else { _state = loaded; LoadSucceeded = false; }
+                }
+                else { _state = loaded; LoadSucceeded = false; }
+            }
+            else { _state = loaded; LoadSucceeded = false; }
         }
         catch { _state = GameEngine.InitialState(); LoadSucceeded = false; }
         _locations.SyncFootholds(_state);
         EnsureHomeCoven();
         ApplyOfflineIncome();
         RestorePendingFoothold();
+        if (loadedFromCloud) await SaveAsync();
         if (LoadSucceeded) NotifyChanged();
     }
 
@@ -603,6 +630,16 @@ public class GameService
                 await _js.InvokeVoidAsync("eval", $"window.__cultSaveJson={JsonSerializer.Serialize(json)};");
             }
             catch { }
+
+            if (_saveId != null)
+            {
+                var now = DateTime.UtcNow;
+                if (now - _lastCloudSave >= TimeSpan.FromSeconds(10))
+                {
+                    _lastCloudSave = now;
+                    _ = _cloud.SaveToCloudAsync(_saveId, json);
+                }
+            }
         }
         finally
         {

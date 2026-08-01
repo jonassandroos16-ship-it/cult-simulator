@@ -21,6 +21,17 @@ public static class SaveLoad
         return (GameEngine.InitialState(), false);
     }
 
+    public static bool IsValidSave(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return false;
+        try
+        {
+            var state = JsonSerializer.Deserialize<GameState>(json, Options);
+            return state != null && !string.IsNullOrWhiteSpace(state.CultName);
+        }
+        catch { return false; }
+    }
+
     private static bool TryLoad(string? json, out GameState state)
     {
         state = GameEngine.InitialState();
