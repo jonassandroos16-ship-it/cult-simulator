@@ -179,6 +179,6 @@
     private static string RoleIcon(PromotedRole role) => role switch { PromotedRole.Zealot => "⚔️", PromotedRole.Scholar => "📖", PromotedRole.Infiltrator => "🕵️", _ => "🔮" };
     private static string RoleName(PromotedRole role) => role switch { PromotedRole.Zealot => "Zealot", PromotedRole.Scholar => "Scholar", PromotedRole.Infiltrator => "Infiltrator", _ => "Unknown" };
     private static string CouncilRoleName(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Inquisitor", CouncilRole.Archon => "Archon", CouncilRole.HighPriest => "High Priest", _ => "Unknown" };
-    private static string CouncilRoleBenefit(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Reduces suspicion generation", CouncilRole.Archon => "Boosts army power generation", CouncilRole.HighPriest => "Boosts all faith generation", _ => "" };
+    private static string CouncilRoleBenefit(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Reduces suspicion generation", CouncilRole.Archon => "Boosts agent production rate", CouncilRole.HighPriest => "Boosts all faith generation", _ => "" };
     public void Dispose() => Game.OnChange -= StateChanged;
 }
