@@ -1,24 +1,26 @@
-const CACHE_NAME = "cultsim-v1";
+const CACHE_NAME = "cultsim-v2";
+const BASE = "/cult-simulator/";
 const ASSETS = [
-  "/",
-  "/index.html",
-  "/icon.svg",
-  "/manifest.json",
-  "/css/base.css",
-  "/css/loading.css",
-  "/css/naming.css",
-  "/css/layout.css",
-  "/css/altar.css",
-  "/css/panels.css",
-  "/css/events.css",
-  "/css/tabs.css",
-  "/css/worldmap.css",
-  "/css/rankup.css",
-  "/css/shadowwar.css",
-  "/css/themes.css",
-  "/css/tailwind.css",
-  "/js/worldmap.js",
-  "/js/autosave.js",
+  BASE,
+  BASE + "index.html",
+  BASE + "icon.svg",
+  BASE + "manifest.json",
+  BASE + "css/base.css",
+  BASE + "css/loading.css",
+  BASE + "css/naming.css",
+  BASE + "css/layout.css",
+  BASE + "css/altar.css",
+  BASE + "css/panels.css",
+  BASE + "css/events.css",
+  BASE + "css/tabs.css",
+  BASE + "css/worldmap.css",
+  BASE + "css/rankup.css",
+  BASE + "css/shadowwar.css",
+  BASE + "css/themes.css",
+  BASE + "css/tailwind.css",
+  BASE + "js/worldmap.js",
+  BASE + "js/autosave.js",
+  BASE + "js/supabase-auth.js",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css",
   "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js",
   "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
@@ -60,7 +62,7 @@ self.addEventListener("fetch", (e) => {
           caches.open(CACHE_NAME).then((c) => c.put(req, copy)).catch(() => {});
           return resp;
         })
-        .catch(() => caches.match(req).then((r) => r || caches.match("/")))
+        .catch(() => caches.match(req).then((r) => r || caches.match(BASE)))
     );
     return;
   }

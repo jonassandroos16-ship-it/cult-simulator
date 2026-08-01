@@ -1,8 +1,9 @@
 {
   "name": "Cult Simulator",
-  "short_name": "CultSim",
+  "short_name": "Cult Simulator",
   "description": "Build your cult, convert covens, and ascend to eldritch power.",
-  "start_url": "/",
+  "start_url": "/cult-simulator/",
+  "scope": "/cult-simulator/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#050308",
