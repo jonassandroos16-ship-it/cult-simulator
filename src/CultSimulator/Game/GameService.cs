@@ -16,7 +16,7 @@ public class GameService
     private DateTime _lastSave = DateTime.UtcNow;
     private DateTime _lastCloudSave = DateTime.UtcNow;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
-    private string? _saveId;
+    public CloudSaveService Cloud => _cloud;
 
     public GameState State => _state;
     public WorldLocationService Locations => _locations;
@@ -62,7 +62,7 @@ public class GameService
     public async Task InitAsync()
     {
         await _locations.LoadAsync();
-        _saveId = await _cloud.GetOrCreateSaveIdAsync(_js);
+        await _cloud.InitAsync();
         bool loadedFromCloud = false;
         try
         {
@@ -75,9 +75,9 @@ public class GameService
                 _state = loaded;
                 LoadSucceeded = true;
             }
-            else if (_saveId != null)
+            else if (_cloud.HasToken)
             {
-                var cloudJson = await _cloud.LoadFromCloudAsync(_saveId);
+                var cloudJson = await _cloud.LoadFromCloudAsync();
                 if (!string.IsNullOrWhiteSpace(cloudJson))
                 {
                     var (cloudLoaded, cloudOk) = SaveLoad.LoadGameWithBackup(cloudJson, null, null);
@@ -631,13 +631,13 @@ public class GameService
             }
             catch { }
 
-            if (_saveId != null)
+            if (_cloud.HasToken)
             {
                 var now = DateTime.UtcNow;
                 if (now - _lastCloudSave >= TimeSpan.FromSeconds(10))
                 {
                     _lastCloudSave = now;
-                    _ = _cloud.SaveToCloudAsync(_saveId, json);
+                    _ = _cloud.SaveToCloudAsync(json);
                 }
             }
         }

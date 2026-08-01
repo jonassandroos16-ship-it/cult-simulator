@@ -22,7 +22,7 @@ else if (Game.NeedsStory)
 else
 {
     <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6 @themeClass">
-        <ResourceBar />
+        <ResourceBar OnOpenCloudSettings="OpenCloudSettings" />
         <div class="bookmark-tabs">
             <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick='() => SwitchTab("preach")'><span class="bookmark-tab-icon">🕯️</span><span class="bookmark-tab-label">Preach</span></button>
             <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick='() => SwitchTab("map")'><span class="bookmark-tab-icon">🗺️</span><span class="bookmark-tab-label">Map</span></button>
@@ -57,14 +57,17 @@ else
         else if (activeTab == "battle") { <BattlePanel OnViewMap="SwitchToBattleMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
         else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
     </div>
-    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><OfflineReportPopup /><RankUpModal /><VictoryScreen /><ContinentStoryScreen />
+    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><OfflineReportPopup /><RankUpModal /><VictoryScreen /><ContinentStoryScreen /><CloudSaveSettingsModal show="@showCloudSettings" OnClose="CloseCloudSettings" />
 }
 
 @code {
     private bool initialized = false;
     private string activeTab = "preach";
     private string mapInitialMode = "world";
+    private bool showCloudSettings = false;
     private string themeClass => ComputeThemeClass();
+    private void OpenCloudSettings() => showCloudSettings = true;
+    private void CloseCloudSettings() => showCloudSettings = false;
 
     private string ComputeThemeClass()
     {

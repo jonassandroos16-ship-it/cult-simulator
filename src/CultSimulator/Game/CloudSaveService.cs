@@ -1,5 +1,6 @@
 using System.Net.Http;
-using System.Net.Http.Json;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.JSInterop;
@@ -9,12 +10,14 @@ namespace CultSimulator.Game;
 public class CloudSaveService
 {
     private readonly HttpClient _http;
-    private readonly string _supabaseUrl;
-    private readonly string _supabaseKey;
-    private string? _saveId;
+    private readonly IJSRuntime _js;
+    private string? _gistId;
+    private string? _token;
 
-    private const string SaveIdKey = "cult_simulator_save_id";
-    private const string SavesTable = "saves";
+    private const string GistIdKey = "cult_simulator_gist_id";
+    private const string TokenKey = "cult_simulator_github_token";
+    private const string GistFilename = "cult-simulator-save.json";
+    private const string GistDescription = "Cult Simulator Cloud Save";
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -22,79 +25,140 @@ public class CloudSaveService
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public CloudSaveService(HttpClient http)
+    public CloudSaveService(HttpClient http, IJSRuntime js)
     {
         _http = http;
-        _supabaseUrl = Environment.GetEnvironmentVariable("VITE_SUPABASE_URL")
-            ?? "https://0ec90b57d6e95fcbda19832f.supabase.co";
-        _supabaseKey = Environment.GetEnvironmentVariable("VITE_SUPABASE_ANON_KEY")
-            ?? "";
+        _js = js;
     }
 
-    public async Task<string> GetOrCreateSaveIdAsync(IJSRuntime js)
+    public bool HasToken => !string.IsNullOrWhiteSpace(_token);
+
+    public async Task InitAsync()
     {
-        if (_saveId != null) return _saveId;
         try
         {
-            _saveId = await js.InvokeAsync<string>("localStorage.getItem", SaveIdKey);
-            if (string.IsNullOrWhiteSpace(_saveId))
-            {
-                _saveId = Guid.NewGuid().ToString("N");
-                await js.InvokeVoidAsync("localStorage.setItem", SaveIdKey, _saveId);
-            }
-        }
-        catch
-        {
-            _saveId = Guid.NewGuid().ToString("N");
-        }
-        return _saveId;
-    }
-
-    public async Task SaveToCloudAsync(string saveId, string json)
-    {
-        if (string.IsNullOrWhiteSpace(_supabaseKey)) return;
-        try
-        {
-            var url = $"{_supabaseUrl}/rest/v1/{SavesTable}?id=eq.{Uri.EscapeDataString(saveId)}";
-            var payload = JsonSerializer.Serialize(new
-            {
-                id = saveId,
-                data = json,
-                updated_at = DateTimeOffset.UtcNow
-            }, JsonOpts);
-            var content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-
-            var req = new HttpRequestMessage(HttpMethod.Post, url)
-            {
-                Content = content
-            };
-            req.Headers.Add("apikey", _supabaseKey);
-            req.Headers.Add("Authorization", $"Bearer {_supabaseKey}");
-            req.Headers.Add("Prefer", "resolution=merge-duplicates,return=minimal");
-
-            var resp = await _http.SendAsync(req);
+            _token = await _js.InvokeAsync<string>("localStorage.getItem", TokenKey);
+            _gistId = await _js.InvokeAsync<string>("localStorage.getItem", GistIdKey);
         }
         catch { }
     }
 
-    public async Task<string?> LoadFromCloudAsync(string saveId)
+    public async Task SetTokenAsync(string token)
     {
-        if (string.IsNullOrWhiteSpace(_supabaseKey)) return null;
+        _token = string.IsNullOrWhiteSpace(token) ? null : token.Trim();
         try
         {
-            var url = $"{_supabaseUrl}/rest/v1/{SavesTable}?select=data&id=eq.{Uri.EscapeDataString(saveId)}&limit=1&order=updated_at.desc";
-            var req = new HttpRequestMessage(HttpMethod.Get, url);
-            req.Headers.Add("apikey", _supabaseKey);
-            req.Headers.Add("Authorization", $"Bearer {_supabaseKey}");
+            if (_token != null)
+                await _js.InvokeVoidAsync("localStorage.setItem", TokenKey, _token);
+            else
+                await _js.InvokeVoidAsync("localStorage.removeItem", TokenKey);
+        }
+        catch { }
+    }
+
+    public async Task<bool> ValidateTokenAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_token)) return false;
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
+            req.Headers.Add("Authorization", $"token {_token}");
+            req.Headers.Add("Accept", "application/vnd.github+json");
+            req.Headers.Add("User-Agent", "CultSimulator");
+            var resp = await _http.SendAsync(req);
+            return resp.IsSuccessStatusCode;
+        }
+        catch { return false; }
+    }
+
+    public async Task SaveToCloudAsync(string json)
+    {
+        if (string.IsNullOrWhiteSpace(_token)) return;
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_gistId))
+            {
+                await CreateGistAndSaveAsync(json);
+            }
+            else
+            {
+                await UpdateGistAsync(json);
+            }
+        }
+        catch { }
+    }
+
+    private async Task CreateGistAndSaveAsync(string json)
+    {
+        var payload = new
+        {
+            description = GistDescription,
+            @public = false,
+            files = new Dictionary<string, object>
+            {
+                [GistFilename] = new { content = json }
+            }
+        };
+        var req = new HttpRequestMessage(HttpMethod.Post, "https://api.github.com/gists")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload, JsonOpts), Encoding.UTF8, "application/json")
+        };
+        req.Headers.Add("Authorization", $"token {_token}");
+        req.Headers.Add("Accept", "application/vnd.github+json");
+        req.Headers.Add("User-Agent", "CultSimulator");
+
+        var resp = await _http.SendAsync(req);
+        if (!resp.IsSuccessStatusCode) return;
+
+        var body = await resp.Content.ReadAsStringAsync();
+        using var doc = JsonDocument.Parse(body);
+        _gistId = doc.RootElement.GetProperty("id").GetString();
+        if (_gistId != null)
+        {
+            try { await _js.InvokeVoidAsync("localStorage.setItem", GistIdKey, _gistId); } catch { }
+        }
+    }
+
+    private async Task UpdateGistAsync(string json)
+    {
+        var payload = new
+        {
+            files = new Dictionary<string, object>
+            {
+                [GistFilename] = new { content = json }
+            }
+        };
+        var req = new HttpRequestMessage(HttpMethod.Patch, $"https://api.github.com/gists/{_gistId}")
+        {
+            Content = new StringContent(JsonSerializer.Serialize(payload, JsonOpts), Encoding.UTF8, "application/json")
+        };
+        req.Headers.Add("Authorization", $"token {_token}");
+        req.Headers.Add("Accept", "application/vnd.github+json");
+        req.Headers.Add("User-Agent", "CultSimulator");
+
+        await _http.SendAsync(req);
+    }
+
+    public async Task<string?> LoadFromCloudAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_token) || string.IsNullOrWhiteSpace(_gistId)) return null;
+        try
+        {
+            var req = new HttpRequestMessage(HttpMethod.Get, $"https://api.github.com/gists/{_gistId}");
+            req.Headers.Add("Authorization", $"token {_token}");
+            req.Headers.Add("Accept", "application/vnd.github+json");
+            req.Headers.Add("User-Agent", "CultSimulator");
 
             var resp = await _http.SendAsync(req);
             if (!resp.IsSuccessStatusCode) return null;
 
-            var json = await resp.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            if (doc.RootElement.GetArrayLength() == 0) return null;
-            var data = doc.RootElement[0].GetProperty("data").GetString();
-            return data;
+            var body = await resp.Content.ReadAsStringAsync();
+            using var doc = JsonDocument.Parse(body);
+            if (!doc.RootElement.TryGetProperty("files", out var files) || !files.TryGetProperty(GistFilename, out var file))
+                return null;
+            if (file.TryGetProperty("content", out var content))
+                return content.GetString();
+            return null;
         }
         catch { return null; }
     }

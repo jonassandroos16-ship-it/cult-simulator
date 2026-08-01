@@ -1,0 +1,88 @@
+@using CultSimulator.Game
+@inject GameService Game
+@inject IJSRuntime JS
+
+@if (show)
+{
+    <div class="modal-overlay" @onclick="Close">
+        <div class="modal-card glass-panel rounded-2xl p-6 max-w-md w-full mx-4" @onclick:stopPropagation="true">
+            <h2 class="font-display text-xl font-semibold text-amber-100 mb-2 tracking-wide">Cloud Save Settings</h2>
+            <p class="text-sm text-violet-300/80 mb-4 leading-relaxed">
+                Connect a GitHub Personal Access Token to back up your save to a private GitHub Gist.
+                Your save will survive browser data clearing and can be shared across devices.
+            </p>
+
+            @if (tokenValid == true)
+            {
+                <div class="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
+                    Token verified. Cloud saves are active.
+                </div>
+            }
+            else if (tokenValid == false)
+            {
+                <div class="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+                    Token validation failed. Check your token and try again.
+                </div>
+            }
+
+            <label class="block text-xs uppercase tracking-[0.15em] text-violet-300 mb-1.5">GitHub Token</label>
+            <input type="password" @bind="tokenInput" placeholder="ghp_..." class="w-full px-3 py-2 rounded-lg bg-black/30 border border-violet-500/20 text-amber-100 text-sm focus:outline-none focus:border-violet-400/50 mb-3" />
+            <p class="text-xs text-violet-400/60 mb-4 leading-relaxed">
+                Create one at github.com/settings/tokens (classic) with the "gist" scope.
+                The token is stored only in your browser's local storage.
+            </p>
+
+            <div class="flex gap-3 justify-end">
+                @if (Game.Cloud.HasToken)
+                {
+                    <button class="ghost-button px-4 py-2 text-sm text-red-300" @onclick="Disconnect">Disconnect</button>
+                }
+                <button class="ghost-button px-4 py-2 text-sm" @onclick="Close">Cancel</button>
+                <button class="primary-button px-4 py-2 text-sm" @onclick="SaveToken">Save Token</button>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public bool show { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private string tokenInput = "";
+    private bool? tokenValid;
+
+    protected override void OnParametersSet()
+    {
+        if (show && string.IsNullOrEmpty(tokenInput))
+        {
+            tokenValid = Game.Cloud.HasToken ? true : null;
+        }
+    }
+
+    private async Task SaveToken()
+    {
+        if (string.IsNullOrWhiteSpace(tokenInput)) return;
+        await Game.Cloud.SetTokenAsync(tokenInput);
+        var valid = await Game.Cloud.ValidateTokenAsync();
+        tokenValid = valid;
+        if (valid)
+        {
+            tokenInput = "";
+            await Close();
+        }
+    }
+
+    private async Task Disconnect()
+    {
+        await Game.Cloud.SetTokenAsync("");
+        tokenValid = null;
+        tokenInput = "";
+        await Close();
+    }
+
+    private async Task Close()
+    {
+        tokenInput = "";
+        await OnClose.InvokeAsync();
+    }
+}

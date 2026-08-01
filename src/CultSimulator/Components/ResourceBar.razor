@@ -12,6 +12,9 @@
             <span class="total-followers-tag font-display text-xs tracking-[0.15em] uppercase text-amber-200 px-2.5 py-1 border border-amber-500/30 rounded-full flex items-center gap-1"><span class="text-sm">👥</span><span>@CovenProgress.TotalFollowers(Game.State) Total</span></span>
         </div>
         <div class="rank-badge font-display text-xs font-semibold tracking-[0.25em] uppercase px-3.5 py-1.5 border rounded-full" style="border-color: @currentRank.Color; color: @currentRank.Color;">@currentRank.Name</div>
+        <button class="cloud-save-btn font-display text-[0.7rem] tracking-[0.15em] uppercase px-2.5 py-1.5 border rounded-full transition-colors" style="@(Game.Cloud.HasToken ? "border-color: rgba(16,185,129,0.4); color: #34d399;" : "border-color: rgba(167,139,250,0.25); color: rgba(167,139,250,0.7);")" @onclick="OpenCloudSettings" title="Cloud Save Settings">
+            @if (Game.Cloud.HasToken) { <span>☁ Connected</span> } else { <span>☁ Setup</span> }
+        </button>
     </div>
     <div class="rank-progress h-1 bg-white/[0.06] rounded-full overflow-hidden mb-1.5"><div class="rank-progress-bar h-full rounded-full transition-all duration-500" style="width: @(GameEngine.RankProgress(Game.State) * 100)%; background: @currentRank.Color;"></div></div>
     <div class="rank-label text-[0.7rem] text-violet-300 tracking-[0.1em] mb-4">@if (nextRank != null) { <span>@totalFollowers / @nextRank.MinFollowers followers to @nextRank.Name</span> } else { <span>Maximum rank achieved</span> }</div>
@@ -32,6 +35,7 @@
 </div>
 
 @code {
+    [Parameter] public EventCallback OnOpenCloudSettings { get; set; }
     private CovenState activeCoven => Game.State.ActiveCoven;
     private int totalFollowers => CovenProgress.TotalFollowers(Game.State);
     private (double faith, double gold) totalIncome => GameEngine.TotalIncomePerSec(Game.State);
@@ -40,5 +44,6 @@
     private string activeCovenName { get { var loc = Locations.Find(Game.State.ActiveCovenId); return loc?.Name ?? Game.State.ActiveCovenId; } }
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+    private async Task OpenCloudSettings() => await OnOpenCloudSettings.InvokeAsync();
     public void Dispose() => Game.OnChange -= StateChanged;
 }
