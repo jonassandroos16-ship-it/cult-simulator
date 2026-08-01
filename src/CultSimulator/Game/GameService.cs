@@ -108,7 +108,7 @@ public class GameService
         _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
     }
 
-    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); LocalCultBattleEngine.Tick(_state, delta); CheckConversionBattle(); CheckLocalCultBattles(); NotifyChanged(); }
+    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); LocalCultBattleEngine.Tick(_state, delta); RivalCultEngine.Tick(_state, _locations, delta); CheckConversionBattle(); CheckLocalCultBattles(); NotifyChanged(); }
     private void Tick() { GameEngine.TickAllCovens(_state, _locations); NotifyChanged(); }
 
     private void TryEvent()
@@ -518,6 +518,32 @@ public class GameService
     public (bool success, string message) AssignDefenders(string institutionId, int count)
     {
         var r = ShadowWarEngine.AssignDefenders(ShadowWar, institutionId, count);
+        NotifyChanged();
+        return r;
+    }
+
+    // ── Rival Cult Battles ──
+    public IReadOnlyList<(RivalCultDef def, RivalCultState state)> ActiveRivals => RivalCultEngine.ActiveRivals(_state);
+    public RivalBattleState? GetRivalBattle(string rivalId)
+    {
+        try { return RivalCultEngine.GetOrCreateRivalBattle(_state, rivalId); }
+        catch { return null; }
+    }
+    public (bool success, string message) DeployRivalBattleAgents(string rivalId, AgentType type, int count)
+    {
+        var r = RivalCultEngine.DeployRivalBattleAgents(_state, rivalId, type, count);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) WithdrawRivalBattleAgents(string rivalId)
+    {
+        var r = RivalCultEngine.WithdrawRivalBattleAgents(_state, rivalId);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) StartRivalBattle(string rivalId)
+    {
+        var r = RivalCultEngine.StartRivalBattle(_state, rivalId);
         NotifyChanged();
         return r;
     }
