@@ -188,6 +188,16 @@
                 }
             }
             catch { }
+            try
+            {
+                var vols = await JS.InvokeAsync<Volumes>("cultAudio.getVolumes");
+                musicVolume = vols.music;
+                sfxVolume = vols.sfx;
+                await Audio.SetMusicVolumeAsync(musicVolume);
+                await Audio.SetSfxVolumeAsync(sfxVolume);
+                StateHasChanged();
+            }
+            catch { }
         }
     }
 
@@ -261,6 +271,12 @@
         public string email { get; set; } = "";
         public string name { get; set; } = "";
         public string avatarUrl { get; set; } = "";
+    }
+
+    public class Volumes
+    {
+        public float music { get; set; }
+        public float sfx { get; set; }
     }
 
     public void Dispose() { }

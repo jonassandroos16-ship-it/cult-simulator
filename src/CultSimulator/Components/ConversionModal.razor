@@ -30,7 +30,7 @@
     </div>
 }
 
-@if (Game.IsConversionActive)
+@if (Game.IsConversionActive && !isMinimized)
 {
     var target = Game.ActiveConversion != null ? Locations.Find(Game.State.Conversion!.CovenId) : null;
     var step = Game.CurrentConversionStep;
@@ -131,7 +131,7 @@
 
                             @if (convBattle.Phase == BattlePhase.Deploy)
                             {
-                                <p class="text-xs text-slate-400 mb-3">Deploy agents from the Battle tab, then start the fight here.</p>
+                                <p class="text-xs text-slate-400 mb-3">Deploy agents from your recruited pool below, or tap <strong class="text-violet-300">Minimize</strong> to visit the Battle tab and recruit more agents first.</p>
                                 <div class="grid grid-cols-3 gap-2 mb-3">
                                     @foreach (var agentDef in BattleData.AgentTypes)
                                     {
@@ -194,23 +194,58 @@
                     </div>
                 }
 
-                <button class="event-choice w-full p-3 rounded-[12px] cursor-pointer text-center transition-all duration-200 hover:bg-slate-500/10"
-                        style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
-                        @onclick="Close">
-                    <span class="text-xs text-slate-400">Abandon Conversion</span>
-                </button>
+                <div class="flex gap-2">
+                    <button class="flex-1 p-3 rounded-[12px] cursor-pointer text-center transition-all duration-200 hover:bg-violet-500/10 hover:border-violet-500/30"
+                            style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                            @onclick="Minimize">
+                        <span class="text-xs text-violet-300 font-medium">⤓ Minimize</span>
+                    </button>
+                    <button class="flex-1 p-3 rounded-[12px] cursor-pointer text-center transition-all duration-200 hover:bg-slate-500/10"
+                            style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;"
+                            @onclick="Close">
+                        <span class="text-xs text-slate-400">Abandon</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 }
 
+@if (Game.IsConversionActive && isMinimized)
+{
+    <div class="fixed bottom-4 right-4 z-[100] animate-fade-in">
+        <button class="px-5 py-3 rounded-2xl shadow-2xl transition-all duration-200 hover:scale-105"
+                style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.3); box-shadow: 0 0 20px rgba(167,139,250,0.15);"
+                @onclick="Restore">
+            <div class="flex items-center gap-2">
+                <span class="text-lg">🔮</span>
+                <div class="text-left">
+                    <div class="text-xs text-amber-200 font-medium">Conversion in Progress</div>
+                    @if (Game.IsConversionBattlePhase)
+                    {
+                        <div class="text-[0.6rem] text-rose-300">Battle phase — tap to return</div>
+                    }
+                    else
+                    {
+                        <div class="text-[0.6rem] text-violet-400">Tap to continue</div>
+                    }
+                </div>
+            </div>
+        </button>
+    </div>
+}
+
 @code {
+    private bool isMinimized = false;
+
     protected override void OnInitialized() => Game.OnChange += StateHasChanged;
     public void Dispose() => Game.OnChange -= StateHasChanged;
 
     private void HandleOverlayClick() => Close();
     private void Close() => Game.CancelConversion();
     private void DismissComplete() => Game.DismissConversionComplete();
+    private void Minimize() => isMinimized = true;
+    private void Restore() => isMinimized = false;
 
     private void ChooseStep(ConversionChoice choice)
     {
