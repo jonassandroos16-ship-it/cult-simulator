@@ -29,7 +29,6 @@ public static class GrandSacrifice
             var oldOccult = coven.Occult;
             coven.Occult = new OccultState
             {
-                ArmyPower = 50,
                 HighCouncil = keepHighPriest ? oldOccult.HighCouncil.Where(c => c.Role == CouncilRole.HighPriest).ToList() : new(),
                 UnlockedTechs = keepAstralAnchor ? oldOccult.UnlockedTechs.Where(t => t == TechId.AstralAnchor).ToList() : new()
             };

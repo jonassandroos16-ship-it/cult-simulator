@@ -7,13 +7,12 @@ public static class WorldMapSystem
 
     public static bool CanConquer(GameState state, MapNodeDef def) =>
         def.CovenId == state.ActiveCovenId &&
-        !IsConquered(state.Occult, def.Id) && state.ActiveCoven.Faith >= def.FaithCost && state.Occult.ArmyPower >= def.ArmyPowerRequired;
+        !IsConquered(state.Occult, def.Id) && state.ActiveCoven.Faith >= def.FaithCost;
 
     public static bool Conquer(GameState state, MapNodeDef def)
     {
         if (!CanConquer(state, def)) return false;
         state.ActiveCoven.Faith -= def.FaithCost;
-        state.Occult.ArmyPower -= def.ArmyPowerRequired;
         state.Occult.MapNodes.Add(new MapNodeState { NodeId = def.Id, Conquered = true, Stance = NodeStance.Harvest });
         return true;
     }
