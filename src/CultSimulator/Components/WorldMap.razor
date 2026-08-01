@@ -171,7 +171,7 @@
             <p class="text-violet-300">The Shadow War map shows institutions across the globe you can infiltrate. Click a marker to recon, infiltrate, or defend. Green = controlled, blue = recon, amber = infiltrating, red = alerted, orange = under investigation.</p>
             @if (rivalCount > 0)
             {
-                <p class="text-rose-300 text-xs mt-2">⚠️ @rivalCount rival cult(s) are active and competing for control. Red markers indicate institutions they've seized. Act fast to defend your territory.</p>
+                <p class="text-rose-300 text-xs mt-2">⚠️ @rivalCount rival cult(s) are active and competing for control. Red markers indicate institutions they've seized. Click a rival marker to launch a direct assault — the biggest and most dangerous battle in the game.</p>
             }
             else
             {
@@ -183,6 +183,39 @@
         @if (selectedInstitution != null)
         {
             <ShadowWarModal InstitutionId="@selectedInstitution" OnClose="CloseInstitutionPopup" />
+        }
+
+        @if (selectedRivalId != null)
+        {
+            var rivalDef = RivalCultData.Find(selectedRivalId);
+            var rivalState = Game.State.RivalCultsOrInit.GetRival(selectedRivalId);
+            if (rivalDef != null && rivalState != null && !rivalState.Defeated)
+            {
+                <div class="fixed inset-0 flex items-center justify-center p-4" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); z-index: 9999;" @onclick="CloseRivalPopup">
+                    <div class="w-full max-w-md rounded-[20px] p-6 shadow-2xl" style="background: rgba(15,5,20,0.95); border: 2px solid rgba(239,68,68,0.3);" @onclick:stopPropagation="true">
+                        <div class="flex items-start justify-between mb-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-3xl">@rivalDef.Icon</span>
+                                <div>
+                                    <h2 class="text-lg font-bold text-rose-200">@rivalDef.Name</h2>
+                                    <div class="text-xs text-slate-400 uppercase tracking-wider">@ContinentName(rivalDef.PreferredTerritoryId) · Power: @((int)rivalState.Power)</div>
+                                </div>
+                            </div>
+                            <button class="p-1 text-slate-400 hover:text-slate-200" @onclick="CloseRivalPopup">✕</button>
+                        </div>
+                        <p class="text-sm text-slate-400 mb-4 italic">@rivalDef.Description</p>
+                        <div class="mb-4 p-3 rounded-[12px] text-xs" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2);">
+                            <div class="text-rose-300 mb-1 font-medium">⚠️ This is the most dangerous battle in the game.</div>
+                            <div class="text-slate-400">Rival HP: @((int)(500 + rivalState.Power * 2)) · Your HP: 200<br/>Defeat permanently destroys this rival. Massive Faith reward on victory.</div>
+                        </div>
+                        <button class="w-full p-3 rounded-[12px] text-sm text-rose-100 font-bold transition-all hover:bg-rose-500/20 hover:border-rose-500/40"
+                                style="background: rgba(127,29,29,0.4); border: 1px solid rgba(239,68,68,0.3);"
+                                @onclick="AttackRivalFromMap">
+                            ⚔️ Launch Assault
+                        </button>
+                    </div>
+                </div>
+            }
         }
     }
 
@@ -294,6 +327,7 @@
     private WorldLocationDef? selectedCoven;
     private LocalCultDef? selectedLocalCult;
     private string? selectedInstitution;
+    private string? selectedRivalId;
     private bool showLore = false;
     private bool mapInitialized = false;
     private DotNetObjectReference<WorldMap>? _dotRef;
@@ -480,7 +514,16 @@
         StateHasChanged();
     }
 
+    [JSInvokable]
+    public void SelectRival(string id)
+    {
+        selectedRivalId = id;
+        StateHasChanged();
+    }
+
     private void CloseInstitutionPopup() { selectedInstitution = null; _ = RefreshShadowWarMap(); }
+    private void CloseRivalPopup() { selectedRivalId = null; StateHasChanged(); }
+    private void AttackRivalFromMap() { if (selectedRivalId != null) { Game.StartRivalBattle(selectedRivalId); } StateHasChanged(); }
 
     private async Task InitShadowWarMap()
     {
@@ -560,7 +603,6 @@
     private void BeginConversion(string id)
     {
         Game.StartConversion(id);
-        selectedCoven = null;
         _ = RefreshMap();
     }
 
