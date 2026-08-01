@@ -10,7 +10,6 @@ public static class OccultBalance
     public const double ScholarFaithPerSec = 0.5;
     public const double InfiltratorFaithPerSec = 0.3;
     public const double ZealotAgentProdBonusPerSec = 0.02;
-    public const double InitiateArmyPowerPerSec = 0.008;
     public const double NodeFaithBasePerSec = 0.2;
     public const double FavorDivisor = 1_000_000.0;
     public const double SuspicionMax = 100.0;
@@ -37,8 +36,6 @@ public static class OccultBalance
     public const int CovenBlessingDurationSec = 90;
 
     // Legacy aliases so any existing code that referenced Acolyte names still compiles
-    public const double AcolyteArmyPowerPerSec = InitiateArmyPowerPerSec;
-    public const double ZealotArmyPowerPerSec = ZealotAgentProdBonusPerSec; // legacy alias
     public const int PromoteAcolyteCost = RecruitUnitCost;
     public const double AcolyteSacrificeSuspicionReduction = InitiateSacrificeSuspicionReduction;
     public const int AcolyteCapBase = InitiateCapBase;
