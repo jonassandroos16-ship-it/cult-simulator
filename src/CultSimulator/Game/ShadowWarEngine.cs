@@ -43,7 +43,8 @@ public static class ShadowWarEngine
             if (def != null && def.Type == InstitutionType.Government)
                 govBonus += def.RewardValue;
         }
-        return baseRate * govBonus * sw.PrestigeMultiplier;
+        double zealotMult = CultistHierarchy.AgentProductionMult(state.Occult);
+        return baseRate * govBonus * sw.PrestigeMultiplier * zealotMult;
     }
 
     public static double AgentStrength(ShadowWarState sw, GameState state)

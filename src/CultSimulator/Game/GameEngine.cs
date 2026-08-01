@@ -198,7 +198,7 @@ public static class GameEngine
     public static void BuyBank(CovenState s) { int owned = s.Buildings.GetValueOrDefault(BuildingType.Bank); int cost = BankBuildingCost(owned); if (s.Gold < cost) return; s.Gold -= cost; s.Buildings[BuildingType.Bank] = owned + 1; }
     public static void BuyUpgrade(CovenState s, UpgradeId id) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; s.Upgrades.Add(id); }
 
-    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, BaseMultiplier = 1.0, Occult = new OccultState { ArmyPower = 50 } } }, ShadowWar = ShadowWarEngine.CreateInitialState(), StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+    public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, BaseMultiplier = 1.0, Occult = new OccultState() } }, ShadowWar = ShadowWarEngine.CreateInitialState(), StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
 
     public static double FaithMultiplier(GameState s) => FaithMultiplier(s.ActiveCoven);
     public static double GoldMultiplier(GameState s) => GoldMultiplier(s.ActiveCoven);

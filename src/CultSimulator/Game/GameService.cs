@@ -217,8 +217,6 @@ public class GameService
                 PopupMessage = "This node belongs to a different coven. Switch active coven first.";
             else if (coven.Faith < def.FaithCost)
                 PopupMessage = $"Not enough Faith. Need {NumberFormat.Fmt(def.FaithCost)} but have {NumberFormat.Fmt(coven.Faith)}.";
-            else if (_state.Occult.ArmyPower < def.ArmyPowerRequired)
-                PopupMessage = $"Not enough Army Power. Need {NumberFormat.Fmt(def.ArmyPowerRequired)} but have {NumberFormat.Fmt(_state.Occult.ArmyPower)}.";
             else
                 PopupMessage = "Cannot conquer this node right now.";
             PopupTitle = "Cannot Claim Node";
