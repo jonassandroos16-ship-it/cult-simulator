@@ -4,6 +4,10 @@ namespace CultSimulator.Game;
 
 public static class RivalCultEngine
 {
+    public const double RivalBattlePlayerBaseHp = 200;
+    public const double RivalBattleRivalBaseHp = 500;
+    public const int MaxLogEntries = 15;
+
     public static RivalCultSystemState CreateInitialState()
     {
         var state = new RivalCultSystemState { Rivals = new() };
@@ -45,6 +49,7 @@ public static class RivalCultEngine
             var def = RivalCultData.Find(rival.Id);
             if (def == null || def.PreferredTerritoryId != continentId) continue;
             if (rival.Status != RivalCultStatus.Dormant) continue;
+            if (rival.Defeated) continue;
 
             rival.Status = RivalCultStatus.Active;
             rival.Power = 20;
@@ -61,6 +66,7 @@ public static class RivalCultEngine
         {
             var rival = rs.GetRival(def.Id);
             if (rival == null) continue;
+            if (rival.Defeated) continue;
 
             bool shouldActive = ShouldActivateForContinent(state, locations, def.PreferredTerritoryId);
 
@@ -86,6 +92,8 @@ public static class RivalCultEngine
                 rival.NextActionAt = now + (long)(Random.Shared.Next(20, 45) * 1000);
             }
         }
+
+        TickRivalBattles(state, locations, deltaSec);
     }
 
     private static void TakeAction(GameState state, RivalCultState rival, RivalCultDef def, long now)
@@ -153,15 +161,198 @@ public static class RivalCultEngine
     public static int TotalRivalControlled(GameState state)
     {
         var rs = EnsureInitialized(state);
-        return rs.Rivals.Where(r => r.Status != RivalCultStatus.Dormant).Sum(r => r.ControlledInstitutions.Count);
+        return rs.Rivals.Where(r => r.Status != RivalCultStatus.Dormant && !r.Defeated).Sum(r => r.ControlledInstitutions.Count);
     }
 
     public static IReadOnlyList<(RivalCultDef def, RivalCultState state)> ActiveRivals(GameState state)
     {
         var rs = EnsureInitialized(state);
         return rs.Rivals
-            .Where(r => r.Status != RivalCultStatus.Dormant)
+            .Where(r => r.Status != RivalCultStatus.Dormant && !r.Defeated)
             .Select(r => (RivalCultData.Find(r.Id)!, r))
             .ToList();
+    }
+
+    // ── Rival Battle System ──
+
+    public static RivalBattleState GetOrCreateRivalBattle(GameState state, string rivalId)
+    {
+        var rs = EnsureInitialized(state);
+        var existing = rs.GetRivalBattle(rivalId);
+        if (existing != null) return existing;
+
+        var def = RivalCultData.Find(rivalId);
+        if (def == null) throw new ArgumentException($"Unknown rival: {rivalId}");
+
+        var rival = rs.GetRival(rivalId);
+        if (rival == null || rival.Defeated) throw new InvalidOperationException("Rival not available");
+
+        double rivalHp = RivalBattleRivalBaseHp + rival.Power * 2;
+        var battle = new RivalBattleState
+        {
+            RivalId = rivalId,
+            ContinentId = def.PreferredTerritoryId,
+            Phase = RivalBattlePhase.Deploy,
+            RivalHp = rivalHp,
+            RivalMaxHp = rivalHp,
+            PlayerHp = RivalBattlePlayerBaseHp,
+            PlayerMaxHp = RivalBattlePlayerBaseHp,
+            LastTickAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+        };
+        rs.RivalBattles.Add(battle);
+        return battle;
+    }
+
+    public static (bool success, string message) DeployRivalBattleAgents(GameState state, string rivalId, AgentType type, int count)
+    {
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        sw.RecruitedAgents.TryGetValue(type, out int available);
+        if (available < count)
+            return (false, $"Not enough {type} agents. Have {available}, need {count}.");
+
+        try
+        {
+            var battle = GetOrCreateRivalBattle(state, rivalId);
+            if (battle.Phase != RivalBattlePhase.Deploy)
+                return (false, "Battle is not in deploy phase.");
+
+            sw.RecruitedAgents[type] = available - count;
+            var slot = battle.DeployedSquad.FirstOrDefault(d => d.Type == type);
+            if (slot != null) slot.Count += count;
+            else battle.DeployedSquad.Add(new DeployedAgent { Type = type, Count = count });
+            return (true, $"Deployed {count} {type}.");
+        }
+        catch (Exception ex) { return (false, ex.Message); }
+    }
+
+    public static (bool success, string message) WithdrawRivalBattleAgents(GameState state, string rivalId)
+    {
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        var rs = EnsureInitialized(state);
+        var battle = rs.GetRivalBattle(rivalId);
+        if (battle == null) return (false, "No battle found.");
+        if (battle.Phase == RivalBattlePhase.Fighting)
+            return (false, "Cannot withdraw during an active battle.");
+
+        foreach (var slot in battle.DeployedSquad)
+        {
+            sw.RecruitedAgents.TryGetValue(slot.Type, out int cur);
+            sw.RecruitedAgents[slot.Type] = cur + slot.Count;
+        }
+        battle.DeployedSquad.Clear();
+        return (true, "Agents withdrawn.");
+    }
+
+    public static (bool success, string message) StartRivalBattle(GameState state, string rivalId)
+    {
+        var rs = EnsureInitialized(state);
+        var battle = rs.GetRivalBattle(rivalId);
+        if (battle == null || battle.Phase != RivalBattlePhase.Deploy)
+            return (false, "Not in deploy phase.");
+        if (battle.TotalDeployed == 0)
+            return (false, "Deploy at least one agent before starting.");
+        battle.Phase = RivalBattlePhase.Fighting;
+        AppendLog(battle, $"Assault on {rivalId} begun with {battle.TotalDeployed} agents!");
+        return (true, "Battle started!");
+    }
+
+    public static void TickRivalBattles(GameState state, WorldLocationService locations, double deltaSec)
+    {
+        var rs = EnsureInitialized(state);
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+
+        foreach (var battle in rs.RivalBattles.ToList())
+        {
+            if (battle.Phase != RivalBattlePhase.Fighting) continue;
+
+            var def = RivalCultData.Find(battle.RivalId);
+            var rival = rs.GetRival(battle.RivalId);
+            if (def == null || rival == null || rival.Defeated) continue;
+
+            double playerAttack = CalculateRivalBattlePlayerAttack(battle, sw, state);
+            double playerDefense = CalculateRivalBattlePlayerDefense(battle, sw, state);
+            double stealth = CalculateRivalBattleStealth(battle);
+
+            double rivalAttack = def.AgentStrength * 3.0 + rival.Power * 0.05;
+            double rivalDamage = rivalAttack * (1.0 - stealth * 0.3) * deltaSec;
+            double playerDamage = playerAttack * deltaSec;
+
+            battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
+            battle.PlayerHp = Math.Max(0, battle.PlayerHp - Math.Max(0, rivalDamage - playerDefense * 0.1 * deltaSec));
+
+            if (battle.RivalHp <= 0)
+            {
+                battle.Phase = RivalBattlePhase.Victory;
+                rival.Defeated = true;
+                rival.Status = RivalCultStatus.Dormant;
+                rival.Power = 0;
+                rival.ControlledInstitutions.Clear();
+                rival.TerritoryControl = 0;
+
+                foreach (var instId in rival.ControlledInstitutions.ToList())
+                {
+                    var inst = sw.GetInstitution(instId);
+                    if (inst != null && inst.Status == InstitutionStatus.Alerted)
+                        inst.Status = InstitutionStatus.Unlocked;
+                }
+
+                double faithReward = 5000 + rival.Power * 50;
+                state.ActiveCoven.Faith += faithReward;
+                state.Occult.LifetimeFaith += faithReward;
+                AppendLog(battle, $"VICTORY! {def.Name} has been destroyed! +{NumberFormat.Fmt(faithReward)} Faith!");
+            }
+            else if (battle.PlayerHp <= 0)
+            {
+                battle.Phase = RivalBattlePhase.Defeat;
+                battle.PlayerHp = battle.PlayerMaxHp;
+                battle.RivalHp = battle.RivalMaxHp;
+                battle.DeployedSquad.Clear();
+                state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 20);
+                AppendLog(battle, $"DEFEAT! Your assault force was annihilated. Suspicion rises.");
+            }
+        }
+
+        rs.RivalBattles.RemoveAll(b => b.Phase == RivalBattlePhase.Victory);
+    }
+
+    private static double CalculateRivalBattlePlayerAttack(RivalBattleState battle, ShadowWarState sw, GameState state)
+    {
+        double strength = ShadowWarEngine.AgentStrength(sw, state);
+        double attack = 0;
+        foreach (var slot in battle.DeployedSquad)
+        {
+            var def = BattleData.AgentDef(slot.Type);
+            if (def != null) attack += def.Attack * slot.Count * strength;
+        }
+        return attack;
+    }
+
+    private static double CalculateRivalBattlePlayerDefense(RivalBattleState battle, ShadowWarState sw, GameState state)
+    {
+        double defense = 0;
+        foreach (var slot in battle.DeployedSquad)
+        {
+            var def = BattleData.AgentDef(slot.Type);
+            if (def != null) defense += def.Defense * slot.Count;
+        }
+        return defense;
+    }
+
+    private static double CalculateRivalBattleStealth(RivalBattleState battle)
+    {
+        if (battle.TotalDeployed == 0) return 0;
+        double stealth = 0;
+        foreach (var slot in battle.DeployedSquad)
+        {
+            var def = BattleData.AgentDef(slot.Type);
+            if (def != null) stealth += def.Stealth * slot.Count;
+        }
+        return stealth / battle.TotalDeployed;
+    }
+
+    private static void AppendLog(RivalBattleState battle, string message)
+    {
+        battle.Log.Add($"[{DateTime.UtcNow:HH:mm:ss}] {message}");
+        if (battle.Log.Count > MaxLogEntries) battle.Log.RemoveAt(0);
     }
 }

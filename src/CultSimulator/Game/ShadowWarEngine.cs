@@ -170,9 +170,6 @@ public static class ShadowWarEngine
                 }
             }
         }
-
-        if (sw.Heat > 0)
-            sw.Heat = Math.Max(0, sw.Heat - 0.1 * deltaSec);
     }
 
     public static (bool, string) StartRecon(ShadowWarState sw, GameState state, WorldLocationService locations, string institutionId, int agentCount)

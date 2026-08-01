@@ -17,7 +17,6 @@ public class InstitutionState
 
 public class ShadowWarState
 {
-    public double Heat { get; set; }
     public double TotalAgents { get; set; }
     public double DeployedAgents { get; set; }
     public double SpentAgents { get; set; }

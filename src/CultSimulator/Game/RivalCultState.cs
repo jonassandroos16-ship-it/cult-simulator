@@ -10,6 +10,7 @@ public class RivalCultState
     public double TerritoryControl { get; set; }
     public List<string> ControlledInstitutions { get; set; } = new();
     public long NextActionAt { get; set; }
+    public bool Defeated { get; set; }
 }
 
 public class RivalCultSystemState
@@ -17,7 +18,11 @@ public class RivalCultSystemState
     public List<RivalCultState> Rivals { get; set; } = new();
     public long ActivatedAt { get; set; }
     public bool IsActive { get; set; }
+    public List<RivalBattleState> RivalBattles { get; set; } = new();
 
     public RivalCultState? GetRival(string id) =>
         Rivals.FirstOrDefault(r => r.Id == id);
+
+    public RivalBattleState? GetRivalBattle(string rivalId) =>
+        RivalBattles.FirstOrDefault(b => b.RivalId == rivalId);
 }
