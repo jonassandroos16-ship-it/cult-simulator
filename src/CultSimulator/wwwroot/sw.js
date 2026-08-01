@@ -2,10 +2,8 @@ const CACHE_NAME = "cultsim-v1";
 const ASSETS = [
   "/",
   "/index.html",
+  "/icon.svg",
   "/manifest.json",
-  "/favicon.png",
-  "/icon-192.png",
-  "/icon-512.png",
   "/css/base.css",
   "/css/loading.css",
   "/css/naming.css",
@@ -50,12 +48,10 @@ self.addEventListener("fetch", (e) => {
 
   const url = new URL(req.url);
 
-  // Never cache Blazor framework files or API calls
   if (url.pathname.startsWith("/_framework") || url.pathname.startsWith("/_blazor")) {
     return;
   }
 
-  // Network-first for navigation requests (so users get latest HTML)
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req)
@@ -69,7 +65,6 @@ self.addEventListener("fetch", (e) => {
     return;
   }
 
-  // Cache-first for everything else
   e.respondWith(
     caches.match(req).then((cached) => {
       if (cached) return cached;
