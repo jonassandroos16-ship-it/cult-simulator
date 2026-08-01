@@ -13,5 +13,6 @@ builder.Services.AddScoped<CloudSaveService>(sp => new CloudSaveService(sp.GetRe
 builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<WorldLocationService>();
 builder.Services.AddScoped<ConversionDataService>();
+builder.Services.AddScoped<AudioService>();
 
 await builder.Build().RunAsync();

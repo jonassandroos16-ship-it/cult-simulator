@@ -3,6 +3,7 @@
 @inject IJSRuntime JS
 @inject GameService Game
 @inject WorldLocationService Locations
+@inject AudioService Audio
 @implements IDisposable
 
 @if (!initialized)
@@ -72,10 +73,23 @@ else
         if (loc == null) return "theme-viking";
         return ContinentThemes.For(loc.Continent).ThemeClass;
     }
-    protected override async Task OnInitializedAsync() { await Game.InitAsync(); Game.OnChange += StateChanged; if (Game.LoadSucceeded || !Game.IsFirstRun) Game.StartTimers(); initialized = true; }
-    protected override async Task OnAfterRenderAsync(bool firstRender) { if (firstRender) { try { await JS.InvokeVoidAsync("setupAutoSave", DotNetObjectReference.Create(this)); } catch { } } }
+    protected override async Task OnInitializedAsync() { await Game.InitAsync(); Game.OnChange += StateChanged; if (Game.LoadSucceeded || !Game.IsFirstRun) Game.StartTimers(); initialized = true; await UpdateAudioState(); }
+    protected override async Task OnAfterRenderAsync(bool firstRender) { if (firstRender) { try { await JS.InvokeVoidAsync("setupAutoSave", DotNetObjectReference.Create(this)); await Audio.ResumeAudioAsync(); } catch { } } }
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
-    private void SwitchTab(string tab) => activeTab = tab;
+    private void SwitchTab(string tab)
+    {
+        activeTab = tab;
+        _ = UpdateAudioState();
+    }
+    private async Task UpdateAudioState()
+    {
+        if (Game.IsFirstRun) { await Audio.SetGameStateAsync(AudioGameState.Menu); return; }
+        var loc = Locations.Find(Game.State.ActiveCovenId);
+        var continent = loc?.Continent;
+        if (activeTab == "map") await Audio.SetGameStateAsync(AudioGameState.Map, continent);
+        else if (activeTab == "battle") await Audio.SetGameStateAsync(AudioGameState.Combat, continent);
+        else await Audio.SetGameStateAsync(AudioGameState.Gameplay, continent);
+    }
     private void SwitchToBattleMap() { mapInitialMode = "shadowwar"; activeTab = "map"; }
     private void StoryDismissed() { }
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
