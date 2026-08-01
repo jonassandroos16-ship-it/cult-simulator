@@ -498,6 +498,19 @@ public class CultGameTests
         var locs = ContinentLocations();
         ConvertCoven(s, "e1");
         ConvertCoven(s, "e2");
+        // Not all covens converted and rival not defeated
+        Assert.Null(CovenProgress.NewlyCompletedContinent(s, locs));
+    }
+
+    [Fact]
+    public void NewlyCompletedContinent_NullWhenCovensDoneButRivalAlive()
+    {
+        var s = NewState();
+        var locs = ContinentLocations();
+        ConvertCoven(s, "e1");
+        ConvertCoven(s, "e2");
+        ConvertCoven(s, "e3");
+        // All covens converted but rival still alive — continent not complete
         Assert.Null(CovenProgress.NewlyCompletedContinent(s, locs));
     }
 
@@ -509,6 +522,10 @@ public class CultGameTests
         ConvertCoven(s, "e1");
         ConvertCoven(s, "e2");
         ConvertCoven(s, "e3");
+        // Rival must also be defeated for continent to be complete
+        var rival = s.RivalCultsOrInit.GetRival("order_of_dawn");
+        Assert.NotNull(rival);
+        rival!.Defeated = true;
         Assert.Equal("europe", CovenProgress.NewlyCompletedContinent(s, locs));
     }
 
@@ -552,6 +569,8 @@ public class CultGameTests
         ConvertCoven(s, "e1");
         ConvertCoven(s, "e2");
         ConvertCoven(s, "e3");
+        var rival = s.RivalCultsOrInit.GetRival("order_of_dawn");
+        rival!.Defeated = true;
         Assert.Equal("europe", CovenProgress.NewlyCompletedContinent(s, locs));
         CovenProgress.MarkContinentStoryPending(s, "europe");
         CovenProgress.GrantFoothold(s, locs);

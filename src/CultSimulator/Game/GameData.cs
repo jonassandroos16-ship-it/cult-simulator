@@ -12,7 +12,8 @@ public static class GameData
         new BuildingDef(BuildingType.Bank, "Bank", "🏦", 500, ResourceKind.Gold, 1.55, "Increases idle income cap"),
         new BuildingDef(BuildingType.Observatory, "Observatory", "🔭", 800, ResourceKind.Gold, 1.22, "+6% Faith generation"),
         new BuildingDef(BuildingType.Reliquary, "Reliquary", "📿", 1500, ResourceKind.Gold, 1.24, "+6% Gold generation"),
-        new BuildingDef(BuildingType.Undercroft, "Undercroft", "⚰️", 3000, ResourceKind.Gold, 1.28, "+2 Acolyte cap per level"));
+        new BuildingDef(BuildingType.Undercroft, "Undercroft", "⚰️", 3000, ResourceKind.Gold, 1.28, "+2 Acolyte cap per level"),
+        new BuildingDef(BuildingType.Barracks, "Barracks", "🏰", 600, ResourceKind.Gold, 1.20, "+5 Agent pool cap per level"));
 
     public static readonly ImmutableArray<UpgradeDef> Upgrades = ImmutableArray.Create(
         new UpgradeDef(UpgradeId.Hymnal, "Sacred Hymnal", "📜", 120, 0, 0, "Preaching yields 2× Faith", 0),
@@ -37,7 +38,8 @@ public static class GameData
         BuildingType.Treasury,
         BuildingType.Observatory,
         BuildingType.Reliquary,
-        BuildingType.Undercroft);
+        BuildingType.Undercroft,
+        BuildingType.Barracks);
 
 public static readonly Dictionary<string, Dictionary<BuildingType, string>> CovenBuildingNames = new()
     {
@@ -50,6 +52,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Star Watch" },
             { BuildingType.Reliquary, "Bone Reliquary" },
             { BuildingType.Undercroft, "Frost Crypt" },
+            { BuildingType.Barracks, "Viking War Camp" },
         },
         ["uppsala_gothi"] = new()
         {
@@ -60,6 +63,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Sky Pillar" },
             { BuildingType.Reliquary, "King's Reliquary" },
             { BuildingType.Undercroft, "Burial Mound" },
+            { BuildingType.Barracks, "Royal Guard Hall" },
         },
         ["hedeby_vikings"] = new()
         {
@@ -70,6 +74,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Mast Watch" },
             { BuildingType.Reliquary, "Amber Reliquary" },
             { BuildingType.Undercroft, "Keel Vault" },
+            { BuildingType.Barracks, "Raiding Camp" },
         },
         ["trossky_berserkers"] = new()
         {
@@ -80,6 +85,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Cliff Watch" },
             { BuildingType.Reliquary, "Pelt Reliquary" },
             { BuildingType.Undercroft, "Ice Cellar" },
+            { BuildingType.Barracks, "Berserker Den" },
         },
         ["jomsborg_elite"] = new()
         {
@@ -90,6 +96,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Harbor Watch" },
             { BuildingType.Reliquary, "Oath Reliquary" },
             { BuildingType.Undercroft, "Sea Vault" },
+            { BuildingType.Barracks, "Jomsviking Camp" },
         },
         ["salem_remnant"] = new()
         {
@@ -100,6 +107,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Paranormal Lab" },
             { BuildingType.Reliquary, "Trial Reliquary" },
             { BuildingType.Undercroft, "Colonial Cellar" },
+            { BuildingType.Barracks, "Witch Hunter Cabin" },
         },
         ["voodoo_quarter"] = new()
         {
@@ -110,6 +118,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Bayou Watch" },
             { BuildingType.Reliquary, "Gris-Gris Reliquary" },
             { BuildingType.Undercroft, "Crypt Vault" },
+            { BuildingType.Barracks, "Voodoo Lodge" },
         },
         ["silicon_circle"] = new()
         {
@@ -120,6 +129,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Neural Watch" },
             { BuildingType.Reliquary, "Code Reliquary" },
             { BuildingType.Undercroft, "Cooling Crypt" },
+            { BuildingType.Barracks, "Private Security Hub" },
         },
         ["hudson_witches"] = new()
         {
@@ -130,6 +140,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Rooftop Watch" },
             { BuildingType.Reliquary, "Colonial Reliquary" },
             { BuildingType.Undercroft, "Wine Cellar" },
+            { BuildingType.Barracks, "Estate Guard House" },
         },
         ["montreal_night"] = new()
         {
@@ -140,6 +151,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Sewer Watch" },
             { BuildingType.Reliquary, "Saint Reliquary" },
             { BuildingType.Undercroft, "Ice Vault" },
+            { BuildingType.Barracks, "Underground Bunker" },
         },
         ["la_recta_provincia"] = new()
         {
@@ -150,6 +162,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Observatorio Austral" },
             { BuildingType.Reliquary, "Relicario Patagón" },
             { BuildingType.Undercroft, "Bóveda de Chiloé" },
+            { BuildingType.Barracks, "Guarnición Secreta" },
         },
         ["amazon_curanderos"] = new()
         {
@@ -160,6 +173,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Canopy Watch" },
             { BuildingType.Reliquary, "Plant Reliquary" },
             { BuildingType.Undercroft, "Root Vault" },
+            { BuildingType.Barracks, "Jungle Outpost" },
         },
         ["andean_pacha"] = new()
         {
@@ -170,6 +184,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Andean Watch" },
             { BuildingType.Reliquary, "Mummy Reliquary" },
             { BuildingType.Undercroft, "Mountain Crypt" },
+            { BuildingType.Barracks, "Warrior Barracks" },
         },
         ["pantanal_feiticeira"] = new()
         {
@@ -180,6 +195,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Wetland Watch" },
             { BuildingType.Reliquary, "Caiman Reliquary" },
             { BuildingType.Undercroft, "Mud Vault" },
+            { BuildingType.Barracks, "Swamp Hideout" },
         },
         ["guarani_shadows"] = new()
         {
@@ -190,6 +206,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Sky Watch" },
             { BuildingType.Reliquary, "Ancestor Reliquary" },
             { BuildingType.Undercroft, "Earth Vault" },
+            { BuildingType.Barracks, "Shadow Camp" },
         },
         ["kush_sorcerers"] = new()
         {
@@ -200,6 +217,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Desert Watch" },
             { BuildingType.Reliquary, "Pharaoh Reliquary" },
             { BuildingType.Undercroft, "Tomb Vault" },
+            { BuildingType.Barracks, "Nubian War Camp" },
         },
         ["ifa_oracles"] = new()
         {
@@ -210,6 +228,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Destiny Watch" },
             { BuildingType.Reliquary, "Orunmila Reliquary" },
             { BuildingType.Undercroft, "Ancestral Vault" },
+            { BuildingType.Barracks, "Oracle Guard" },
         },
         ["dogon_star_priests"] = new()
         {
@@ -220,6 +239,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Star Watch" },
             { BuildingType.Reliquary, "Nommo Reliquary" },
             { BuildingType.Undercroft, "Cliff Vault" },
+            { BuildingType.Barracks, "Cliff Garrison" },
         },
         ["zulu_sangoma"] = new()
         {
@@ -230,6 +250,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Spirit Watch" },
             { BuildingType.Reliquary, "Bone Reliquary" },
             { BuildingType.Undercroft, "Ancestor Vault" },
+            { BuildingType.Barracks, "Warrior Kraal" },
         },
         ["axum_guardians"] = new()
         {
@@ -240,6 +261,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Highland Watch" },
             { BuildingType.Reliquary, "Covenant Reliquary" },
             { BuildingType.Undercroft, "Ancient Vault" },
+            { BuildingType.Barracks, "Guardian Fortress" },
         },
         ["babylon_mages"] = new()
         {
@@ -250,6 +272,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Astrology Watch" },
             { BuildingType.Reliquary, "Tablet Reliquary" },
             { BuildingType.Undercroft, "Clay Vault" },
+            { BuildingType.Barracks, "Ziggurat Guard" },
         },
         ["djinn_binders"] = new()
         {
@@ -260,6 +283,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Dune Watch" },
             { BuildingType.Reliquary, "Brass Reliquary" },
             { BuildingType.Undercroft, "Sand Vault" },
+            { BuildingType.Barracks, "Djinn Guard Camp" },
         },
         ["hashashin_shadow"] = new()
         {
@@ -270,6 +294,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Mountain Watch" },
             { BuildingType.Reliquary, "Dagger Reliquary" },
             { BuildingType.Undercroft, "Alamut Vault" },
+            { BuildingType.Barracks, "Assassin Stronghold" },
         },
         ["sumerian_deep"] = new()
         {
@@ -280,6 +305,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Deep Watch" },
             { BuildingType.Reliquary, "Abyss Reliquary" },
             { BuildingType.Undercroft, "Subterranean Vault" },
+            { BuildingType.Barracks, "Deep Garrison" },
         },
         ["qabbalah_masters"] = new()
         {
@@ -290,6 +316,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Emanation Watch" },
             { BuildingType.Reliquary, "Letter Reliquary" },
             { BuildingType.Undercroft, "Safed Vault" },
+            { BuildingType.Barracks, "Mystic Guard House" },
         },
         ["iga_shinobi"] = new()
         {
@@ -300,6 +327,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Mist Watch" },
             { BuildingType.Reliquary, "Ninjutsu Reliquary" },
             { BuildingType.Undercroft, "Shadow Vault" },
+            { BuildingType.Barracks, "Shinobi Dojo" },
         },
         ["koga_nightblades"] = new()
         {
@@ -310,6 +338,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Night Watch" },
             { BuildingType.Reliquary, "Venom Reliquary" },
             { BuildingType.Undercroft, "Poison Vault" },
+            { BuildingType.Barracks, "Nightblade Camp" },
         },
         ["takeda_ronin"] = new()
         {
@@ -320,6 +349,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Battlefield Watch" },
             { BuildingType.Reliquary, "Spirit Blade Reliquary" },
             { BuildingType.Undercroft, "Warrior Vault" },
+            { BuildingType.Barracks, "Ronin Barracks" },
         },
         ["wu_dang_immortals"] = new()
         {
@@ -330,6 +360,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Peak Watch" },
             { BuildingType.Reliquary, "Alchemy Reliquary" },
             { BuildingType.Undercroft, "Cave Vault" },
+            { BuildingType.Barracks, "Immortal Training Hall" },
         },
         ["shadow_shogun"] = new()
         {
@@ -340,6 +371,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Castle Watch" },
             { BuildingType.Reliquary, "Shogun Reliquary" },
             { BuildingType.Undercroft, "Castle Vault" },
+            { BuildingType.Barracks, "Shogun Barracks" },
         },
         ["maori_tohunga"] = new()
         {
@@ -350,6 +382,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Coastal Watch" },
             { BuildingType.Reliquary, "Tiki Reliquary" },
             { BuildingType.Undercroft, "Burial Cave" },
+            { BuildingType.Barracks, "War Canoe Lodge" },
         },
         ["dreamtime_elders"] = new()
         {
@@ -360,6 +393,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Desert Watch" },
             { BuildingType.Reliquary, "Ancestor Reliquary" },
             { BuildingType.Undercroft, "Dreamtime Vault" },
+            { BuildingType.Barracks, "Outback Camp" },
         },
         ["polynesian_navigators"] = new()
         {
@@ -370,6 +404,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Star Path Watch" },
             { BuildingType.Reliquary, "Navigation Reliquary" },
             { BuildingType.Undercroft, "Deep Vault" },
+            { BuildingType.Barracks, "Voyager Camp" },
         },
         ["papuan_spirits"] = new()
         {
@@ -380,6 +415,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Ridge Watch" },
             { BuildingType.Reliquary, "Mask Reliquary" },
             { BuildingType.Undercroft, "Highland Vault" },
+            { BuildingType.Barracks, "Highland Garrison" },
         },
         ["pacific_abyss"] = new()
         {
@@ -390,6 +426,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Observatory, "Abyssal Watch" },
             { BuildingType.Reliquary, "Deep One Reliquary" },
             { BuildingType.Undercroft, "Mariana Vault" },
+            { BuildingType.Barracks, "Abyssal Garrison" },
         },
     };
 
