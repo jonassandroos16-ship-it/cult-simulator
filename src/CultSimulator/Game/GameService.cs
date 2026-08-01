@@ -622,7 +622,8 @@ public class GameService
     public async Task SaveAsync()
     {
         if (!LoadSucceeded && string.IsNullOrWhiteSpace(_state.CultName))
-            return;\n
+            return;
+
         await _saveLock.WaitAsync();
         try
         {
