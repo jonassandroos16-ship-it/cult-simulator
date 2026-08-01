@@ -5,6 +5,10 @@ window.supabaseAuth = (function () {
   const SUPABASE_URL = "https://bwjreumsfxzmkbttsiqd.supabase.co";
   const SUPABASE_ANON_KEY = "sb_publishable_UD_XJQg5a7kocofsBXC8kw_o-8a5GjS";
 
+  // GitHub Pages serves the app at /cult-simulator/, so the OAuth redirect
+  // must point there — not to window.location.origin (which omits the subpath).
+  const REDIRECT_URL = "https://jonassandroos16-ship-it.github.io/cult-simulator/";
+
   let supabaseClient = null;
   let currentUser = null;
   let dotNetRef = null;
@@ -84,7 +88,7 @@ window.supabaseAuth = (function () {
       const { data, error } = await supabaseClient.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: window.location.origin
+          redirectTo: REDIRECT_URL
         }
       });
       if (error) throw error;
