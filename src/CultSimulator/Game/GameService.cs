@@ -8,17 +8,22 @@ public class GameService
     private readonly IJSRuntime _js;
     private readonly WorldLocationService _locations;
     private readonly ConversionDataService _conversions;
+    private readonly CloudSaveService _cloud;
     private GameState _state;
     private Timer? _tickTimer, _eventTimer, _occultTimer, _periodicSaveTimer, _localCultTimer;
     private bool _eventPending;
     private DateTime _lastOccultTick;
     private DateTime _lastSave = DateTime.UtcNow;
+    private DateTime _lastCloudSave = DateTime.UtcNow;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private bool _isCloudSaving;
+    public CloudSaveService Cloud => _cloud;
 
     public GameState State => _state;
     public WorldLocationService Locations => _locations;
     public bool IsFirstRun => string.IsNullOrWhiteSpace(_state.CultName);
     public bool NeedsStory => !IsFirstRun && !_state.StoryShown;
+    public bool LoadSucceeded { get; private set; }
     public EventDef? ActiveEvent { get; private set; }
     public bool EventPending => _eventPending;
     public string? ConvertedCovenName { get; private set; }
@@ -34,8 +39,8 @@ public class GameService
     public double OfflineSeconds { get; private set; }
     public double OfflineLostFaith { get; private set; }
     public double OfflineLostGold { get; private set; }
-    public bool HasOfflineReport => OfflineFaith > 0 || OfflineGold > 0;
     public bool OfflinePopupPending { get; private set; }
+    public bool HasOfflineReport => OfflineFaith > 0 || OfflineGold > 0;
     public event Action? OnChange;
 
     public string? PendingLocalCultId { get; private set; }
@@ -46,31 +51,70 @@ public class GameService
     public LocalCultDef? SpawnedLocalCultDef =>
         SpawnedLocalCultId == null ? null : LocalCultData.Find(SpawnedLocalCultId);
 
-    public GameService(IJSRuntime js, WorldLocationService locations, ConversionDataService conversions)
+    public GameService(IJSRuntime js, WorldLocationService locations, ConversionDataService conversions, CloudSaveService cloud)
     {
         _js = js;
         _locations = locations;
         _conversions = conversions;
+        _cloud = cloud;
         _state = GameEngine.InitialState();
     }
 
     public async Task InitAsync()
     {
         await _locations.LoadAsync();
+        bool loadedFromCloud = false;
         try
         {
             var primary = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
             var backup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
             var backup2 = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey2);
             var (loaded, success) = SaveLoad.LoadGameWithBackup(primary, backup, backup2);
-            _state = loaded;
+            if (success)
+            {
+                _state = loaded;
+                LoadSucceeded = true;
+            }
+
+            // Try Supabase cloud save (via JS interop) — takes priority if newer
+            try
+            {
+                var user = await _js.InvokeAsync<JsonElement?>("supabaseAuth.getSession");
+                if (user != null && user.Value.ValueKind != JsonValueKind.Null)
+                {
+                    var cloudSave = await _js.InvokeAsync<JsonElement?>("supabaseAuth.loadSave");
+                    if (cloudSave != null && cloudSave.Value.ValueKind != JsonValueKind.Null)
+                    {
+                        var cloudJson = cloudSave.Value.GetRawText();
+                        if (!string.IsNullOrWhiteSpace(cloudJson) && cloudJson != "null")
+                        {
+                            var (cloudLoaded, cloudOk) = SaveLoad.LoadGameWithBackup(cloudJson, null, null);
+                            if (cloudOk)
+                            {
+                                var localTime = success ? loaded.LastSavedAt : 0;
+                                if (cloudLoaded.LastSavedAt > localTime)
+                                {
+                                    _state = cloudLoaded;
+                                    LoadSucceeded = true;
+                                    loadedFromCloud = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            catch { /* supabaseAuth not ready yet — that's fine, local save is used */ }
+
+            if (!LoadSucceeded && !success)
+                _state = loaded;
         }
-        catch { _state = GameEngine.InitialState(); }
+        catch { _state = GameEngine.InitialState(); LoadSucceeded = false; }
         _locations.SyncFootholds(_state);
         EnsureHomeCoven();
         ApplyOfflineIncome();
         RestorePendingFoothold();
-        NotifyChanged();
+        if (loadedFromCloud) await SaveAsync();
+        if (LoadSucceeded) NotifyChanged();
     }
 
     private void EnsureHomeCoven() { if (_state.Covens.Count == 0) { _state.Covens.Add(new CovenState { Id = "skanor", Converted = true }); _state.ActiveCovenId = "skanor"; } }
@@ -106,7 +150,7 @@ public class GameService
         _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
     }
 
-    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); LocalCultBattleEngine.Tick(_state, delta); NotifyChanged(); }
+    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); LocalCultBattleEngine.Tick(_state, delta); RivalCultEngine.Tick(_state, _locations, delta); CheckConversionBattle(); CheckLocalCultBattles(); CheckRivalBattleResults(); NotifyChanged(); }
     private void Tick() { GameEngine.TickAllCovens(_state, _locations); NotifyChanged(); }
 
     private void TryEvent()
@@ -173,8 +217,6 @@ public class GameService
                 PopupMessage = "This node belongs to a different coven. Switch active coven first.";
             else if (coven.Faith < def.FaithCost)
                 PopupMessage = $"Not enough Faith. Need {NumberFormat.Fmt(def.FaithCost)} but have {NumberFormat.Fmt(coven.Faith)}.";
-            else if (_state.Occult.ArmyPower < def.ArmyPowerRequired)
-                PopupMessage = $"Not enough Army Power. Need {NumberFormat.Fmt(def.ArmyPowerRequired)} but have {NumberFormat.Fmt(_state.Occult.ArmyPower)}.";
             else
                 PopupMessage = "Cannot conquer this node right now.";
             PopupTitle = "Cannot Claim Node";
@@ -235,7 +277,7 @@ public class GameService
 
     public void DismissPopup() { PopupMessage = null; PopupTitle = null; NotifyChanged(); }
     private static void Clamp(CovenState c) { if (c.Faith < 0) c.Faith = 0; if (c.Gold < 0) c.Gold = 0; if (c.Followers < 0) c.Followers = 0; }
-    public void ConfirmName(string name) { _state.CultName = name.Trim(); NotifyChanged(); }
+    public void ConfirmName(string name) { _state.CultName = name.Trim(); LoadSucceeded = true; NotifyChanged(); }
     public void MarkStoryShown() { _state.StoryShown = true; NotifyChanged(); }
 
     public bool CanConvert(string covenId)
@@ -471,6 +513,32 @@ public class GameService
     public LocalCultDef? PendingLocalCultDef =>
         PendingLocalCultId == null ? null : LocalCultData.Find(PendingLocalCultId);
 
+    private void CheckLocalCultBattles()
+    {
+        if (_state.LocalCultBattles == null) return;
+        foreach (var battle in _state.LocalCultBattles.ToList())
+        {
+            if (battle.Status != LocalCultBattleStatus.Victory) continue;
+            var def = LocalCultData.Find(battle.CultId);
+            if (def != null && PendingLocalCultId == null)
+            {
+                PendingLocalCultId = battle.CultId;
+            }
+        }
+    }
+
+    private void CheckRivalBattleResults()
+    {
+        var rs = _state.RivalCultsOrInit;
+        foreach (var battle in rs.RivalBattles.ToList())
+        {
+            if (battle.Phase != RivalBattlePhase.Victory) continue;
+            var rival = rs.GetRival(battle.RivalId);
+            if (rival?.Defeated == true)
+                CheckContinentCompletion();
+        }
+    }
+
     public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; CheckContinentCompletion(); NotifyChanged(); }
     public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
     public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
@@ -506,7 +574,33 @@ public class GameService
         return r;
     }
 
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
+    // ── Rival Cult Battles ──
+    public IReadOnlyList<(RivalCultDef def, RivalCultState state)> ActiveRivals => RivalCultEngine.ActiveRivals(_state);
+    public RivalBattleState? GetRivalBattle(string rivalId)
+    {
+        try { return RivalCultEngine.GetOrCreateRivalBattle(_state, rivalId); }
+        catch { return null; }
+    }
+    public (bool success, string message) DeployRivalBattleAgents(string rivalId, AgentType type, int count)
+    {
+        var r = RivalCultEngine.DeployRivalBattleAgents(_state, rivalId, type, count);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) WithdrawRivalBattleAgents(string rivalId)
+    {
+        var r = RivalCultEngine.WithdrawRivalBattleAgents(_state, rivalId);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) StartRivalBattle(string rivalId)
+    {
+        var r = RivalCultEngine.StartRivalBattle(_state, rivalId);
+        NotifyChanged();
+        return r;
+    }
+
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; LoadSucceeded = true; await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
     {
@@ -527,6 +621,8 @@ public class GameService
 
     public async Task SaveAsync()
     {
+        if (!LoadSucceeded && string.IsNullOrWhiteSpace(_state.CultName))
+            return;\n
         await _saveLock.WaitAsync();
         try
         {
@@ -546,11 +642,39 @@ public class GameService
                 await _js.InvokeVoidAsync("eval", $"window.__cultSaveJson={JsonSerializer.Serialize(json)};");
             }
             catch { }
+
+            // Cloud save via Supabase JS interop (replaces old GitHub Gist approach)
+            if (!_isCloudSaving)
+            {
+                var now = DateTime.UtcNow;
+                if (now - _lastCloudSave >= TimeSpan.FromSeconds(10))
+                {
+                    _lastCloudSave = now;
+                    _isCloudSaving = true;
+                    _ = CloudSaveToSupabaseAsync(json);
+                }
+            }
         }
         finally
         {
             _lastSave = DateTime.UtcNow;
             _saveLock.Release();
+        }
+    }
+
+    private async Task CloudSaveToSupabaseAsync(string json)
+    {
+        try
+        {
+            await _js.InvokeVoidAsync("supabaseAuth.saveToCloud", json);
+        }
+        catch
+        {
+            // User not signed in or supabaseAuth not ready — silently skip
+        }
+        finally
+        {
+            _isCloudSaving = false;
         }
     }
 }

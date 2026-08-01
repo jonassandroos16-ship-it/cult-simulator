@@ -40,4 +40,7 @@ public static class GameBalance
     public const int CovensPerContinent = 5;
     public const int TotalContinents = 7;
     public const int TotalCovens = 35;
+
+    public const int AgentPoolBaseCap = 10;
+    public const int BarracksAgentCapPerLevel = 5;
 }
