@@ -31,7 +31,6 @@ public static class CultistHierarchy
         return minion;
     }
 
-    /// <summary>Recruits a disciple of the player's chosen role, spending 100 Initiates.</summary>
     public static Minion? RecruitUnit(OccultState o, PromotedRole role)
     {
         if (!CanRecruitUnit(o)) return null;
@@ -88,6 +87,15 @@ public static class CultistHierarchy
     {
         double mult = 1.0;
         foreach (var m in o.Minions) if (m.Role == PromotedRole.Zealot) mult *= m.Trait?.RaidPowerMult ?? 1.0;
+        if (o.HighCouncil.Any(c => c.Role == CouncilRole.Archon)) mult *= 1.5;
+        return mult;
+    }
+
+    public static double AgentProductionMult(OccultState o)
+    {
+        double mult = 1.0;
+        int zealotCount = o.Minions.Count(m => m.Role == PromotedRole.Zealot);
+        mult += zealotCount * OccultBalance.ZealotAgentProdBonusPerSec;
         if (o.HighCouncil.Any(c => c.Role == CouncilRole.Archon)) mult *= 1.5;
         return mult;
     }
