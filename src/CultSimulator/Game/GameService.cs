@@ -16,6 +16,7 @@ public class GameService
     private DateTime _lastSave = DateTime.UtcNow;
     private DateTime _lastCloudSave = DateTime.UtcNow;
     private readonly SemaphoreSlim _saveLock = new(1, 1);
+    private bool _isCloudSaving;
     public CloudSaveService Cloud => _cloud;
 
     public GameState State => _state;
@@ -62,7 +63,6 @@ public class GameService
     public async Task InitAsync()
     {
         await _locations.LoadAsync();
-        await _cloud.InitAsync();
         bool loadedFromCloud = false;
         try
         {
@@ -75,23 +75,38 @@ public class GameService
                 _state = loaded;
                 LoadSucceeded = true;
             }
-            else if (_cloud.HasToken)
+
+            // Try Supabase cloud save (via JS interop) — takes priority if newer
+            try
             {
-                var cloudJson = await _cloud.LoadFromCloudAsync();
-                if (!string.IsNullOrWhiteSpace(cloudJson))
+                var user = await _js.InvokeAsync<JsonElement?>("supabaseAuth.getSession");
+                if (user != null && user.Value.ValueKind != JsonValueKind.Null)
                 {
-                    var (cloudLoaded, cloudOk) = SaveLoad.LoadGameWithBackup(cloudJson, null, null);
-                    if (cloudOk)
+                    var cloudSave = await _js.InvokeAsync<JsonElement?>("supabaseAuth.loadSave");
+                    if (cloudSave != null && cloudSave.Value.ValueKind != JsonValueKind.Null)
                     {
-                        _state = cloudLoaded;
-                        LoadSucceeded = true;
-                        loadedFromCloud = true;
+                        var cloudJson = cloudSave.Value.GetRawText();
+                        if (!string.IsNullOrWhiteSpace(cloudJson) && cloudJson != "null")
+                        {
+                            var (cloudLoaded, cloudOk) = SaveLoad.LoadGameWithBackup(cloudJson, null, null);
+                            if (cloudOk)
+                            {
+                                var localTime = success ? loaded.LastSavedAt : 0;
+                                if (cloudLoaded.LastSavedAt > localTime)
+                                {
+                                    _state = cloudLoaded;
+                                    LoadSucceeded = true;
+                                    loadedFromCloud = true;
+                                }
+                            }
+                        }
                     }
-                    else { _state = loaded; LoadSucceeded = false; }
                 }
-                else { _state = loaded; LoadSucceeded = false; }
             }
-            else { _state = loaded; LoadSucceeded = false; }
+            catch { /* supabaseAuth not ready yet — that's fine, local save is used */ }
+
+            if (!LoadSucceeded && !success)
+                _state = loaded;
         }
         catch { _state = GameEngine.InitialState(); LoadSucceeded = false; }
         _locations.SyncFootholds(_state);
@@ -631,13 +646,15 @@ public class GameService
             }
             catch { }
 
-            if (_cloud.HasToken)
+            // Cloud save via Supabase JS interop (replaces old GitHub Gist approach)
+            if (!_isCloudSaving)
             {
                 var now = DateTime.UtcNow;
                 if (now - _lastCloudSave >= TimeSpan.FromSeconds(10))
                 {
                     _lastCloudSave = now;
-                    _ = _cloud.SaveToCloudAsync(json);
+                    _isCloudSaving = true;
+                    _ = CloudSaveToSupabaseAsync(json);
                 }
             }
         }
@@ -645,6 +662,22 @@ public class GameService
         {
             _lastSave = DateTime.UtcNow;
             _saveLock.Release();
+        }
+    }
+
+    private async Task CloudSaveToSupabaseAsync(string json)
+    {
+        try
+        {
+            await _js.InvokeVoidAsync("supabaseAuth.saveToCloud", json);
+        }
+        catch
+        {
+            // User not signed in or supabaseAuth not ready — silently skip
+        }
+        finally
+        {
+            _isCloudSaving = false;
         }
     }
 }
