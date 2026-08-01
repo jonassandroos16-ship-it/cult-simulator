@@ -155,7 +155,7 @@ public class CultGameTests
         s.HomeCoven.Followers = 10;
         s.HomeCoven.Buildings[BuildingType.Shrine] = 2;
         s.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() - 10000;
-        var (faith, gold) = GameEngine.ApplyOfflineIncome(s, 10000);
+        var (faith, gold, _, _) = GameEngine.ApplyOfflineIncome(s, 10000);
         Assert.True(faith > 0);
     }
 
