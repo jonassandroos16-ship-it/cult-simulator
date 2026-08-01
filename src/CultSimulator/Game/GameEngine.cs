@@ -103,15 +103,11 @@ public static class GameEngine
     public static int BankBuildingCost(int owned) => (int)Math.Ceiling(GameBalance.BankBaseCost * Math.Pow(GameBalance.BankCostGrowth, owned));
 
     public static bool CanAfford(CovenState s, int faithCost, int goldCost) => s.Faith >= faithCost && s.Gold >= goldCost;
+    public static bool CanAffordUpgrade(CovenState s, UpgradeDef def) => s.Faith >= def.FaithCost && s.Gold >= def.GoldCost && Game.State.ShadowWarOrInit.AvailableAgents >= def.AgentCost;
 
     public static bool UpgradeUnlocked(CovenState s, UpgradeDef def) => s.Followers >= def.UnlockFollowers;
-
-    public static void BuyUpgrade(CovenState s, UpgradeId id)
-    {
-        var def = Upgrades.First(u => u.Id == id);
-        if (!UpgradeUnlocked(s, def) || s.HasUpgrade(id) || !CanAfford(s, def.FaithCost, def.GoldCost)) return;
-        s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; s.Upgrades.Add(id);
-    }
+    public static bool CanBuyUpgrade(CovenState s, UpgradeDef def) => !s.HasUpgrade(def.Id) && UpgradeUnlocked(s, def) && CanAffordUpgrade(s, def);
+    public static void BuyUpgrade(CovenState s, UpgradeId id) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; if (def.AgentCost > 0) Game.State.ShadowWarOrInit.TotalAgents -= def.AgentCost; s.Upgrades.Add(id); }
 
     public static void BuyBank(CovenState s) { int owned = s.Buildings.GetValueOrDefault(BuildingType.Bank); int cost = BankBuildingCost(owned); if (s.Gold < cost) return; s.Gold -= cost; s.Buildings[BuildingType.Bank] = owned + 1; }
 
@@ -123,4 +119,8 @@ public static class GameEngine
         foreach (var coven in state.Covens) { if (!coven.TakenOver) continue; var (fps, gps) = TickIncome(coven); f += fps; g += gps; }
         return (f, g);
     }
+
+    public static bool UpgradeUnlocked(GameState s, UpgradeDef def) => UpgradeUnlocked(s.ActiveCoven, def);
+    public static bool CanBuyUpgrade(GameState s, UpgradeDef def) => CanBuyUpgrade(s.ActiveCoven, def);
+    public static bool CanAfford(GameState s, int faithCost, int goldCost) => CanAfford(s.ActiveCoven, faithCost, goldCost);
 }
