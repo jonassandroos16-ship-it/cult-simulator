@@ -2,7 +2,7 @@
 // CULT SIMULATOR — Procedural Audio Engine (Tone.js)
 // ============================================================================
 // All music and SFX are synthesized in-browser. No audio files needed.
-// Requires Tone.js loaded via CDN <script> tag in index.html.
+// Requires Tone.js loaded via local <script> tag in index.html (js/tone.js).
 //
 // EXPOSED FUNCTIONS (called from C# via JS interop on window.cultAudio):
 //   playTrack(name)                  — "menu"|"gameplay"|"map"|"combat"
@@ -313,20 +313,27 @@ const UI_SOUNDS = {
 // ============================================================================
 
 window.cultAudio = (function () {
-  let _musicVol = 0.5;
-  let _sfxVol = 0.6;
+  let _musicVol = parseFloat(localStorage.getItem("cult_musicVol")) || 0.5;
+  let _sfxVol = parseFloat(localStorage.getItem("cult_sfxVol")) || 0.6;
   let _currentTrack = null;
   let _nodes = null;
   let _started = false;
   let _gestureListenerAttached = false;
+  let _pendingTrack = null;
 
   // --- Audio context startup ----------------------------------------------
 
   async function ensureStarted() {
     if (_started) return;
-    if (typeof Tone === "undefined") return;
+    if (typeof Tone === "undefined") { console.warn("[cultAudio] Tone.js not loaded — audio disabled."); return; }
     await Tone.start();
     _started = true;
+    // If a track was requested before the audio context was ready, start it now.
+    if (_pendingTrack) {
+      var pending = _pendingTrack;
+      _pendingTrack = null;
+      playTrackInternal(pending.key, pending.name, pending.continentId);
+    }
   }
 
   // Attach a one-time listener so the audio context resumes on the first
@@ -765,7 +772,7 @@ window.cultAudio = (function () {
 
   async function playTrackInternal(trackKey, trackName, continentId) {
     await ensureStarted();
-    if (!_started) return; // Tone not loaded yet
+    if (!_started) { _pendingTrack = { key: trackKey, name: trackName, continentId }; return; }
 
     if (_currentTrack === trackKey) return;
     _currentTrack = trackKey;
@@ -859,6 +866,7 @@ window.cultAudio = (function () {
 
     setMusicVolume: function (v) {
       _musicVol = Math.max(0, Math.min(1, v));
+      try { localStorage.setItem("cult_musicVol", _musicVol); } catch (e) {}
       if (_nodes) {
         const db = Tone.gainToDb(_musicVol);
         _nodes.nodes.forEach(n => {
@@ -869,10 +877,15 @@ window.cultAudio = (function () {
 
     setSfxVolume: function (v) {
       _sfxVol = Math.max(0, Math.min(1, v));
+      try { localStorage.setItem("cult_sfxVol", _sfxVol); } catch (e) {}
     },
 
     getCurrentTrack: function () {
       return _currentTrack;
+    },
+
+    getVolumes: function () {
+      return { music: _musicVol, sfx: _sfxVol };
     }
   };
 })();
