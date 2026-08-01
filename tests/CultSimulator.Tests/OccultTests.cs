@@ -116,22 +116,21 @@ public class OccultTests
     }
 
     [Fact]
-    public void Conquer_RequiresFaithAndArmy()
+    public void Conquer_RequiresFaith()
     {
         var state = NewState();
         Assert.False(WorldMapSystem.CanConquer(state, OccultData.MapNode("skanor_runestone")));
-        state.ActiveCoven.Faith = 150; state.Occult.ArmyPower = 10;
+        state.ActiveCoven.Faith = 150;
         Assert.True(WorldMapSystem.CanConquer(state, OccultData.MapNode("skanor_runestone")));
     }
 
     [Fact]
-    public void Conquer_SpendsResources()
+    public void Conquer_SpendsFaith()
     {
         var state = NewState();
-        state.ActiveCoven.Faith = 1000; state.Occult.ArmyPower = 100;
+        state.ActiveCoven.Faith = 1000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
         Assert.Equal(850, state.ActiveCoven.Faith);
-        Assert.Equal(90, state.Occult.ArmyPower);
         Assert.True(WorldMapSystem.IsConquered(state.Occult, "skanor_runestone"));
     }
 
@@ -139,7 +138,7 @@ public class OccultTests
     public void SetStance_ChangesNodeStance()
     {
         var state = NewState();
-        state.ActiveCoven.Faith = 1000; state.Occult.ArmyPower = 100;
+        state.ActiveCoven.Faith = 1000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
         WorldMapSystem.SetStance(state.Occult, "skanor_runestone", NodeStance.Veil);
         Assert.Equal(NodeStance.Veil, WorldMapSystem.GetNode(state.Occult, "skanor_runestone")!.Stance);
@@ -149,7 +148,7 @@ public class OccultTests
     public void VeilMode_GeneratesZeroSuspicion()
     {
         var state = NewState();
-        state.ActiveCoven.Faith = 1000; state.Occult.ArmyPower = 100;
+        state.ActiveCoven.Faith = 1000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
         WorldMapSystem.SetStance(state.Occult, "skanor_runestone", NodeStance.Veil);
         Assert.Equal(0, WorldMapSystem.TotalSuspicionPerSec(state.Occult));
@@ -160,7 +159,7 @@ public class OccultTests
     {
         var state = NewState();
         state.Occult.Suspicion = 99;
-        state.ActiveCoven.Faith = 100000; state.Occult.ArmyPower = 10000;
+        state.ActiveCoven.Faith = 100000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_mound"));
         WorldMapSystem.TickSuspicion(state.Occult, 100);
         Assert.Equal(OccultBalance.SuspicionMax, state.Occult.Suspicion);
@@ -188,7 +187,7 @@ public class OccultTests
     public void LeyLine_RequiresTwoConqueredNodes()
     {
         var state = NewState();
-        state.ActiveCoven.Faith = 100000; state.Occult.ArmyPower = 10000;
+        state.ActiveCoven.Faith = 100000;
         Assert.False(WorldMapSystem.IsConquered(state.Occult, "skanor_runestone"));
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
         Assert.True(WorldMapSystem.IsConquered(state.Occult, "skanor_runestone"));
@@ -281,7 +280,7 @@ public class OccultTests
     {
         var state = NewState();
         state.Occult.LifetimeFaith = 4_000_000;
-        state.ActiveCoven.Faith = 100000; state.Occult.ArmyPower = 10000;
+        state.ActiveCoven.Faith = 100000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
         Assert.Equal(2.0, Math.Floor(GrandSacrifice.CalculateFavor(state)));
     }
@@ -381,7 +380,7 @@ public class OccultTests
         var faithBefore = state.ActiveCoven.Faith;
         OccultEngine.Tick(state, 1.0);
         Assert.True(state.ActiveCoven.Faith > faithBefore);
-        state.ActiveCoven.Faith = 10000; state.Occult.ArmyPower = 1000;
+        state.ActiveCoven.Faith = 10000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
         var mapFaithBefore = state.ActiveCoven.Faith;
         OccultEngine.Tick(state, 1.0);
@@ -436,7 +435,7 @@ public class OccultTests
     {
         var state = NewState();
         state.Occult.Initiates = 10;
-        state.ActiveCoven.Faith = 10000; state.Occult.ArmyPower = 1000;
+        state.ActiveCoven.Faith = 10000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
         var baseFaith = OccultEngine.TotalMapFaithPerSec(state);
         state.Occult.UnlockedTechs.Add(TechId.MassHysteria);
