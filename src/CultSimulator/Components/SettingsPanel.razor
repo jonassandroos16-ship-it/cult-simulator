@@ -1,0 +1,86 @@
+@using CultSimulator.Game
+@inject GameService Game
+@implements IDisposable
+
+<div class="panel glass-panel rounded-[20px] p-5 md:p-6">
+    <h2 class="panel-title">Settings</h2>
+
+    <div class="mb-6">
+        <h3 class="font-display text-sm tracking-[0.2em] uppercase text-violet-300 mb-2">Cloud Save</h3>
+        <p class="text-sm text-violet-300/80 mb-4 leading-relaxed">
+            Connect a GitHub Personal Access Token to back up your save to a private GitHub Gist.
+            Your save will survive browser data clearing and can be shared across devices.
+        </p>
+
+        @if (tokenValid == true)
+        {
+            <div class="mb-4 p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
+                Token verified. Cloud saves are active.
+            </div>
+        }
+        else if (tokenValid == false)
+        {
+            <div class="mb-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+                Token validation failed. Check your token and try again.
+            </div>
+        }
+
+        <label class="block text-xs uppercase tracking-[0.15em] text-violet-300 mb-1.5">GitHub Token</label>
+        <input type="password" @bind="tokenInput" placeholder="ghp_..." class="w-full px-3 py-2 rounded-lg bg-black/30 border border-violet-500/20 text-amber-100 text-sm focus:outline-none focus:border-violet-400/50 mb-3" />
+        <p class="text-xs text-violet-400/60 mb-4 leading-relaxed">
+            Create one at github.com/settings/tokens (classic) with the "gist" scope.
+            The token is stored only in your browser's local storage.
+        </p>
+
+        <div class="flex gap-3 flex-wrap">
+            @if (Game.Cloud.HasToken)
+            {
+                <button class="ghost-button px-4 py-2 text-sm text-red-300" @onclick="Disconnect">Disconnect</button>
+            }
+            <button class="primary-button px-4 py-2 text-sm" @onclick="SaveToken">Save Token</button>
+        </div>
+    </div>
+
+    <div class="border-t border-white/[0.06] pt-6">
+        <h3 class="font-display text-sm tracking-[0.2em] uppercase text-red-300/80 mb-2">Danger Zone</h3>
+        <p class="text-sm text-slate-400 mb-4 leading-relaxed">
+            Abandon your cult and start over from the beginning. This cannot be undone.
+        </p>
+        <button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button>
+    </div>
+</div>
+
+@code {
+    private string tokenInput = "";
+    private bool? tokenValid;
+
+    protected override void OnParametersSet()
+    {
+        if (string.IsNullOrEmpty(tokenInput))
+        {
+            tokenValid = Game.Cloud.HasToken ? true : null;
+        }
+    }
+
+    private async Task SaveToken()
+    {
+        if (string.IsNullOrWhiteSpace(tokenInput)) return;
+        await Game.Cloud.SetTokenAsync(tokenInput);
+        var valid = await Game.Cloud.ValidateTokenAsync();
+        tokenValid = valid;
+        if (valid) tokenInput = "";
+    }
+
+    private async Task Disconnect()
+    {
+        await Game.Cloud.SetTokenAsync("");
+        tokenValid = null;
+        tokenInput = "";
+    }
+
+    private async Task ResetGame() => await Game.ResetAsync();
+
+    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    private void StateChanged() => _ = InvokeAsync(StateHasChanged);
+    public void Dispose() => Game.OnChange -= StateChanged;
+}

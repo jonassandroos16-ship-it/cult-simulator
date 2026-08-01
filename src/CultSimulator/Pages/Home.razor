@@ -22,7 +22,7 @@ else if (Game.NeedsStory)
 else
 {
     <div class="game-container max-w-5xl mx-auto px-4 pb-12 pt-6 @themeClass">
-        <ResourceBar OnOpenCloudSettings="OpenCloudSettings" />
+        <ResourceBar />
         <div class="bookmark-tabs">
             <button class="bookmark-tab @(activeTab == "preach" ? "active" : "")" @onclick='() => SwitchTab("preach")'><span class="bookmark-tab-icon">🕯️</span><span class="bookmark-tab-label">Preach</span></button>
             <button class="bookmark-tab @(activeTab == "map" ? "active" : "")" @onclick='() => SwitchTab("map")'><span class="bookmark-tab-icon">🗺️</span><span class="bookmark-tab-label">Map</span></button>
@@ -32,6 +32,7 @@ else
             <button class="bookmark-tab @(activeTab == "ascension" ? "active" : "")" @onclick='() => SwitchTab("ascension")'><span class="bookmark-tab-icon">🌟</span><span class="bookmark-tab-label">Ascension</span></button>
             <button class="bookmark-tab @(activeTab == "bank" ? "active" : "")" @onclick='() => SwitchTab("bank")'><span class="bookmark-tab-icon">🏦</span><span class="bookmark-tab-label">Bank</span></button>
             <button class="bookmark-tab @(activeTab == "battle" ? "active" : "")" @onclick='() => SwitchTab("battle")'><span class="bookmark-tab-icon">⚔️</span><span class="bookmark-tab-label">Battle</span></button>
+            <button class="bookmark-tab @(activeTab == "settings" ? "active" : "")" @onclick='() => SwitchTab("settings")'><span class="bookmark-tab-icon">⚙️</span><span class="bookmark-tab-label">Settings</span></button>
         </div>
         @if (activeTab == "preach")
         {
@@ -39,35 +40,31 @@ else
                 <div class="game-left flex flex-col gap-6"><PreachAltar OnPreach="OnPreach" OnRecruit="OnRecruit" /></div>
                 <div class="game-right flex flex-col gap-6"><BuildingsPanel /><UpgradesPanel /></div>
             </div>
-            <div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div>
-        }
+            }
         else if (activeTab == "sanctum")
         {
             <div class="game-main grid grid-cols-1 md:grid-cols-[1fr_1.3fr] gap-6">
                 <div class="game-left flex flex-col gap-6"><SanctumPanel /></div>
                 <div class="game-right flex flex-col gap-6"></div>
             </div>
-            <div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div>
         }
-        else if (activeTab == "codex") { <CodexPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "grimoire") { <GrimoirePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "codex") { <CodexPanel /> }
+        else if (activeTab == "grimoire") { <GrimoirePanel /> }
 
-        else if (activeTab == "ascension") { <GrandSacrificePanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "bank") { <BankPanel /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "battle") { <BattlePanel OnViewMap="SwitchToBattleMap" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
-        else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /><div class="game-footer mt-8 text-center"><button class="reset-button ghost-button" @onclick="ResetGame">Abandon Cult</button></div> }
+        else if (activeTab == "ascension") { <GrandSacrificePanel /> }
+        else if (activeTab == "bank") { <BankPanel /> }
+        else if (activeTab == "battle") { <BattlePanel OnViewMap="SwitchToBattleMap" /> }
+        else if (activeTab == "settings") { <SettingsPanel /> }
+        else if (activeTab == "map") { <WorldMap InitialMode="@mapInitialMode" /> }
     </div>
-    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><OfflineReportPopup /><RankUpModal /><VictoryScreen /><ContinentStoryScreen /><CloudSaveSettingsModal show="@showCloudSettings" OnClose="CloseCloudSettings" />
+    <ConversionModal /><EventModal /><GenericPopup /><LocalCultModal /><LocalCultSpawnModal /><OfflineReportPopup /><RankUpModal /><VictoryScreen /><ContinentStoryScreen />
 }
 
 @code {
     private bool initialized = false;
     private string activeTab = "preach";
     private string mapInitialMode = "world";
-    private bool showCloudSettings = false;
     private string themeClass => ComputeThemeClass();
-    private void OpenCloudSettings() => showCloudSettings = true;
-    private void CloseCloudSettings() => showCloudSettings = false;
 
     private string ComputeThemeClass()
     {
@@ -83,7 +80,6 @@ else
     private void StoryDismissed() { }
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
-    private async Task ResetGame() { await Game.ResetAsync(); }
     public void Dispose() { Game.OnChange -= StateChanged; _ = Game.SaveAsync(); }
     [Microsoft.JSInterop.JSInvokable] public async Task SyncSaveJsonToJS() => await Game.SyncSaveJsonToJSAsync();
     [Microsoft.JSInterop.JSInvokable] public async Task SaveOnExit() => await Game.SaveAsync();
