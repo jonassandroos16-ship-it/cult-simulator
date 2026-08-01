@@ -61,6 +61,14 @@ public static class ShadowWarEngine
         return strength;
     }
 
+    public static int AgentPoolCap(GameState state)
+    {
+        int cap = GameBalance.AgentPoolBaseCap;
+        int barracks = state.ActiveCoven.Buildings.GetValueOrDefault(BuildingType.Barracks);
+        cap += barracks * GameBalance.BarracksAgentCapPerLevel;
+        return cap;
+    }
+
     public static double FaithMultiplierBonus(ShadowWarState sw) => 0.0;
 
     public static double ReconRiskMultiplier(ShadowWarState sw)
@@ -110,7 +118,10 @@ public static class ShadowWarEngine
     public static void Tick(ShadowWarState sw, GameState state, WorldLocationService locations, double deltaSec)
     {
         double agentProd = AgentProductionPerSec(sw, state);
-        sw.TotalAgents += agentProd * deltaSec;
+        int cap = AgentPoolCap(state);
+        double effectiveCap = cap - sw.DeployedAgents - sw.SpentAgents;
+        double potentialNew = sw.TotalAgents + agentProd * deltaSec;
+        sw.TotalAgents = Math.Min(potentialNew, cap);
 
         foreach (var inst in sw.Institutions)
         {
