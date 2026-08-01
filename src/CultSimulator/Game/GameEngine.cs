@@ -51,12 +51,12 @@ public static class GameEngine
     public static int BuildingCost(BuildingDef def, int owned) => (int)Math.Ceiling(def.BaseCost * Math.Pow(def.Growth, owned));
     public static int BankBuildingCost(int owned) => (int)Math.Ceiling(GameBalance.BankBaseCost * Math.Pow(GameBalance.BankCostGrowth, owned));
     public static bool CanAfford(CovenState s, int faithCost, int goldCost) => s.Faith >= faithCost && s.Gold >= goldCost;
-    public static bool CanAffordUpgrade(CovenState s, UpgradeDef def) => s.Faith >= def.FaithCost && s.Gold >= def.GoldCost && Game.State.ShadowWarOrInit.AvailableAgents >= def.AgentCost;
+    public static bool CanAffordUpgrade(CovenState s, UpgradeDef def, GameState state) => s.Faith >= def.FaithCost && s.Gold >= def.GoldCost && state.ShadowWarOrInit.AvailableAgents >= def.AgentCost;
 
     public static int RecruitCostFor(CovenState s) => s.Followers == 0 ? GameBalance.RecruitBaseCost : (int)Math.Ceiling(GameBalance.RecruitBaseCost * Math.Pow(GameBalance.RecruitCostGrowth, s.Followers));
     public static bool CanRecruit(CovenState s) => s.Faith >= RecruitCostFor(s);
     public static bool UpgradeUnlocked(CovenState s, UpgradeDef def) => s.Followers >= def.UnlockFollowers;
-    public static bool CanBuyUpgrade(CovenState s, UpgradeDef def) => !s.HasUpgrade(def.Id) && UpgradeUnlocked(s, def) && CanAffordUpgrade(s, def);
+    public static bool CanBuyUpgrade(CovenState s, UpgradeDef def, GameState state) => !s.HasUpgrade(def.Id) && UpgradeUnlocked(s, def) && CanAffordUpgrade(s, def, state);
 
     public static (double faith, double gold) TickIncome(CovenState s)
     {
@@ -197,7 +197,7 @@ public static class GameEngine
     }
     public static void BuyBuilding(CovenState s, BuildingType type) { var def = GameData.Buildings.First(b => b.Type == type); int owned = s.Buildings.GetValueOrDefault(type); int cost = BuildingCost(def, owned); if (def.CostResource == ResourceKind.Faith) { if (s.Faith < cost) return; s.Faith -= cost; } else { if (s.Gold < cost) return; s.Gold -= cost; } s.Buildings[type] = owned + 1; }
     public static void BuyBank(CovenState s) { int owned = s.Buildings.GetValueOrDefault(BuildingType.Bank); int cost = BankBuildingCost(owned); if (s.Gold < cost) return; s.Gold -= cost; s.Buildings[BuildingType.Bank] = owned + 1; }
-    public static void BuyUpgrade(CovenState s, UpgradeId id) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; if (def.AgentCost > 0) Game.State.ShadowWarOrInit.TotalAgents -= def.AgentCost; s.Upgrades.Add(id); }
+    public static void BuyUpgrade(CovenState s, UpgradeId id, GameState state) { var def = GameData.Upgrades.First(u => u.Id == id); if (!CanBuyUpgrade(s, def, state)) return; s.Faith -= def.FaithCost; s.Gold -= def.GoldCost; if (def.AgentCost > 0) state.ShadowWarOrInit.TotalAgents -= def.AgentCost; s.Upgrades.Add(id); }
 
     public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, BaseMultiplier = 1.0, Occult = new OccultState { ArmyPower = 50 } } }, ShadowWar = ShadowWarEngine.CreateInitialState(), StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
 
@@ -206,7 +206,7 @@ public static class GameEngine
     public static int RecruitCostFor(GameState s) => RecruitCostFor(s.ActiveCoven);
     public static bool CanRecruit(GameState s) => CanRecruit(s.ActiveCoven);
     public static bool UpgradeUnlocked(GameState s, UpgradeDef def) => UpgradeUnlocked(s.ActiveCoven, def);
-    public static bool CanBuyUpgrade(GameState s, UpgradeDef def) => CanBuyUpgrade(s.ActiveCoven, def);
+    public static bool CanBuyUpgrade(GameState s, UpgradeDef def) => CanBuyUpgrade(s.ActiveCoven, def, s);
     public static bool CanAfford(GameState s, int faithCost, int goldCost) => CanAfford(s.ActiveCoven, faithCost, goldCost);
     public static (double faith, double gold) TickIncome(GameState s) => TickIncome(s.ActiveCoven);
     public static double Preach(GameState s) { s.ActiveCoven.PreachCount++; var gained = PreachMultiplier(s); s.ActiveCoven.Faith += gained; return gained; }
@@ -214,5 +214,5 @@ public static class GameEngine
     public static int RecruitMultiple(GameState s, int max) => RecruitMultiple(s.ActiveCoven, max);
     public static void BuyBuilding(GameState s, BuildingType type) => BuyBuilding(s.ActiveCoven, type);
     public static void BuyBank(GameState s) => BuyBank(s.ActiveCoven);
-    public static void BuyUpgrade(GameState s, UpgradeId id) => BuyUpgrade(s.ActiveCoven, id);
+    public static void BuyUpgrade(GameState s, UpgradeId id) => BuyUpgrade(s.ActiveCoven, id, s);
 }
