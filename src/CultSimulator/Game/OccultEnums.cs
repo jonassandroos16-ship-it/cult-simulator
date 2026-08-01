@@ -44,6 +44,7 @@ public enum CauldronRecipeId
     VoidTincture,
     MindPhiltre,
     FleshBrew,
+    WarElixir,
     BloodForge,
     VoidForge,
     MindForge,

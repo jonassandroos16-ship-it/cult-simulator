@@ -23,7 +23,7 @@ public static class Cauldron
         var sw = ShadowWarEngine.EnsureInitialized(state);
         if (!CanCraft(state, recipe)) return (false, null);
 
-        sw.TotalAgents -= recipe.AgentCost;
+        sw.SpentAgents += recipe.AgentCost;
 
         if (recipe.IsPermanent)
         {
@@ -53,6 +53,10 @@ public static class Cauldron
             case CauldronRecipeId.VoidTincture: o.ElixirFaithMult = 1.5; break;
             case CauldronRecipeId.MindPhiltre: o.ElixirSuspicionMult = 0.5; break;
             case CauldronRecipeId.FleshBrew: o.Initiates += 100; break;
+            case CauldronRecipeId.WarElixir:
+                o.ElixirWarStrengthMult = 1.5;
+                o.ElixirTimer = OccultBalance.WarElixirDurationSec;
+                break;
         }
     }
 
@@ -60,6 +64,13 @@ public static class Cauldron
     {
         if (o.ElixirTimer <= 0) return;
         o.ElixirTimer -= deltaSec;
-        if (o.ElixirTimer <= 0) { o.ElixirTimer = 0; o.ElixirTapMult = 1.0; o.ElixirFaithMult = 1.0; o.ElixirSuspicionMult = 1.0; }
+        if (o.ElixirTimer <= 0)
+        {
+            o.ElixirTimer = 0;
+            o.ElixirTapMult = 1.0;
+            o.ElixirFaithMult = 1.0;
+            o.ElixirSuspicionMult = 1.0;
+            o.ElixirWarStrengthMult = 1.0;
+        }
     }
 }

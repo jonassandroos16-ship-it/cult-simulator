@@ -50,6 +50,7 @@ public static class OccultData
         new CauldronRecipeDef(CauldronRecipeId.VoidTincture, "Void Tincture", "💧", 10, "+50% Faith generation for 60s", false),
         new CauldronRecipeDef(CauldronRecipeId.MindPhiltre, "Mind Philtre", "🧠", 10, "-50% Suspicion for 60s", false),
         new CauldronRecipeDef(CauldronRecipeId.FleshBrew, "Flesh Brew", "🥕", 15, "+100 Acolytes instantly", false),
+        new CauldronRecipeDef(CauldronRecipeId.WarElixir, "War Elixir", "⚗️", 20, "+50% battle agent attack for 120s", false),
         new CauldronRecipeDef(CauldronRecipeId.BloodForge, "Blood Forge", "🍷", 30, "Forge a random Blood artifact", true),
         new CauldronRecipeDef(CauldronRecipeId.VoidForge, "Void Forge", "🔮", 30, "Forge a random Void artifact", true),
         new CauldronRecipeDef(CauldronRecipeId.MindForge, "Mind Forge", "👁️", 30, "Forge a random Mind artifact", true),

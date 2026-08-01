@@ -220,6 +220,7 @@ public static class BattleEngine
     private static double CalculatePlayerAttack(BattleState battle, ShadowWarState sw, GameState state)
     {
         double strength = ShadowWarEngine.AgentStrength(sw, state);
+        strength *= state.Occult.ElixirWarStrengthMult;
         double attack = 0;
         foreach (var slot in battle.DeployedSquad)
         {

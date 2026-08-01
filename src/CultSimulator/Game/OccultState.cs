@@ -58,6 +58,7 @@ public class OccultState
     public double ElixirTapMult { get; set; } = 1.0;
     public double ElixirFaithMult { get; set; } = 1.0;
     public double ElixirSuspicionMult { get; set; } = 1.0;
+    public double ElixirWarStrengthMult { get; set; } = 1.0;
     public double ElixirTimer { get; set; }
     public List<string[]> LeyLines { get; set; } = new();
 
