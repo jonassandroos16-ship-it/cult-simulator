@@ -62,7 +62,11 @@ public static class BattleEngine
         int totalCost = def.AgentCost * count;
         if (sw.AvailableAgents < totalCost)
             return (false, $"Not enough agents. Need {totalCost}, have {(int)sw.AvailableAgents}.");
-        sw.TotalAgents -= totalCost;
+        int maxForType = MaxAgentsForType(sw, state, type);
+        sw.RecruitedAgents.TryGetValue(type, out int currentRecruited);
+        if (type != AgentType.Initiate && currentRecruited + count > maxForType)
+            return (false, $"Max {maxForType} {def.Name}s allowed (based on promoted minions). You have {currentRecruited}.");
+        sw.SpentAgents += totalCost;
         sw.RecruitedAgents.TryGetValue(type, out int existing);
         sw.RecruitedAgents[type] = existing + count;
         return (true, $"Recruited {count} {def.Name}.");

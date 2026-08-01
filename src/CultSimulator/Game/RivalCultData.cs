@@ -36,7 +36,31 @@ public static class RivalCultData
             RivalCultArchetype.TheObsidianCircle,
             "An ancient cabal of sorcerer-aristocrats. Slow to act but devastating when they commit.",
             "africa",
-            0.04, 1.8, 0.5)
+            0.04, 1.8, 0.5),
+        new RivalCultDef(
+            "silver_legion",
+            "The Silver Legion",
+            "🛡️",
+            RivalCultArchetype.TheSilentChoir,
+            "A modern occult syndicate that controls media narratives and government puppets. Adaptable and well-funded.",
+            "north_america",
+            0.07, 1.1, 0.6),
+        new RivalCultDef(
+            "deep_current",
+            "The Deep Current",
+            "🌊",
+            RivalCultArchetype.TheCrimsonConclave,
+            "Isolationist sorcerers of the southern seas. Few in number but their distance makes reinforcement slow.",
+            "oceania",
+            0.03, 1.3, 0.3),
+        new RivalCultDef(
+            "iron_caliphate",
+            "The Iron Caliphate",
+            "🕌",
+            RivalCultArchetype.TheOrderOfTheDawn,
+            "Crossroads faction blending ancient mysticism with political ambition. Multiple cells compete for dominance.",
+            "middle_east",
+            0.06, 1.4, 0.5)
     );
 
     public static RivalCultDef? Find(string id) =>

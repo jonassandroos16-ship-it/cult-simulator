@@ -180,10 +180,6 @@ public static class LocalCultBattleEngine
     {
         var def = LocalCultData.Find(battle.CultId);
         if (def == null) return;
-        var home = state.HomeCoven;
-        double faithBonus = def.RewardAmount * 1.5;
-        home.Faith += faithBonus;
-        state.Occult.LifetimeFaith += faithBonus;
         var instance = state.ActiveLocalCults.FirstOrDefault(i => i.CultId == battle.CultId);
         if (instance != null) state.ActiveLocalCults.Remove(instance);
         ClearBattle(state, battle.CultId);
