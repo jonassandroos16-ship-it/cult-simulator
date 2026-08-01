@@ -1,6 +1,7 @@
 @using CultSimulator.Game
 @inject GameService Game
 @inject IJSRuntime JS
+@inject AudioService Audio
 @implements IDisposable
 
 <div class="panel glass-panel rounded-[20px] p-5 md:p-6">
@@ -61,6 +62,31 @@
     </div>
 
     <div class="border-t border-white/[0.06] pt-6">
+        <h3 class="font-display text-sm tracking-[0.2em] uppercase text-violet-300/80 mb-2">Audio</h3>
+        <p class="text-sm text-slate-400 mb-4 leading-relaxed">
+            Adjust the volume of music and sound effects. Music starts after your first interaction with the page.
+        </p>
+        <div class="space-y-4 mb-2">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs text-violet-300 tracking-wide uppercase">Music Volume</label>
+                    <span class="text-xs text-amber-200 font-display">@((int)(musicVolume * 100))%</span>
+                </div>
+                <input type="range" min="0" max="100" value="@((int)(musicVolume * 100))" class="audio-slider w-full"
+                       @oninput="OnMusicVolumeChange" />
+            </div>
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <label class="text-xs text-violet-300 tracking-wide uppercase">Sound Effects Volume</label>
+                    <span class="text-xs text-amber-200 font-display">@((int)(sfxVolume * 100))%</span>
+                </div>
+                <input type="range" min="0" max="100" value="@((int)(sfxVolume * 100))" class="audio-slider w-full"
+                       @oninput="OnSfxVolumeChange" />
+            </div>
+        </div>
+    </div>
+
+    <div class="border-t border-white/[0.06] pt-6">
         <h3 class="font-display text-sm tracking-[0.2em] uppercase text-red-300/80 mb-2">Danger Zone</h3>
         <p class="text-sm text-slate-400 mb-4 leading-relaxed">
             Abandon your cult and start over from the beginning. This cannot be undone.
@@ -93,6 +119,38 @@
         opacity: 0.7;
         cursor: default;
     }
+    .audio-slider {
+        -webkit-appearance: none;
+        appearance: none;
+        height: 6px;
+        border-radius: 3px;
+        background: rgba(167,139,250,0.2);
+        outline: none;
+        cursor: pointer;
+    }
+    .audio-slider::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        appearance: none;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #a78bfa;
+        border: 2px solid #1e1b4b;
+        cursor: pointer;
+        transition: transform 0.15s ease;
+    }
+    .audio-slider::-webkit-slider-thumb:hover {
+        transform: scale(1.2);
+        background: #c4b5fd;
+    }
+    .audio-slider::-moz-range-thumb {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #a78bfa;
+        border: 2px solid #1e1b4b;
+        cursor: pointer;
+    }
     .google-signin-spinner {
         width: 18px;
         height: 18px;
@@ -111,6 +169,8 @@
     private bool signingIn = false;
     private bool signingOut = false;
     private string authError = "";
+    private float musicVolume = 0.5f;
+    private float sfxVolume = 0.6f;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -166,6 +226,25 @@
     }
 
     private async Task ResetGame() => await Game.ResetAsync();
+
+    private async Task OnMusicVolumeChange(Microsoft.AspNetCore.Components.ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), out var pct))
+        {
+            musicVolume = pct / 100f;
+            await Audio.SetMusicVolumeAsync(musicVolume);
+        }
+    }
+
+    private async Task OnSfxVolumeChange(Microsoft.AspNetCore.Components.ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), out var pct))
+        {
+            sfxVolume = pct / 100f;
+            await Audio.SetSfxVolumeAsync(sfxVolume);
+            await Audio.PlayClickAsync();
+        }
+    }
 
     [Microsoft.JSInterop.JSInvokable]
     public async Task OnAuthStateChanged(bool signedIn, UserInfo? user)

@@ -2,16 +2,16 @@
 // CULT SIMULATOR — Procedural Audio Engine (Tone.js)
 // ============================================================================
 // All music and SFX are synthesized in-browser. No audio files needed.
-// Requires Tone.js loaded via CDN in index.html.
+// Requires Tone.js loaded via CDN <script> tag in index.html.
 //
-// EXPOSED FUNCTIONS (called from C# via JS interop):
-//   playTrack(name)                  — play a core track: "menu"|"gameplay"|"map"|"combat"
-//   playRegionalTrack(base, contId)  — play a regionally-tinted track
+// EXPOSED FUNCTIONS (called from C# via JS interop on window.cultAudio):
+//   playTrack(name)                  — "menu"|"gameplay"|"map"|"combat"
+//   playRegionalTrack(base, contId)  — regionally-tinted gameplay/combat
 //   stopMusic()                       — fade out and stop all music
 //   playUiSound(name)                 — "click"|"hover"|"error"|"success"
 //   setMusicVolume(v)                 — 0.0–1.0
 //   setSfxVolume(v)                   — 0.0–1.0
-//   resumeAudio()                      — resume Tone context on first user gesture
+//   resumeAudio()                      — resume Tone context (call on first gesture)
 //
 // To add a new continent: add an entry to CONTINENT_CONFIG below with the
 // continent ID matching your C# ContinentThemes.ByContinent key (lowercase
@@ -31,14 +31,13 @@ const TRACK_CONFIG = {
   // Deep low pads + sparse ceremonial drum + occasional dissonant horn.
   menu: {
     rootNote: "C2",
-    scale: [0, 3, 7, 10],          // minor pentatonic-ish (C Eb G Bb)
-    tempo: 48,                       // very slow BPM
+    scale: [0, 3, 7, 10],
+    tempo: 48,
     pad: {
       oscillator: "sine",
       envelope: { attack: 4, decay: 2, sustain: 0.8, release: 6 },
-      harmonicity: 1.5,
-      detune: 8,
-      gain: -14
+      gain: -14,
+      filterFreq: 800
     },
     drone: {
       oscillator: "sawtooth",
@@ -48,14 +47,14 @@ const TRACK_CONFIG = {
     },
     horn: {
       notes: ["C3", "Eb3", "G3", "Bb3", "C4"],
-      intervalSec: 12,               // every 12s a horn stabs
+      intervalSec: 12,
       oscillator: "fatsawtooth",
       envelope: { attack: 0.08, decay: 0.3, sustain: 0.4, release: 2.5 },
       gain: -18,
       filterFreq: 800
     },
     drum: {
-      intervalSec: 2.5,              // slow ceremonial pulse
+      intervalSec: 2.5,
       pitch: "C1",
       oscillator: "sine",
       envelope: { attack: 0.005, decay: 0.4, sustain: 0, release: 0.3 },
@@ -64,17 +63,15 @@ const TRACK_CONFIG = {
   },
 
   // GAMEPLAY: darker ambient bed, subtle rhythmic undertone, low tension.
-  // Designed for long listening without fatigue.
   gameplay: {
     rootNote: "A1",
-    scale: [0, 2, 3, 5, 7, 8, 10],   // natural minor (A B C D E F G)
+    scale: [0, 2, 3, 5, 7, 8, 10],
     tempo: 60,
     pad: {
       oscillator: "sine",
       envelope: { attack: 3, decay: 1, sustain: 0.7, release: 5 },
-      harmonicity: 1.2,
-      detune: 5,
-      gain: -16
+      gain: -16,
+      filterFreq: 600
     },
     drone: {
       oscillator: "triangle",
@@ -99,17 +96,15 @@ const TRACK_CONFIG = {
   },
 
   // MAP: spacious, atmospheric, sparse — "scheming/planning" feel.
-  // Slower, fewer elements, wider stereo space.
   map: {
     rootNote: "D2",
-    scale: [0, 2, 3, 5, 7, 8, 10],   // D natural minor
+    scale: [0, 2, 3, 5, 7, 8, 10],
     tempo: 40,
     pad: {
       oscillator: "sine",
       envelope: { attack: 5, decay: 2, sustain: 0.6, release: 8 },
-      harmonicity: 2.0,
-      detune: 12,
-      gain: -15
+      gain: -15,
+      filterFreq: 800
     },
     drone: {
       oscillator: "sawtooth",
@@ -130,7 +125,7 @@ const TRACK_CONFIG = {
   // COMBAT: driving percussion, aggressive bass, faster tempo, dissonant stabs.
   combat: {
     rootNote: "E1",
-    scale: [0, 1, 4, 6, 7, 10],      // E phrygian dominant-ish (E F A Bb B D)
+    scale: [0, 1, 4, 6, 7, 10],
     tempo: 120,
     bass: {
       notes: ["E1", "E1", "E1", "F1", "E1", "E1", "Bb1", "B1"],
@@ -167,15 +162,14 @@ const TRACK_CONFIG = {
 
 // --- Per-continent regional config ----------------------------------------
 // Keys MUST match the string keys in ContinentThemes.ByContinent (C#).
-// Each entry overrides musical parameters for gameplay and combat tracks.
 // To add a new continent: copy an entry, change the key to your continent ID,
 // and adjust the scale / root / timbre / percussion style.
 //
 // Musical rationale per entry:
-//   europe       — Dorian mode on D, sine pads, slow frame-drum pulse (Norse/Viking)
-//   north_america— Aeolian on C, triangle pads, softer tom-like beats (occult colonial)
-//   south_america— Pentatonic minor on F#, sine+triangle, woodblock-style percussion
-//   asia         — Hirajoshi scale, triangle/sine, tight muted percussion (shinobi/monk)
+//   europe        — Dorian mode on D, sine pads, slow frame-drum pulse (Norse/Viking)
+//   north_america — Aeolian on C, triangle pads, softer tom-like beats (occult colonial)
+//   south_america — Pentatonic minor on F#, sine+triangle, woodblock-style percussion
+//   asia          — Hirajoshi scale, triangle/sine, tight muted percussion (shinobi/monk)
 //   oceania       — Lydian on G, wide sine pads, sparse oceanic swell percussion
 //   africa        — Dorian on G, warmer sawtooth pads, polyrhythmic djembe-style beats
 //   middle_east   — Phrygian dominant on D, buzzy sawtooth, darbuka-style frame drums
@@ -184,7 +178,7 @@ const CONTINENT_CONFIG = {
   europe: {
     label: "Norse/Viking",
     rootNote: "D2",
-    scale: [0, 2, 3, 5, 6, 7, 10],     // D Dorian
+    scale: [0, 2, 3, 5, 6, 7, 10],
     padWave: "sine",
     padGain: -15,
     drumWave: "sine",
@@ -198,7 +192,7 @@ const CONTINENT_CONFIG = {
   north_america: {
     label: "Colonial Occult",
     rootNote: "C2",
-    scale: [0, 2, 3, 5, 7, 8, 10],    // C Aeolian (natural minor)
+    scale: [0, 2, 3, 5, 7, 8, 10],
     padWave: "triangle",
     padGain: -17,
     drumWave: "sine",
@@ -212,7 +206,7 @@ const CONTINENT_CONFIG = {
   south_america: {
     label: "Amazonian",
     rootNote: "F#2",
-    scale: [0, 3, 5, 7, 10],          // F# minor pentatonic
+    scale: [0, 3, 5, 7, 10],
     padWave: "sine",
     padGain: -16,
     drumWave: "triangle",
@@ -226,7 +220,7 @@ const CONTINENT_CONFIG = {
   asia: {
     label: "Eastern",
     rootNote: "A2",
-    scale: [0, 2, 5, 7, 9],           // A Hirajoshi-inspired (pentatonic)
+    scale: [0, 2, 5, 7, 9],
     padWave: "triangle",
     padGain: -18,
     drumWave: "square",
@@ -240,7 +234,7 @@ const CONTINENT_CONFIG = {
   oceania: {
     label: "Oceanic",
     rootNote: "G2",
-    scale: [0, 2, 4, 5, 7, 9, 11],   // G Lydian
+    scale: [0, 2, 4, 5, 7, 9, 11],
     padWave: "sine",
     padGain: -14,
     drumWave: "sine",
@@ -254,7 +248,7 @@ const CONTINENT_CONFIG = {
   africa: {
     label: "African",
     rootNote: "G2",
-    scale: [0, 2, 3, 5, 6, 7, 10],    // G Dorian
+    scale: [0, 2, 3, 5, 6, 7, 10],
     padWave: "sawtooth",
     padGain: -18,
     drumWave: "sine",
@@ -268,7 +262,7 @@ const CONTINENT_CONFIG = {
   middle_east: {
     label: "Middle Eastern",
     rootNote: "D2",
-    scale: [0, 1, 4, 5, 7, 8, 11],   // D Phrygian dominant
+    scale: [0, 1, 4, 5, 7, 8, 11],
     padWave: "sawtooth",
     padGain: -17,
     drumWave: "square",
@@ -295,8 +289,7 @@ const UI_SOUNDS = {
     oscillator: "triangle",
     freq: 220,
     envelope: { attack: 0.005, decay: 0.06, sustain: 0, release: 0.04 },
-    gain: -18,
-    pitchDrop: 0
+    gain: -18
   },
   error: {
     oscillator: "sawtooth",
@@ -311,8 +304,7 @@ const UI_SOUNDS = {
     freq: 180,
     envelope: { attack: 0.01, decay: 0.3, sustain: 0, release: 0.4 },
     gain: -14,
-    pitchRise: 120,
-    harmonicity: 2.0
+    pitchRise: 120
   }
 };
 
@@ -323,18 +315,30 @@ const UI_SOUNDS = {
 window.cultAudio = (function () {
   let _musicVol = 0.5;
   let _sfxVol = 0.6;
-  let _currentTrack = null;       // "menu" | "gameplay" | "gameplay:europe" | etc.
-  let _nodes = null;              // active track nodes
-  let _loops = [];                // active Tone.Loop / Repeatable objects
+  let _currentTrack = null;
+  let _nodes = null;
   let _started = false;
+  let _gestureListenerAttached = false;
 
   // --- Audio context startup ----------------------------------------------
 
   async function ensureStarted() {
     if (_started) return;
+    if (typeof Tone === "undefined") return;
     await Tone.start();
     _started = true;
   }
+
+  // Attach a one-time listener so the audio context resumes on the first
+  // user gesture (click/touch/keydown). Browsers block audio until then.
+  function attachGestureListener() {
+    if (_gestureListenerAttached) return;
+    _gestureListenerAttached = true;
+    const resume = () => { ensureStarted(); };
+    document.addEventListener("pointerdown", resume, { once: false, passive: true });
+    document.addEventListener("keydown", resume, { once: false, passive: true });
+  }
+  attachGestureListener();
 
   // --- Helper: note from scale degree -------------------------------------
 
@@ -345,7 +349,7 @@ window.cultAudio = (function () {
     return Tone.Frequency(root).transpose(semis).toNote();
   }
 
-  // --- Helper: create a synth from config --------------------------------
+  // --- Helper: create synth chains ----------------------------------------
 
   function makePad(cfg) {
     const synth = new Tone.PolySynth(Tone.Synth, {
@@ -353,53 +357,60 @@ window.cultAudio = (function () {
       envelope: cfg.envelope || { attack: 3, decay: 1, sustain: 0.7, release: 5 }
     });
     const filter = new Tone.Filter(cfg.filterFreq || 800, "lowpass");
-    synth.connect(filter);
     const vol = new Tone.Volume(cfg.gain || -16);
+    synth.connect(filter);
     filter.connect(vol);
     vol.toDestination();
     return { synth, vol, filter };
   }
 
   function makeDrone(cfg) {
-    const osc = new Tone.Oscillator(cfg.oscillator || "sawtooth");
-    osc.envelope = new Tone.Envelope(cfg.envelope || { attack: 4, decay: 0, sustain: 1, release: 6 });
+    // Use an AMSynth for a sustained drone with envelope control
+    const synth = new Tone.AMSynth({
+      harmonicity: 1.5,
+      oscillator: { type: cfg.oscillator || "sawtooth" },
+      envelope: cfg.envelope || { attack: 4, decay: 0, sustain: 1, release: 6 },
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 2, decay: 0, sustain: 1, release: 4 }
+    });
     const filter = new Tone.Filter(cfg.filterFreq || 200, "lowpass");
     const vol = new Tone.Volume(cfg.gain || -24);
-    osc.connect(filter);
-    filter.connect(vol);
-    vol.toDestination();
-    return { osc, vol, filter };
-  }
-
-  function makeBass(cfg) {
-    const opts = {
-      oscillator: { type: cfg.oscillator || "sine" },
-      envelope: cfg.envelope || { attack: 0.05, decay: 0.3, sustain: 0.3, release: 0.8 }
-    };
-    const synth = new Tone.Synth(opts);
-    const filter = new Tone.Filter(cfg.filterFreq || 400, "lowpass");
-    let chain = synth;
-    if (cfg.distortion) {
-      const dist = new Tone.Distortion(cfg.distortion);
-      synth.connect(dist);
-      dist.connect(filter);
-    } else {
-      synth.connect(filter);
-    }
-    const vol = new Tone.Volume(cfg.gain || -18);
+    synth.connect(filter);
     filter.connect(vol);
     vol.toDestination();
     return { synth, vol, filter };
   }
 
-  function makePercussion(cfg) {
-    const osc = new Tone.Oscillator(cfg.oscillator || "sine");
-    const env = new Tone.Envelope(cfg.envelope || { attack: 0.003, decay: 0.15, sustain: 0, release: 0.1 });
+  function makeBass(cfg) {
+    const synth = new Tone.Synth({
+      oscillator: { type: cfg.oscillator || "sine" },
+      envelope: cfg.envelope || { attack: 0.05, decay: 0.3, sustain: 0.3, release: 0.8 }
+    });
+    const filter = new Tone.Filter(cfg.filterFreq || 400, "lowpass");
     const vol = new Tone.Volume(cfg.gain || -18);
-    osc.connect(env);
-    env.connect(vol);
+    synth.connect(filter);
+    if (cfg.distortion) {
+      const dist = new Tone.Distortion(cfg.distortion);
+      filter.connect(dist);
+      dist.connect(vol);
+    } else {
+      filter.connect(vol);
+    }
     vol.toDestination();
-    return { osc, env, vol };
+    return { synth, vol, filter };
+  }
+
+  function makePercussion(cfg) {
+    // Use MembraneSynth for drum-like sounds
+    const synth = new Tone.MembraneSynth({
+      pitchDecay: 0.05,
+      octaves: 4,
+      envelope: cfg.envelope || { attack: 0.003, decay: 0.15, sustain: 0, release: 0.1 }
+    });
+    const vol = new Tone.Volume(cfg.gain || -18);
+    synth.connect(vol);
+    vol.toDestination();
+    return { synth, vol };
   }
 
   function makeChime(cfg) {
@@ -423,20 +434,8 @@ window.cultAudio = (function () {
     const drum = makePercussion(cfg.drum);
     const horn = makeChime(cfg.horn);
 
-    pad.synth.volume.value = cfg.pad.gain || -14;
-    drone.osc.volume.value = cfg.drone.gain || -22;
-    drum.vol.volume.value = cfg.drum.gain || -12;
-
-    // Start drone
-    drone.osc.start();
-    drone.env.triggerAttack();
-
-    // Pad chord — sustained
-    const padNotes = [
-      noteFromScale(cfg.rootNote, cfg.scale, 0),
-      noteFromScale(cfg.rootNote, cfg.scale, 2),
-      noteFromScale(cfg.rootNote, cfg.scale, 4)
-    ];
+    // Start drone — sustained note
+    drone.synth.triggerAttack(cfg.rootNote);
 
     // Pad loop — slow chord changes
     let padDegree = 0;
@@ -453,8 +452,7 @@ window.cultAudio = (function () {
 
     // Drum pulse
     const drumLoop = new Tone.Loop((time) => {
-      drum.osc.frequency.value = cfg.drum.pitch;
-      drum.env.triggerAttackRelease(0.3, time);
+      drum.synth.triggerAttackRelease(cfg.drum.pitch, "8n", time);
     }, cfg.drum.intervalSec);
     drumLoop.start(0);
 
@@ -472,8 +470,7 @@ window.cultAudio = (function () {
     return {
       type: "menu",
       nodes: [pad, drone, drum, horn],
-      loops: [padLoop, drumLoop, hornLoop],
-      volume: _musicVol
+      loops: [padLoop, drumLoop, hornLoop]
     };
   }
 
@@ -493,20 +490,26 @@ window.cultAudio = (function () {
       oscillator: { type: padWave },
       envelope: cfg.pad.envelope
     });
-    const padFilter = new Tone.Filter(600, "lowpass");
+    const padFilter = new Tone.Filter(cfg.pad.filterFreq, "lowpass");
     const padVol = new Tone.Volume(padGain);
     padSynth.connect(padFilter);
     padFilter.connect(padVol);
     padVol.toDestination();
 
     // Drone
-    const droneOsc = new Tone.Oscillator(cfg.drone.oscillator);
+    const droneSynth = new Tone.AMSynth({
+      harmonicity: 1.2,
+      oscillator: { type: cfg.drone.oscillator },
+      envelope: cfg.drone.envelope,
+      modulation: { type: "sine" },
+      modulationEnvelope: { attack: 2, decay: 0, sustain: 1, release: 4 }
+    });
     const droneFilter = new Tone.Filter(cfg.drone.filterFreq, "lowpass");
     const droneVol = new Tone.Volume(cfg.drone.gain);
-    droneOsc.connect(droneFilter);
+    droneSynth.connect(droneFilter);
     droneFilter.connect(droneVol);
     droneVol.toDestination();
-    droneOsc.start();
+    droneSynth.triggerAttack(root);
 
     // Bass
     const bassSynth = new Tone.Synth({
@@ -518,11 +521,13 @@ window.cultAudio = (function () {
     bassVol.toDestination();
 
     // Percussion
-    const percOsc = new Tone.Oscillator(drumWave);
-    const percEnv = new Tone.Envelope(cfg.percussion.envelope);
+    const percSynth = new Tone.MembraneSynth({
+      pitchDecay: 0.03,
+      octaves: 3,
+      envelope: cfg.percussion.envelope
+    });
     const percVol = new Tone.Volume(cfg.percussion.gain);
-    percOsc.connect(percEnv);
-    percEnv.connect(percVol);
+    percSynth.connect(percVol);
     percVol.toDestination();
 
     // Pad loop
@@ -549,8 +554,7 @@ window.cultAudio = (function () {
 
     // Percussion loop
     const percLoop = new Tone.Loop((time) => {
-      percOsc.frequency.value = drumPitch;
-      percEnv.triggerAttackRelease(0.15, time);
+      percSynth.triggerAttackRelease(drumPitch, "8n", time);
     }, drumInterval);
     percLoop.start(0);
 
@@ -558,9 +562,13 @@ window.cultAudio = (function () {
 
     return {
       type: "gameplay",
-      nodes: [{ synth: padSynth, vol: padVol }, { osc: droneOsc, vol: droneVol }, { synth: bassSynth, vol: bassVol }, { osc: percOsc, env: percEnv, vol: percVol }],
-      loops: [padLoop, bassLoop, percLoop],
-      volume: _musicVol
+      nodes: [
+        { synth: padSynth, vol: padVol },
+        { synth: droneSynth, vol: droneVol },
+        { synth: bassSynth, vol: bassVol },
+        { synth: percSynth, vol: percVol }
+      ],
+      loops: [padLoop, bassLoop, percLoop]
     };
   }
 
@@ -569,7 +577,7 @@ window.cultAudio = (function () {
     const drone = makeDrone(cfg.drone);
     const chime = makeChime(cfg.chime);
 
-    drone.osc.start();
+    drone.synth.triggerAttack(cfg.rootNote);
 
     let padDegree = 0;
     const padLoop = new Tone.Loop((time) => {
@@ -596,8 +604,7 @@ window.cultAudio = (function () {
     return {
       type: "map",
       nodes: [pad, drone, chime],
-      loops: [padLoop, chimeLoop],
-      volume: _musicVol
+      loops: [padLoop, chimeLoop]
     };
   }
 
@@ -608,22 +615,21 @@ window.cultAudio = (function () {
     const bassWave = regionCfg ? regionCfg.combatBassWave : cfg.bass.oscillator;
     const distortion = regionCfg ? regionCfg.combatDistortion : cfg.bass.distortion;
 
-    // Bass
+    // Bass with distortion
     const bassSynth = new Tone.Synth({
       oscillator: { type: bassWave },
       envelope: cfg.bass.envelope
     });
     const bassFilter = new Tone.Filter(cfg.bass.filterFreq, "lowpass");
-    let bassChain = bassSynth;
+    const bassVol = new Tone.Volume(cfg.bass.gain);
+    bassSynth.connect(bassFilter);
     if (distortion) {
       const dist = new Tone.Distortion(distortion);
-      bassSynth.connect(dist);
-      dist.connect(bassFilter);
+      bassFilter.connect(dist);
+      dist.connect(bassVol);
     } else {
-      bassSynth.connect(bassFilter);
+      bassFilter.connect(bassVol);
     }
-    const bassVol = new Tone.Volume(cfg.bass.gain);
-    bassFilter.connect(bassVol);
     bassVol.toDestination();
 
     // Stabs
@@ -638,11 +644,13 @@ window.cultAudio = (function () {
     stabVol.toDestination();
 
     // Percussion
-    const percOsc = new Tone.Oscillator(cfg.percussion.oscillator);
-    const percEnv = new Tone.Envelope(cfg.percussion.envelope);
+    const percSynth = new Tone.MembraneSynth({
+      pitchDecay: 0.02,
+      octaves: 4,
+      envelope: cfg.percussion.envelope
+    });
     const percVol = new Tone.Volume(cfg.percussion.gain);
-    percOsc.connect(percEnv);
-    percEnv.connect(percVol);
+    percSynth.connect(percVol);
     percVol.toDestination();
 
     // Pad
@@ -676,8 +684,7 @@ window.cultAudio = (function () {
 
     // Percussion loop — driving beat
     const percLoop = new Tone.Loop((time) => {
-      percOsc.frequency.value = cfg.percussion.pitch;
-      percEnv.triggerAttackRelease(0.1, time);
+      percSynth.triggerAttackRelease(cfg.percussion.pitch, "16n", time);
     }, cfg.percussion.intervalSec);
     percLoop.start(0);
 
@@ -698,9 +705,13 @@ window.cultAudio = (function () {
 
     return {
       type: "combat",
-      nodes: [{ synth: bassSynth, vol: bassVol }, { synth: stabSynth, vol: stabVol }, { osc: percOsc, env: percEnv, vol: percVol }, { synth: padSynth, vol: padVol }],
-      loops: [bassLoop, stabLoop, percLoop, padLoop],
-      volume: _musicVol
+      nodes: [
+        { synth: bassSynth, vol: bassVol },
+        { synth: stabSynth, vol: stabVol },
+        { synth: percSynth, vol: percVol },
+        { synth: padSynth, vol: padVol }
+      ],
+      loops: [bassLoop, stabLoop, percLoop, padLoop]
     };
   }
 
@@ -711,20 +722,12 @@ window.cultAudio = (function () {
     track.loops.forEach(l => { try { l.stop(); l.dispose(); } catch (e) {} });
     track.nodes.forEach(n => {
       try {
-        if (n.synth) n.synth.dispose();
+        if (n.synth) { try { n.synth.triggerRelease(); } catch(e){} n.synth.dispose(); }
         if (n.osc) { try { n.osc.stop(); } catch(e){} n.osc.dispose(); }
         if (n.env) n.env.dispose();
         if (n.vol) n.vol.dispose();
         if (n.filter) n.filter.dispose();
       } catch (e) {}
-    });
-  }
-
-  function applyVolume(track) {
-    if (!track || !track.nodes) return;
-    const db = Tone.gainToDb(_musicVol);
-    track.nodes.forEach(n => {
-      if (n.vol) n.vol.volume.rampTo(db, CROSSFADE_MS / 1000);
     });
   }
 
@@ -752,28 +755,26 @@ window.cultAudio = (function () {
     }
 
     switch (trackName) {
-      case "menu":    return buildMenuTrack(cfg);
+      case "menu":     return buildMenuTrack(cfg);
       case "gameplay": return buildGameplayTrack(cfg, regionCfg);
-      case "map":     return buildMapTrack(cfg);
-      case "combat":  return buildCombatTrack(cfg, regionCfg);
-      default:        return null;
+      case "map":      return buildMapTrack(cfg);
+      case "combat":   return buildCombatTrack(cfg, regionCfg);
+      default:         return null;
     }
   }
 
   async function playTrackInternal(trackKey, trackName, continentId) {
     await ensureStarted();
+    if (!_started) return; // Tone not loaded yet
 
-    // Same track? Don't restart.
     if (_currentTrack === trackKey) return;
     _currentTrack = trackKey;
 
-    // Fade out old
     const old = _nodes;
     if (old) {
       await fadeOut(old, CROSSFADE_MS);
     }
 
-    // Build and start new
     const track = buildTrack(trackName, continentId);
     if (!track) return;
     _nodes = track;
@@ -783,13 +784,11 @@ window.cultAudio = (function () {
       if (n.vol) n.vol.volume.value = -60;
     });
 
-    // Ramp in
     const db = Tone.gainToDb(_musicVol);
     track.nodes.forEach(n => {
       if (n.vol) n.vol.volume.rampTo(db, CROSSFADE_MS / 1000);
     });
 
-    // Start transport if not already
     if (Tone.Transport.state !== "started") {
       Tone.Transport.start();
     }
@@ -821,37 +820,24 @@ window.cultAudio = (function () {
 
     playUiSound: async function (name) {
       await ensureStarted();
+      if (!_started) return;
       const cfg = UI_SOUNDS[name];
       if (!cfg) return;
 
       const synth = new Tone.Synth({
         oscillator: { type: cfg.oscillator },
-        envelope: cfg.envelope,
-        harmonicity: cfg.harmonicity || 1
+        envelope: cfg.envelope
       });
-
-      let chain = synth;
-      if (cfg.filterFreq) {
-        const filter = new Tone.Filter(cfg.filterFreq, "lowpass");
-        synth.connect(filter);
-        filter.toDestination();
-      } else {
-        synth.toDestination();
-      }
-
       const vol = new Tone.Volume(cfg.gain + Tone.gainToDb(_sfxVol));
+
       if (cfg.filterFreq) {
-        // volume inserted after filter
-        synth.disconnect();
         const filter = new Tone.Filter(cfg.filterFreq, "lowpass");
         synth.connect(filter);
         filter.connect(vol);
-        vol.toDestination();
       } else {
-        synth.disconnect();
         synth.connect(vol);
-        vol.toDestination();
       }
+      vol.toDestination();
 
       const now = Tone.now();
       synth.triggerAttack(cfg.freq, now);
@@ -864,11 +850,11 @@ window.cultAudio = (function () {
       }
 
       setTimeout(() => {
-        synth.triggerRelease();
+        try { synth.triggerRelease(); } catch(e){}
         setTimeout(() => {
           try { synth.dispose(); vol.dispose(); } catch (e) {}
         }, 500);
-      }, 200);
+      }, 250);
     },
 
     setMusicVolume: function (v) {

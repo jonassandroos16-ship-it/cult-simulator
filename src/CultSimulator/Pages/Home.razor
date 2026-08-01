@@ -79,6 +79,7 @@ else
     private void SwitchTab(string tab)
     {
         activeTab = tab;
+        _ = Audio.PlayClickAsync();
         _ = UpdateAudioState();
     }
     private async Task UpdateAudioState()

@@ -7,18 +7,10 @@ public enum AudioGameState { Menu, Gameplay, Map, Combat }
 public class AudioService
 {
     private readonly IJSRuntime _js;
-    private IJSObjectReference? _module;
     private AudioGameState? _lastState;
     private string? _lastContinentId;
 
     public AudioService(IJSRuntime js) => _js = js;
-
-    private async Task<IJSObjectReference> GetModuleAsync()
-    {
-        if (_module is not null) return _module;
-        _module = await _js.InvokeAsync<IJSObjectReference>("import", "./js/audio.js?v=1");
-        return _module;
-    }
 
     /// <summary>
     /// Sets the music state. Only triggers a track change if the resulting
@@ -32,7 +24,6 @@ public class AudioService
         _lastState = state;
         _lastContinentId = normContinent;
 
-        var mod = await GetModuleAsync();
         var trackName = state switch
         {
             AudioGameState.Menu => "menu",
@@ -43,58 +34,50 @@ public class AudioService
         };
 
         if (!string.IsNullOrEmpty(normContinent) && (state == AudioGameState.Gameplay || state == AudioGameState.Combat))
-            await mod.InvokeVoidAsync("playRegionalTrack", trackName, normContinent);
+            await _js.InvokeVoidAsync("cultAudio.playRegionalTrack", trackName, normContinent);
         else
-            await mod.InvokeVoidAsync("playTrack", trackName);
+            await _js.InvokeVoidAsync("cultAudio.playTrack", trackName);
     }
 
     public async Task StopMusicAsync()
     {
         _lastState = null;
         _lastContinentId = null;
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("stopMusic");
+        await _js.InvokeVoidAsync("cultAudio.stopMusic");
     }
 
     public async Task PlayClickAsync()
     {
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("playUiSound", "click");
+        await _js.InvokeVoidAsync("cultAudio.playUiSound", "click");
     }
 
     public async Task PlayHoverAsync()
     {
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("playUiSound", "hover");
+        await _js.InvokeVoidAsync("cultAudio.playUiSound", "hover");
     }
 
     public async Task PlayErrorAsync()
     {
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("playUiSound", "error");
+        await _js.InvokeVoidAsync("cultAudio.playUiSound", "error");
     }
 
     public async Task PlaySuccessAsync()
     {
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("playUiSound", "success");
+        await _js.InvokeVoidAsync("cultAudio.playUiSound", "success");
     }
 
     public async Task SetMusicVolumeAsync(float v)
     {
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("setMusicVolume", v);
+        await _js.InvokeVoidAsync("cultAudio.setMusicVolume", v);
     }
 
     public async Task SetSfxVolumeAsync(float v)
     {
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("setSfxVolume", v);
+        await _js.InvokeVoidAsync("cultAudio.setSfxVolume", v);
     }
 
     public async Task ResumeAudioAsync()
     {
-        var mod = await GetModuleAsync();
-        await mod.InvokeVoidAsync("resumeAudio");
+        await _js.InvokeVoidAsync("cultAudio.resumeAudio");
     }
 }
