@@ -8,8 +8,15 @@ window.supabaseAuth = (function () {
   let supabaseClient = null;
   let currentUser = null;
   let dotNetRef = null;
+  let initPromise = null;
 
   async function init() {
+    if (initPromise) return initPromise;
+    initPromise = doInit();
+    return initPromise;
+  }
+
+  async function doInit() {
     if (supabaseClient) return;
     const { createClient } = await import("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm");
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -42,6 +49,11 @@ window.supabaseAuth = (function () {
     });
   }
 
+  // Auto-initialize immediately so detectSessionInUrl can process the OAuth
+  // callback hash before Blazor finishes loading. Without this, the tokens in
+  // the URL expire by the time the Settings panel calls init().
+  init();
+
   function getUserInfo() {
     if (!currentUser) return null;
     return {
@@ -54,6 +66,10 @@ window.supabaseAuth = (function () {
 
   return {
     init: init,
+
+    ready: function () {
+      return init();
+    },
 
     setDotNetRef: function (ref) {
       dotNetRef = ref;
