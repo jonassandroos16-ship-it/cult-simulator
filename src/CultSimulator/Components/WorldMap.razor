@@ -103,7 +103,9 @@
                     }
                     else if (battle.Phase == LocalCultBattlePhase.Fighting)
                     {
-                        <div class="text-center text-xs text-rose-300 py-3 animate-pulse">Battle in progress...</div>
+                        <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
+                                          ShowReinforce="true" PoolAgents="(int)sw.AvailableAgents"
+                                          OnReinforceAgent="args => ReinforceLocalCult(cultDef.Id, args.Item1, args.Item2)" />
                         @if (battle.Log.Count > 0)
                         {
                             <div class="mt-2 p-2 rounded-[8px] text-[0.65rem] space-y-0.5 max-h-20 overflow-y-auto" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
@@ -604,6 +606,11 @@
     private void FightLocalCult(string cultId)
     {
         Game.StartLocalCultBattle(cultId);
+    }
+
+    private void ReinforceLocalCult(string cultId, AgentType type, int count)
+    {
+        Game.ReinforceLocalCultAgents(cultId, type, count);
     }
 
     private void Switch(string id)

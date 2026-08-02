@@ -234,7 +234,9 @@
                     }
                     else if (battle.Phase == RivalBattlePhase.Fighting)
                     {
-                        <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad" />
+                        <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
+                                          ShowReinforce="true" PoolAgents="poolAgents"
+                                          OnReinforceAgent="args => OnReinforceRival(def.Id, args.Item1, args.Item2)" />
                     }
                     else if (battle.Phase == RivalBattlePhase.Defeat)
                     {
@@ -329,7 +331,9 @@
                     }
                     else if (battle.Phase == BattlePhase.Fighting)
                     {
-                        <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad" />
+                        <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
+                                          ShowReinforce="true" PoolAgents="poolAgents"
+                                          OnReinforceAgent="args => OnReinforce(theater.ContinentId, args.Item1, args.Item2)" />
                     }
                     else if (battle.Phase == BattlePhase.Cooldown)
                     {
@@ -367,10 +371,12 @@
     private void OnDeploy(string continentId, AgentType type, int count) => Game.DeployAgents(continentId, type, count);
     private void OnStartBattle(string continentId) => Game.StartBattle(continentId);
     private void OnWithdraw(string continentId) => Game.WithdrawBattleAgents(continentId);
+    private void OnReinforce(string continentId, AgentType type, int count) => Game.ReinforceBattleAgents(continentId, type, count);
 
     private void OnDeployRival(string rivalId, AgentType type, int count) => Game.DeployRivalBattleAgents(rivalId, type, count);
     private void OnWithdrawRival(string rivalId) => Game.WithdrawRivalBattleAgents(rivalId);
     private void OnStartRivalBattle(string rivalId) => Game.StartRivalBattle(rivalId);
+    private void OnReinforceRival(string rivalId, AgentType type, int count) => Game.ReinforceRivalBattleAgents(rivalId, type, count);
     private void OnRetryRival(string rivalId)
     {
         Game.WithdrawRivalBattleAgents(rivalId);
