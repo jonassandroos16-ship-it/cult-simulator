@@ -24,6 +24,8 @@ public class LocalCultBattleState
     public double RoundTimer { get; set; }
     public double Momentum { get; set; }
     public RivalCultArchetype? EnemyArchetype { get; set; }
+    public double LastFaithReward { get; set; }
+    public long VictoryAt { get; set; }
 
     [JsonIgnore]
     public int TotalDeployed => DeployedSquad.Sum(d => d.Count);

@@ -100,12 +100,13 @@ public static class BattleRoundEngine
         var activeEnemies = enemyUnits.Where(u => u.Count > 0).ToList();
         if (activeEnemies.Count == 0) return attacks;
 
+        double squadTotalAttack = Math.Max(1, squad.Sum(s => BattleData.AgentDef(s.Type)?.Attack * s.Count ?? 0));
         foreach (var slot in squad.Where(s => s.Count > 0))
         {
             var def = BattleData.AgentDef(slot.Type);
             if (def == null) continue;
 
-            double unitAttack = def.Attack * slot.Count * (totalAttack / Math.Max(1, squad.Sum(s => BattleData.AgentDef(s.Type)?.Attack * s.Count ?? 0)));
+            double unitAttack = def.Attack * slot.Count * (totalAttack / squadTotalAttack) * deltaSec;
             if (unitAttack <= 0 && def.Attack > 0)
                 unitAttack = def.Attack * slot.Count * deltaSec;
 
