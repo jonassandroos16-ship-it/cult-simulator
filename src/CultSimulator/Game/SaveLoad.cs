@@ -5,13 +5,19 @@ namespace CultSimulator.Game;
 
 public static class SaveLoad
 {
+    public const int CurrentVersion = 2;
+
     private static readonly JsonSerializerOptions Options = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNameCaseInsensitive = true
     };
 
-    public static string SaveGame(GameState state) => JsonSerializer.Serialize(state, Options);
+    public static string SaveGame(GameState state)
+    {
+        state.SaveVersion = CurrentVersion;
+        return JsonSerializer.Serialize(state, Options);
+    }
 
     public static (GameState state, bool success) LoadGameWithBackup(string? primary, string? backup, string? backup2)
     {
@@ -32,17 +38,68 @@ public static class SaveLoad
         catch { return false; }
     }
 
+    public static bool IsCorrupted(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json)) return true;
+        try
+        {
+            var state = JsonSerializer.Deserialize<GameState>(json, Options);
+            if (state == null) return true;
+            if (string.IsNullOrWhiteSpace(state.CultName)) return true;
+            if (state.Covens == null) return true;
+            if (state.Occult == null) return true;
+            if (state.ActiveCovenId == null) return true;
+            return false;
+        }
+        catch { return true; }
+    }
+
     private static bool TryLoad(string? json, out GameState state)
     {
         state = GameEngine.InitialState();
         if (string.IsNullOrWhiteSpace(json)) return false;
         try
         {
-            state = JsonSerializer.Deserialize<GameState>(json, Options) ?? GameEngine.InitialState();
+            state = JsonSerializer.Deserialize<GameState>(json, Options);
+            if (state == null)
+            {
+                state = GameEngine.InitialState();
+                return false;
+            }
+            if (string.IsNullOrWhiteSpace(state.CultName))
+                return false;
             EnsureCollections(state);
+            Migrate(state);
             return true;
         }
         catch { return false; }
+    }
+
+    private static void Migrate(GameState state)
+    {
+        if (state.SaveVersion >= CurrentVersion) return;
+
+        if (state.SaveVersion < 1)
+        {
+            state.Occult ??= new OccultState();
+            state.ShadowWar ??= ShadowWarEngine.CreateInitialState();
+            state.BattleSystem ??= BattleEngine.CreateInitialState();
+            state.RivalCults ??= RivalCultEngine.CreateInitialState();
+        }
+
+        if (state.SaveVersion < 2)
+        {
+            state.LocalCultBattles ??= new List<LocalCultBattleState>();
+            state.RivalCults ??= RivalCultEngine.CreateInitialState();
+            state.RivalCults.RivalBattles ??= new List<RivalBattleState>();
+            if (state.RivalCults.Rivals != null)
+            {
+                foreach (var rival in state.RivalCults.Rivals)
+                    rival.ControlledInstitutions ??= new List<string>();
+            }
+        }
+
+        state.SaveVersion = CurrentVersion;
     }
 
     private static void EnsureCollections(GameState state)
@@ -72,5 +129,8 @@ public static class SaveLoad
         state.BattleSystem.Battles ??= new List<BattleState>();
         state.RivalCults ??= RivalCultEngine.CreateInitialState();
         state.RivalCults.Rivals ??= new List<RivalCultState>();
+        state.RivalCults.RivalBattles ??= new List<RivalBattleState>();
+        foreach (var rival in state.RivalCults.Rivals)
+            rival.ControlledInstitutions ??= new List<string>();
     }
 }

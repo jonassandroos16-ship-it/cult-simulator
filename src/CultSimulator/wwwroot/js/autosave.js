@@ -9,26 +9,30 @@ window.setupAutoSave = function (dotNetRef) {
   syncJson();
   setInterval(syncJson, 5000);
 
+  // Track whether we have unsaved changes
+  window.__cultSaveDirty = false;
+  window.__cultSaveMarkDirty = function() { window.__cultSaveDirty = true; };
+
   // Write the cached JSON to all three localStorage slots synchronously.
-  // This runs during beforeunload / pagehide where async JSInterop would
-  // be killed mid-flight.
+  // Only rotates backups if the previous data is valid (not corrupted).
   const writeCachedSave = () => {
     var json = window.__cultSaveJson;
     if (!json) return;
     try {
       var prev = localStorage.getItem("cult_simulator_save_v2");
-      if (prev) {
+      if (prev && prev.length > 10) {
+        // Only rotate backups if previous save looks valid
         var prevBackup = localStorage.getItem("cult_simulator_save_v2_backup");
-        if (prevBackup)
+        if (prevBackup && prevBackup.length > 10)
           localStorage.setItem("cult_simulator_save_v2_backup2", prevBackup);
         localStorage.setItem("cult_simulator_save_v2_backup", prev);
       }
       localStorage.setItem("cult_simulator_save_v2", json);
+      window.__cultSaveDirty = false;
     } catch (e) {}
   };
 
   // pagehide is the reliable cross-browser event for page close / tab close.
-  // We use it to write the cached save synchronously.
   window.addEventListener("pagehide", () => {
     writeCachedSave();
     // Also trigger a cloud save via .NET if the runtime is still alive.
@@ -42,7 +46,15 @@ window.setupAutoSave = function (dotNetRef) {
     if (document.visibilityState === "hidden") writeCachedSave();
   });
 
-  // beforeunload is a last-resort fallback. On some browsers async
-  // JSInterop won't complete, so we rely on the cached JSON write above.
-  window.addEventListener("beforeunload", writeCachedSave);
+  // beforeunload: show a warning if we have unsaved data, giving the save system
+  // time to finish writing. The browser shows its own dialog.
+  window.addEventListener("beforeunload", (e) => {
+    writeCachedSave();
+    // If we still have unsaved changes (cloud save pending), ask user to stay
+    if (window.__cultSaveDirty) {
+      e.preventDefault();
+      e.returnValue = "Your save is still being written. Please wait a moment and try closing again.";
+      return e.returnValue;
+    }
+  });
 };

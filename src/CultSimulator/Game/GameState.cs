@@ -8,6 +8,7 @@ public class GameState
     public string CultName { get; set; } = "";
     public long StartedAt { get; set; }
     public bool StoryShown { get; set; }
+    public int SaveVersion { get; set; } = SaveLoad.CurrentVersion;
     public List<CovenState> Covens { get; set; } = new();
     public string ActiveCovenId { get; set; } = "skanor";
     public long LastSavedAt { get; set; }

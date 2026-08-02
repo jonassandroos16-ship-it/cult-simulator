@@ -76,7 +76,7 @@ public class GameService
                 LoadSucceeded = true;
             }
 
-            // Try Supabase cloud save (via JS interop) — takes priority if newer
+            // Try Supabase cloud save (via JS interop) — takes priority if newer or local is corrupted
             try
             {
                 var user = await _js.InvokeAsync<JsonElement?>("supabaseAuth.getSession");
@@ -92,7 +92,8 @@ public class GameService
                             if (cloudOk)
                             {
                                 var localTime = success ? loaded.LastSavedAt : 0;
-                                if (cloudLoaded.LastSavedAt > localTime)
+                                // Use cloud save if it's newer, or if local save failed/corrupted
+                                if (cloudLoaded.LastSavedAt > localTime || !LoadSucceeded)
                                 {
                                     _state = cloudLoaded;
                                     LoadSucceeded = true;
@@ -146,7 +147,7 @@ public class GameService
         _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
         _lastOccultTick = DateTime.UtcNow;
         _occultTimer = new Timer(_ => OccultTick(), null, 100, 100);
-        _periodicSaveTimer = new Timer(async _ => await SaveAsync(), null, 5000, 5000);
+        _periodicSaveTimer = new Timer(async _ => await SaveAsync(), null, 10000, 10000);
         _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
     }
 
@@ -668,13 +669,17 @@ public class GameService
         {
             _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             var json = SaveLoad.SaveGame(_state);
+
+            if (!SaveLoad.IsValidSave(json))
+                return;
+
             try
             {
                 var prev = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
-                if (!string.IsNullOrWhiteSpace(prev))
+                if (!string.IsNullOrWhiteSpace(prev) && !SaveLoad.IsCorrupted(prev))
                 {
                     var prevBackup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
-                    if (!string.IsNullOrWhiteSpace(prevBackup))
+                    if (!string.IsNullOrWhiteSpace(prevBackup) && !SaveLoad.IsCorrupted(prevBackup))
                         await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey2, prevBackup);
                     await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey, prev);
                 }
@@ -683,11 +688,10 @@ public class GameService
             }
             catch { }
 
-            // Cloud save via Supabase JS interop (replaces old GitHub Gist approach)
             if (!_isCloudSaving)
             {
                 var now = DateTime.UtcNow;
-                if (now - _lastCloudSave >= TimeSpan.FromSeconds(10))
+                if (now - _lastCloudSave >= TimeSpan.FromSeconds(15))
                 {
                     _lastCloudSave = now;
                     _isCloudSaving = true;
