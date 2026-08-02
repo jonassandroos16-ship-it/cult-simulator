@@ -106,10 +106,21 @@
                 <p class="text-violet-300">The Cauldron brews elixirs and forges artifacts by consuming agents from your Shadow War agent pool. Recruit agents in the Battle tab, then spend them here to craft powerful temporary boosts or forge permanent artifacts for socketing.</p>
                 <p class="text-slate-400 text-xs mt-2">Elixirs grant temporary bonuses for 60 seconds. Forge recipes consume agents to create a random artifact of the matching suit — these go to your Grimoire inventory for socketing.</p>
             </div>
-            <div class="flex items-center gap-2 px-3 py-2 rounded-full self-start" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-                <span class="text-sm">🧙</span>
-                <span class="font-display text-sm text-amber-100">@((int)sw.AvailableAgents)</span>
-                <span class="text-[0.65rem] text-slate-400">agents available</span>
+            <div class="flex flex-col gap-1 self-start w-full max-w-xs">
+                <div class="flex items-center gap-2 px-3 py-2 rounded-full" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
+                    <span class="text-sm">🧙</span>
+                    <span class="font-display text-sm text-amber-100">@((int)sw.AvailableAgents)</span>
+                    <span class="text-[0.65rem] text-slate-400">agents available</span>
+                </div>
+                @if (productionRate > 0 && (int)sw.AvailableAgents < agentCap)
+                {
+                    <div class="px-3">
+                        <div class="h-1.5 rounded-full bg-stone-800 overflow-hidden">
+                            <div class="h-full rounded-full transition-all duration-300" style="width: @(agentProgressPercent)%; background: linear-gradient(90deg, #06b6d4, #0891b2);"></div>
+                        </div>
+                        <div class="text-[9px] text-slate-500 mt-0.5">@agentProgressText until next agent</div>
+                    </div>
+                }
             </div>
             @foreach (var recipe in OccultData.Recipes)
             {
@@ -137,6 +148,12 @@
 @code {
     private OccultState occult => Game.State.Occult;
     private ShadowWarState sw => Game.State.ShadowWarOrInit;
+    private double productionRate => ShadowWarEngine.AgentProductionPerSec(sw, Game.State);
+    private int agentCap => ShadowWarEngine.AgentPoolCap(Game.State);
+    private double fractional => sw.TotalAgents - Math.Floor(sw.TotalAgents);
+    private int agentProgressPercent => (int)(fractional * 100);
+    private double secondsToNext => productionRate > 0 ? (1.0 - fractional) / productionRate : 0;
+    private string agentProgressText => secondsToNext >= 60 ? $"{(int)(secondsToNext / 60)}m {Math.Ceiling(secondsToNext % 60)}s" : $"{Math.Ceiling(secondsToNext)}s";
     private IReadOnlyDictionary<ArtifactSuit, int> suitCounts => Grimoire.SocketedSuitCounts(occult);
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
