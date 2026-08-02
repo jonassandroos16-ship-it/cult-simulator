@@ -269,7 +269,7 @@ public class GameService
     public void ActivateMassHysteria() { OccultEngine.ActivateMassHysteria(_state.Occult); NotifyChanged(); }
     public void SacrificeAcolyte() { OccultEngine.SacrificeAcolyte(_state); NotifyChanged(); }
     public void ActivateBloodOffering() { OccultEngine.ActivateBloodOffering(_state); NotifyChanged(); }
-    public void ActivateDarkVigil() { OccultEngine.ActivateDarkVigil(_state.Occult); NotifyChanged(); }
+    public void ActivateDarkVigil() { OccultEngine.ActivateDarkVigil(_state); NotifyChanged(); }
     public void ActivateWhisperChoir() { OccultEngine.ActivateWhisperChoir(_state.Occult); NotifyChanged(); }
     public void ActivateCovenBlessing() { OccultEngine.ActivateCovenBlessing(_state.Occult); NotifyChanged(); }
     public double PerformGrandSacrifice() { var favor = GrandSacrifice.PerformSacrifice(_state); NotifyChanged(); return favor; }
@@ -651,12 +651,19 @@ public class GameService
         _ = SaveAsync();
     }
 
+    [JSInvokable]
     public async Task SyncSaveJsonToJSAsync()
     {
         _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var json = SaveLoad.SaveGame(_state);
         try { await _js.InvokeVoidAsync("eval", $"window.__cultSaveJson={JsonSerializer.Serialize(json)};"); }
         catch { }
+    }
+
+    [JSInvokable]
+    public async Task SaveOnExit()
+    {
+        await SaveAsync();
     }
 
     public async Task SaveAsync()
