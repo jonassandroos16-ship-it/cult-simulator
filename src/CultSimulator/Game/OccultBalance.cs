@@ -17,6 +17,10 @@ public static class OccultBalance
     public const double SuspicionDecayPerSec = 0.1;
     public const double SuspicionHarvestBase = 0.3;
     public const int RecruitUnitCost = 100;
+    public const int ZealotRecruitCost = 120;
+    public const int InfiltratorRecruitCost = 100;
+    public const int ScholarRecruitCost = 80;
+    public const int MageRecruitCost = 200;
     public const int InitiateCapBase = 200;
     public const double SacrificeFaithBase = 10.0;
     public const double SacrificeSermonMult = 50.0;
@@ -35,7 +39,6 @@ public static class OccultBalance
     public const int WhisperChoirDurationSec = 60;
     public const int CovenBlessingDurationSec = 90;
 
-    // Legacy aliases so any existing code that referenced Acolyte names still compiles
     public const int PromoteAcolyteCost = RecruitUnitCost;
     public const double AcolyteSacrificeSuspicionReduction = InitiateSacrificeSuspicionReduction;
     public const int AcolyteCapBase = InitiateCapBase;

@@ -10,7 +10,10 @@ public static class CultistHierarchy
         int cap = OccultBalance.InitiateCapBase;
         if (activeCoven != null)
             cap += activeCoven.Buildings.GetValueOrDefault(BuildingType.Undercroft) * (int)GameBalance.UndercroftAcolyteBonus;
+        if (o.UnlockedTechs.Contains(TechId.AutophagousCult))
+            cap += 50;
         foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") cap += 50; }
+        foreach (var artifactId in o.OwnedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") cap += 50; }
         foreach (var m in o.Minions) if (m.Trait?.Id == "fleshspeaker") cap += 50;
         foreach (var c in o.HighCouncil) if (c.Trait?.Id == "fleshspeaker") cap += 50;
         return cap;
@@ -20,7 +23,6 @@ public static class CultistHierarchy
 
     public static bool CanRecruitUnit(OccultState o) => o.Initiates >= OccultBalance.RecruitUnitCost;
     public static bool CanPromote(OccultState o) => CanRecruitUnit(o);
-
     public static Minion Promote(OccultState o)
     {
         o.Initiates -= OccultBalance.RecruitUnitCost;
@@ -31,14 +33,32 @@ public static class CultistHierarchy
         return minion;
     }
 
-    public static Minion? RecruitUnit(OccultState o, PromotedRole role)
+    public static int RecruitUnitCostForRole(PromotedRole role) => role switch
     {
-        if (!CanRecruitUnit(o)) return null;
-        o.Initiates -= OccultBalance.RecruitUnitCost;
+        PromotedRole.Zealot => OccultBalance.ZealotRecruitCost,
+        PromotedRole.Infiltrator => OccultBalance.InfiltratorRecruitCost,
+        PromotedRole.Scholar => OccultBalance.ScholarRecruitCost,
+        PromotedRole.Mage => OccultBalance.MageRecruitCost,
+        _ => OccultBalance.RecruitUnitCost
+    };
+
+    public static bool CanRecruitUnitForRole(OccultState o, PromotedRole role) =>
+        o.Initiates >= RecruitUnitCostForRole(role);
+
+    public static Minion? RecruitUnitForRole(OccultState o, PromotedRole role)
+    {
+        int cost = RecruitUnitCostForRole(role);
+        if (o.Initiates < cost) return null;
+        o.Initiates -= cost;
         var trait = OccultData.Traits[Random.Shared.Next(OccultData.Traits.Length)];
         var minion = new Minion { Role = role, TraitId = trait.Id, Name = MinionNames[Random.Shared.Next(MinionNames.Length)] };
         o.Minions.Add(minion);
         return minion;
+    }
+
+    public static Minion? RecruitUnit(OccultState o, PromotedRole role)
+    {
+        return RecruitUnitForRole(o, role);
     }
 
     public static bool CanSacrifice(OccultState o, string minionId) => o.Minions.Any(m => m.Id == minionId);

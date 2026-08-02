@@ -189,8 +189,6 @@ public static class RivalCultEngine
             .ToList();
     }
 
-    // ── Rival Battle System ──
-
     public static RivalBattleState GetOrCreateRivalBattle(GameState state, string rivalId)
     {
         var rs = EnsureInitialized(state);
@@ -214,8 +212,10 @@ public static class RivalCultEngine
             RivalMaxHp = rivalHp,
             PlayerHp = RivalBattlePlayerBaseHp,
             PlayerMaxHp = RivalBattlePlayerBaseHp,
-            LastTickAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            LastTickAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            EnemyArchetype = def.Archetype
         };
+        battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(def.Archetype, scale, rival.Power);
         rs.RivalBattles.Add(battle);
         return battle;
     }
@@ -338,6 +338,9 @@ public static class RivalCultEngine
 
             double scale = ScaleFor(def.PreferredTerritoryId);
             double rivalAttack = (def.AgentStrength * 3.0 + rival.Power * 0.05) * scale;
+            double playerAttack = BattleCommon.CalculateAttack(battle.DeployedSquad, sw, state);
+            double playerDefense = BattleCommon.CalculateDefense(battle.DeployedSquad);
+            double stealth = BattleCommon.CalculateStealth(battle.DeployedSquad);
             var (mitigated, playerDamage) = BattleCommon.ExchangeDamage(battle.DeployedSquad, rivalAttack, sw, state, deltaSec);
 
             double faithRegen = BattleCommon.CalculateFaithRegen(battle.DeployedSquad);
@@ -345,6 +348,25 @@ public static class RivalCultEngine
 
             battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
             battle.PlayerHp = Math.Max(0, battle.PlayerHp - mitigated);
+
+            battle.RoundTimer += deltaSec;
+            battle.Momentum = Math.Clamp(battle.Momentum + (playerDamage - mitigated) * 0.01, -100, 100);
+
+            if (battle.RoundTimer >= BattleRoundEngine.RoundIntervalSec)
+            {
+                battle.RoundTimer = 0;
+                battle.RoundNumber++;
+                var round = BattleRoundEngine.ExecuteRound(
+                    battle.RoundNumber, battle.DeployedSquad, battle.EnemyUnits,
+                    playerAttack, rivalAttack, playerDefense, stealth, BattleRoundEngine.RoundIntervalSec);
+                var tactic = BattleRoundEngine.TryEnemyTactic(def.Archetype, battle.DeployedSquad, battle.RoundNumber);
+                if (tactic != null) round.EnemyAction = tactic;
+                var (reinforced, action) = BattleRoundEngine.TryEnemyReinforce(battle.EnemyUnits, def.Archetype, scale, battle.RoundNumber);
+                if (reinforced) { round.EnemyReinforced = true; round.EnemyAction = action; }
+                battle.RecentRounds.Add(round);
+                if (battle.RecentRounds.Count > 6) battle.RecentRounds.RemoveAt(0);
+                AppendLog(battle, round.Summary);
+            }
 
             if (battle.RivalHp <= 0)
             {
@@ -365,6 +387,10 @@ public static class RivalCultEngine
 
                 state.ActiveCoven.Faith += faithReward;
                 state.Occult.LifetimeFaith += faithReward;
+                battle.EnemyUnits.Clear();
+                battle.RecentRounds.Clear();
+                battle.RoundNumber = 0;
+                battle.Momentum = 0;
                 AppendLog(battle, $"VICTORY! {def.Name} has been destroyed! +{NumberFormat.Fmt(faithReward)} Faith!");
             }
             else if (battle.PlayerHp <= 0)
@@ -373,6 +399,9 @@ public static class RivalCultEngine
                 battle.PlayerHp = battle.PlayerMaxHp;
                 battle.RivalHp = battle.RivalMaxHp;
                 battle.DeployedSquad.Clear();
+                battle.RecentRounds.Clear();
+                battle.RoundNumber = 0;
+                battle.Momentum = 0;
                 state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 20);
                 AppendLog(battle, $"DEFEAT! Your assault force was annihilated. Suspicion rises.");
             }
