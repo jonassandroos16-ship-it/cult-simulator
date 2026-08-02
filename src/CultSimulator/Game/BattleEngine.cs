@@ -53,6 +53,8 @@ public static class BattleEngine
             PlayerMaxHp = PlayerBaseHp,
             LastTickAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
         };
+        if (rivalDef != null)
+            battle.EnemyArchetype = rivalDef.Archetype;
         bs.Battles.Add(battle);
         return battle;
     }
@@ -197,6 +199,13 @@ public static class BattleEngine
         if (battle.Phase == BattlePhase.NoThreat && IsTheaterActive(state, locations, continentId))
         {
             battle.Phase = BattlePhase.Deploy;
+            var rivalDef0 = BattleData.RivalForContinent(continentId);
+            if (rivalDef0 != null)
+            {
+                double scale0 = RivalCultEngine.ScaleFor(continentId);
+                battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(rivalDef0.Archetype, scale0, 20);
+                battle.EnemyArchetype = rivalDef0.Archetype;
+            }
             AppendLog(battle, $"A rival cult has emerged in {continentId}!");
         }
 
@@ -212,6 +221,8 @@ public static class BattleEngine
                 battle.RivalMaxHp = rivalHp2;
                 battle.PlayerHp = PlayerBaseHp;
                 battle.Phase = BattlePhase.Deploy;
+                var rivalDef3 = BattleData.RivalForContinent(continentId);
+                if (rivalDef3 != null) { double scale3 = RivalCultEngine.ScaleFor(continentId); battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(rivalDef3.Archetype, scale3, 20); battle.EnemyArchetype = rivalDef3.Archetype; }
                 AppendLog(battle, "A new rival cult has risen. Prepare your agents.");
             }
             return;
@@ -220,7 +231,12 @@ public static class BattleEngine
         if (battle.Phase != BattlePhase.Fighting) return;
 
         var rivalDef = BattleData.RivalForContinent(continentId);
-        double rivalAttack = (rivalDef?.AgentStrength ?? 5.0) * RivalCultEngine.ScaleFor(continentId);
+        double scale = RivalCultEngine.ScaleFor(continentId);
+        double rivalAttack = (rivalDef?.AgentStrength ?? 5.0) * scale;
+        double playerAttack = BattleCommon.CalculateAttack(battle.DeployedSquad, sw, state);
+        double playerDefense = BattleCommon.CalculateDefense(battle.DeployedSquad);
+        double stealth = BattleCommon.CalculateStealth(battle.DeployedSquad);
+
         var (mitigated, playerDamage) = BattleCommon.ExchangeDamage(battle.DeployedSquad, rivalAttack, sw, state, deltaSec);
 
         double faithRegen = BattleCommon.CalculateFaithRegen(battle.DeployedSquad);
@@ -229,12 +245,38 @@ public static class BattleEngine
         battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
         battle.PlayerHp = Math.Max(0, battle.PlayerHp - mitigated);
 
+        battle.RoundTimer += deltaSec;
+        battle.Momentum = Math.Clamp(battle.Momentum + (playerDamage - mitigated) * 0.01, -100, 100);
+
+        if (battle.RoundTimer >= BattleRoundEngine.RoundIntervalSec)
+        {
+            battle.RoundTimer = 0;
+            battle.RoundNumber++;
+            var round = BattleRoundEngine.ExecuteRound(
+                battle.RoundNumber, battle.DeployedSquad, battle.EnemyUnits,
+                playerAttack, rivalAttack, playerDefense, stealth, BattleRoundEngine.RoundIntervalSec);
+            if (battle.EnemyArchetype != null)
+            {
+                var tactic = BattleRoundEngine.TryEnemyTactic(battle.EnemyArchetype.Value, battle.DeployedSquad, battle.RoundNumber);
+                if (tactic != null) round.EnemyAction = tactic;
+                var (reinforced, action) = BattleRoundEngine.TryEnemyReinforce(battle.EnemyUnits, battle.EnemyArchetype.Value, scale, battle.RoundNumber);
+                if (reinforced) { round.EnemyReinforced = true; round.EnemyAction = action; }
+            }
+            battle.RecentRounds.Add(round);
+            if (battle.RecentRounds.Count > 6) battle.RecentRounds.RemoveAt(0);
+            AppendLog(battle, round.Summary);
+        }
+
         if (battle.RivalHp <= 0)
         {
             battle.Phase = BattlePhase.Cooldown;
             battle.Status = BattleStatus.Victory;
             battle.CooldownUntil = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (long)(CooldownSec * 1000);
             battle.DeployedSquad.Clear();
+            battle.EnemyUnits.Clear();
+            battle.RecentRounds.Clear();
+            battle.RoundNumber = 0;
+            battle.Momentum = 0;
             ApplyVictoryReward(state, continentId);
             AppendLog(battle, $"Victory! Rival cult defeated in {continentId}.");
         }
@@ -247,6 +289,9 @@ public static class BattleEngine
             battle.Status = BattleStatus.Defeat;
             battle.PlayerHp = PlayerBaseHp;
             battle.DeployedSquad.Clear();
+            battle.RecentRounds.Clear();
+            battle.RoundNumber = 0;
+            battle.Momentum = 0;
             ApplyDefeatPenalty(state);
             AppendLog(battle, $"Defeat! Your agents were repelled in {continentId}.");
         }

@@ -2,11 +2,6 @@ using System.Linq;
 
 namespace CultSimulator.Game;
 
-/// <summary>
-/// Data-driven battle system for local cult takeovers.
-/// Local cults use the same agent-based combat as continent battles,
-/// but are simpler: single encounter, no cooldown, lower HP pools.
-/// </summary>
 public static class LocalCultBattleEngine
 {
     public const double PlayerBaseHp = 60;
@@ -111,6 +106,13 @@ public static class LocalCultBattleEngine
         }
 
         battle.Phase = LocalCultBattlePhase.Fighting;
+        var localDef = LocalCultData.Find(cultId);
+        if (localDef != null)
+        {
+            double localScale = 0.5 + localDef.FollowersRequired / 40.0;
+            battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(RivalCultArchetype.TheCrimsonConclave, localScale, battle.RivalMaxHp / 10);
+            battle.EnemyArchetype = RivalCultArchetype.TheCrimsonConclave;
+        }
         AppendLog(battle, $"Battle started with {battle.TotalDeployed} agents.");
         return (true, "Battle started!");
     }
@@ -125,6 +127,9 @@ public static class LocalCultBattleEngine
             var sw = ShadowWarEngine.EnsureInitialized(state);
             var def = LocalCultData.Find(battle.CultId);
             double rivalAttack = def != null ? 2.0 + def.FollowersRequired * 0.01 : 3.0;
+            double playerAttack = BattleCommon.CalculateAttack(battle.DeployedSquad, sw, state);
+            double playerDefense = BattleCommon.CalculateDefense(battle.DeployedSquad);
+            double stealth = BattleCommon.CalculateStealth(battle.DeployedSquad);
 
             var (mitigated, playerDamage) = BattleCommon.ExchangeDamage(battle.DeployedSquad, rivalAttack, sw, state, deltaSec);
 
@@ -134,10 +139,36 @@ public static class LocalCultBattleEngine
             battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
             battle.PlayerHp = Math.Max(0, battle.PlayerHp - mitigated);
 
+            battle.RoundTimer += deltaSec;
+            battle.Momentum = Math.Clamp(battle.Momentum + (playerDamage - mitigated) * 0.01, -100, 100);
+
+            if (battle.RoundTimer >= BattleRoundEngine.RoundIntervalSec)
+            {
+                battle.RoundTimer = 0;
+                battle.RoundNumber++;
+                var round = BattleRoundEngine.ExecuteRound(
+                    battle.RoundNumber, battle.DeployedSquad, battle.EnemyUnits,
+                    playerAttack, rivalAttack, playerDefense, stealth, BattleRoundEngine.RoundIntervalSec);
+                if (battle.EnemyArchetype != null)
+                {
+                    var tactic = BattleRoundEngine.TryEnemyTactic(battle.EnemyArchetype.Value, battle.DeployedSquad, battle.RoundNumber);
+                    if (tactic != null) round.EnemyAction = tactic;
+                    var (reinforced, action) = BattleRoundEngine.TryEnemyReinforce(battle.EnemyUnits, battle.EnemyArchetype.Value, 0.5, battle.RoundNumber);
+                    if (reinforced) { round.EnemyReinforced = true; round.EnemyAction = action; }
+                }
+                battle.RecentRounds.Add(round);
+                if (battle.RecentRounds.Count > 6) battle.RecentRounds.RemoveAt(0);
+                AppendLog(battle, round.Summary);
+            }
+
             if (battle.RivalHp <= 0)
             {
                 battle.Phase = LocalCultBattlePhase.Victory;
                 battle.Status = LocalCultBattleStatus.Victory;
+                battle.EnemyUnits.Clear();
+                battle.RecentRounds.Clear();
+                battle.RoundNumber = 0;
+                battle.Momentum = 0;
                 AppendLog(battle, "Victory! The local cult has been defeated.");
                 ApplyVictory(state, battle);
             }
@@ -148,6 +179,9 @@ public static class LocalCultBattleEngine
                 battle.PlayerHp = battle.PlayerMaxHp;
                 battle.RivalHp = battle.RivalMaxHp;
                 battle.DeployedSquad.Clear();
+                battle.RecentRounds.Clear();
+                battle.RoundNumber = 0;
+                battle.Momentum = 0;
                 AppendLog(battle, "Defeat! Your agents were lost in battle. Recruit new ones to try again.");
             }
         }
