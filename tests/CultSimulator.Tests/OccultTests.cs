@@ -263,29 +263,33 @@ public class OccultTests
     }
 
     [Fact]
-    public void Cauldron_CraftRequiresMaterials()
+    public void Cauldron_CraftRequiresTransmutationTech()
     {
         var state = NewState();
-        Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
-        Assert.Empty(state.Occult.ActiveBuffs);
+        var (success, _) = Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
+        Assert.False(success);
     }
 
     [Fact]
-    public void Cauldron_CraftWithMaterials()
+    public void Cauldron_CraftWithTechAndAgents()
     {
         var state = NewState();
-        state.Occult.Materials[MaterialKind.GraveDust] = 20;
-        Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
-        Assert.NotEmpty(state.Occult.ActiveBuffs);
+        state.Occult.UnlockedTechs.Add(TechId.TransmutationCrucible);
+        state.ShadowWarOrInit.TotalAgents = 100;
+        var (success, _) = Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
+        Assert.True(success);
+        Assert.True(state.Occult.ElixirTimer > 0);
     }
 
     [Fact]
-    public void Cauldron_CraftConsumesMaterials()
+    public void Cauldron_CraftConsumesAgents()
     {
         var state = NewState();
-        state.Occult.Materials[MaterialKind.GraveDust] = 20;
+        state.Occult.UnlockedTechs.Add(TechId.TransmutationCrucible);
+        state.ShadowWarOrInit.TotalAgents = 100;
+        var before = state.ShadowWarOrInit.AvailableAgents;
         Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
-        Assert.True(state.Occult.Materials[MaterialKind.GraveDust] < 20);
+        Assert.True(state.ShadowWarOrInit.AvailableAgents < before);
     }
 
     [Fact]
