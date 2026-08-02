@@ -1,194 +1,128 @@
 @using CultSimulator.Game
-@inject GameService Game
-
-@{
-    var sw = Game.State.ShadowWarOrInit;
-    var poolAgents = (int)sw.AvailableAgents;
-    var hasAgents = poolAgents > 0 || sw.RecruitedAgents.Values.Sum() > 0;
-}
 
 <div class="deploy-squad-panel">
-    @if (!hasAgents)
+    @if (DeployedSquad != null && DeployedSquad.Count > 0)
     {
-        <div class="deploy-empty-state">
-            <div class="text-3xl mb-2">🏕️</div>
-            <p class="text-sm text-slate-400 mb-3">You have no agents to deploy. Your agent pool is empty.</p>
-            <p class="text-xs text-violet-300">Go to the <strong>Battle</strong> tab and recruit agents from your pool first, then return here.</p>
+        <div class="flex flex-col gap-1.5 mb-3">
+            <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider">Deployed Squad</div>
+            @foreach (var slot in DeployedSquad.Where(d => d.Count > 0))
+            {
+                var def = BattleData.AgentDef(slot.Type);
+                <div class="flex items-center gap-2 text-xs">
+                    <span class="text-base">@def?.Icon</span>
+                    <span class="text-amber-100 font-medium">@def?.Name</span>
+                    <span class="text-slate-400">×@slot.Count</span>
+                    @if (def?.IsSupport == true)
+                    {
+                        <span class="text-[0.55rem] text-emerald-400">+@def.FaithRegen/s Faith</span>
+                    }
+                </div>
+            }
         </div>
     }
-    else
+    else if (!IsFighting && !IsCooldown)
     {
-        <!-- Recruited agents available to deploy -->
-        <div class="deploy-agent-grid">
+        <div class="text-xs text-slate-500 text-center py-2 mb-2">No agents deployed yet.</div>
+    }
+
+    @if (CanDeploy)
+    {
+        <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider mb-1.5">Add Agents</div>
+        <div class="grid grid-cols-1 gap-1.5">
             @foreach (var agentDef in BattleData.AgentTypes)
             {
-                sw.RecruitedAgents.TryGetValue(agentDef.Type, out int owned);
-                var deployedCount = DeployedCount(agentDef.Type);
-                var available = owned - deployedCount;
-                var canDeploy = available > 0 && CanDeploy;
-                <div class="deploy-agent-card @(available == 0 && deployedCount == 0 ? "deploy-agent-empty" : "")">
-                    <div class="deploy-agent-header">
-                        <span class="deploy-agent-icon">@agentDef.Icon</span>
-                        <div class="deploy-agent-info">
-                            <div class="deploy-agent-name">@agentDef.Name</div>
-                            <div class="deploy-agent-stats">
-                                <span class="text-rose-300">⚔ @agentDef.Attack</span>
-                                <span class="text-cyan-300">🛡 @agentDef.Defense</span>
-                                <span class="text-emerald-300">👁 @agentDef.Stealth</span>
-                            </div>
-                        </div>
-                        <div class="deploy-agent-pool">
-                            <span class="text-[0.6rem] text-slate-400">Available</span>
-                            <span class="font-display text-sm text-amber-100">@available</span>
+                <div class="flex items-center gap-2 p-2 rounded-[10px]" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
+                    <span class="text-lg flex-shrink-0">@agentDef.Icon</span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-amber-100 font-medium">@agentDef.Name</div>
+                        <div class="text-[0.55rem] text-slate-400">
+                            <span class="text-rose-300">⚔@agentDef.Attack</span>
+                            <span class="text-cyan-300 ml-1">🛡@agentDef.Defense</span>
+                            <span class="text-emerald-300 ml-1">👁@agentDef.Stealth</span>
+                            @if (agentDef.IsSupport)
+                            {
+                                <span class="text-amber-300 ml-1">✨@agentDef.FaithRegen/s</span>
+                            }
                         </div>
                     </div>
-
-                    @if (deployedCount > 0)
-                    {
-                        <div class="deploy-agent-deployed-badge">
-                            <span class="text-violet-300">Deployed: @deployedCount</span>
-                        </div>
-                    }
-
-                    @if (CanDeploy)
-                    {
-                        <div class="deploy-agent-controls">
-                            <button class="deploy-btn deploy-btn-small" disabled="@(available == 0)" @onclick="() => OnDeploy(agentDef.Type, 1)">
-                                +1
-                            </button>
-                            <button class="deploy-btn deploy-btn-small" disabled="@(available < 5)" @onclick="() => OnDeploy(agentDef.Type, 5)">
-                                +5
-                            </button>
-                            <button class="deploy-btn deploy-btn-small" disabled="@(available < 10)" @onclick="() => OnDeploy(agentDef.Type, 10)">
-                                +10
-                            </button>
-                            <button class="deploy-btn deploy-btn-small" disabled="@(available == 0)" @onclick="() => OnDeploy(agentDef.Type, available)">
-                                All
-                            </button>
-                        </div>
-                    }
+                    <button class="deploy-btn deploy-btn-deploy"
+                            @onclick="() => OnDeployAgent?.Invoke((agentDef.Type, 1))">
+                        Deploy
+                    </button>
                 </div>
             }
         </div>
-
-        <!-- Squad summary -->
-        @if (SquadTotal > 0)
-        {
-            <div class="deploy-squad-summary">
-                <div class="deploy-squad-summary-header">
-                    <span class="text-xs text-violet-300 font-display tracking-wider uppercase">Your Squad</span>
-                    <span class="text-xs text-amber-200 font-display">@SquadTotal agents</span>
-                </div>
-                <div class="deploy-squad-summary-stats">
-                    <div class="deploy-squad-stat">
-                        <span class="deploy-squad-stat-label">⚔ Attack</span>
-                        <span class="deploy-squad-stat-value text-rose-300">@SquadAttack.ToString("F1")</span>
-                    </div>
-                    <div class="deploy-squad-stat">
-                        <span class="deploy-squad-stat-label">🛡 Defense</span>
-                        <span class="deploy-squad-stat-value text-cyan-300">@SquadDefense.ToString("F1")</span>
-                    </div>
-                    <div class="deploy-squad-stat">
-                        <span class="deploy-squad-stat-label">👁 Stealth</span>
-                        <span class="deploy-squad-stat-value text-emerald-300">@SquadStealth.ToString("F2")</span>
-                    </div>
-                </div>
-            </div>
-        }
-
-        <!-- Action buttons -->
-        @if (CanDeploy)
-        {
-            <div class="deploy-actions">
-                <button class="deploy-btn deploy-btn-withdraw" disabled="@(SquadTotal == 0)" @onclick="OnWithdraw">
-                    ↩ Withdraw All
-                </button>
-                <button class="deploy-btn deploy-btn-fight @(SquadTotal == 0 ? "deploy-btn-disabled" : "")" disabled="@(SquadTotal == 0)" @onclick="OnFight">
-                    ⚔️ @(FightLabel)
-                </button>
-            </div>
-            @if (SquadTotal == 0)
+        <div class="flex gap-2 mt-3">
+            @if (OnWithdraw != null)
             {
-                <p class="text-center text-[0.65rem] text-slate-500 mt-2">Select agents above to deploy them, then start the battle.</p>
+                <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
+                        style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);"
+                        @onclick="() => OnWithdraw?.Invoke()">
+                    Withdraw
+                </button>
             }
-        }
-        else if (IsFighting)
-        {
-            <div class="deploy-fighting-state">
-                <span class="text-sm text-rose-300 animate-pulse font-medium">⚔️ Battle in progress...</span>
-            </div>
-        }
-        else if (IsCooldown)
-        {
-            <div class="deploy-cooldown-state">
-                <span class="text-sm text-emerald-300 font-medium">Victory! Regrouping...</span>
-            </div>
-        }
+            @if (OnFight != null)
+            {
+                <button class="flex-1 p-2 rounded-[10px] text-xs font-bold text-rose-100 transition-all hover:bg-rose-500/20"
+                        style="background: rgba(127,29,29,0.4); border: 1px solid rgba(239,68,68,0.3);"
+                        @onclick="() => OnFight?.Invoke()">
+                    @FightLabel
+                </button>
+            }
+        </div>
+    }
+
+    @if (ShowReinforce)
+    {
+        <div class="text-[0.65rem] text-amber-400 uppercase tracking-wider mb-1.5 mt-2">Reinforce</div>
+        <div class="text-[0.6rem] text-slate-400 mb-2">Pool: @PoolAgents agents available</div>
+        <div class="grid grid-cols-1 gap-1.5">
+            @foreach (var agentDef in BattleData.AgentTypes.Where(a => a.Type != AgentType.Initiate))
+            {
+                <div class="flex items-center gap-2 p-2 rounded-[10px]" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
+                    <span class="text-lg flex-shrink-0">@agentDef.Icon</span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs text-amber-100 font-medium">@agentDef.Name</div>
+                        <div class="text-[0.55rem] text-slate-400">
+                            <span class="text-rose-300">⚔@agentDef.Attack</span>
+                            <span class="text-cyan-300 ml-1">🛡@agentDef.Defense</span>
+                            @if (agentDef.IsSupport)
+                            {
+                                <span class="text-amber-300 ml-1">✨@agentDef.FaithRegen/s</span>
+                            }
+                        </div>
+                    </div>
+                    <button class="deploy-btn deploy-btn-reinforce"
+                            disabled="@(PoolAgents < agentDef.AgentCost)"
+                            @onclick="() => OnReinforceAgent?.Invoke((agentDef.Type, 1))">
+                        +1
+                    </button>
+                </div>
+            }
+        </div>
+    }
+
+    @if (IsFighting && !ShowReinforce)
+    {
+        <div class="text-xs text-rose-300 text-center py-2 animate-pulse">Battle in progress...</div>
+    }
+
+    @if (IsCooldown)
+    {
+        <div class="text-xs text-slate-500 text-center py-2">Battle on cooldown.</div>
     }
 </div>
 
 @code {
-    [Parameter] public bool CanDeploy { get; set; } = true;
-    [Parameter] public bool IsFighting { get; set; } = false;
-    [Parameter] public bool IsCooldown { get; set; } = false;
-    [Parameter] public string FightLabel { get; set; } = "Start Battle";
+    [Parameter] public bool CanDeploy { get; set; }
+    [Parameter] public bool IsFighting { get; set; }
+    [Parameter] public bool IsCooldown { get; set; }
+    [Parameter] public bool ShowReinforce { get; set; }
+    [Parameter] public int PoolAgents { get; set; }
     [Parameter] public List<DeployedAgent>? DeployedSquad { get; set; }
+    [Parameter] public string FightLabel { get; set; } = "Fight!";
     [Parameter] public EventCallback<(AgentType, int)> OnDeployAgent { get; set; }
     [Parameter] public EventCallback OnWithdraw { get; set; }
     [Parameter] public EventCallback OnFight { get; set; }
-
-    private int SquadTotal => DeployedSquad?.Sum(d => d.Count) ?? 0;
-
-    private double SquadAttack
-    {
-        get
-        {
-            if (DeployedSquad == null) return 0;
-            double total = 0;
-            foreach (var slot in DeployedSquad)
-            {
-                var def = BattleData.AgentDef(slot.Type);
-                if (def != null) total += def.Attack * slot.Count;
-            }
-            return total;
-        }
-    }
-
-    private double SquadDefense
-    {
-        get
-        {
-            if (DeployedSquad == null) return 0;
-            double total = 0;
-            foreach (var slot in DeployedSquad)
-            {
-                var def = BattleData.AgentDef(slot.Type);
-                if (def != null) total += def.Defense * slot.Count;
-            }
-            return total;
-        }
-    }
-
-    private double SquadStealth
-    {
-        get
-        {
-            if (DeployedSquad == null || SquadTotal == 0) return 0;
-            double total = 0;
-            foreach (var slot in DeployedSquad)
-            {
-                var def = BattleData.AgentDef(slot.Type);
-                if (def != null) total += def.Stealth * slot.Count;
-            }
-            return total / SquadTotal;
-        }
-    }
-
-    private int DeployedCount(AgentType type) =>
-        DeployedSquad?.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
-
-    private async Task OnDeploy(AgentType type, int count)
-    {
-        await OnDeployAgent.InvokeAsync((type, count));
-    }
+    [Parameter] public EventCallback<(AgentType, int)> OnReinforceAgent { get; set; }
 }

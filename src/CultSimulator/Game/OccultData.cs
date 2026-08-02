@@ -82,7 +82,7 @@ public static class OccultData
         new MapNodeDef("newforest_standing", "Stonestanding Circle", "🪨", 550, 35, 0.8, 0.3, 50.88, -1.55, "New Forest Standing Stones", new() { { MaterialKind.AstralMercury, 2 } }, "new_forest_coven"),
         new MapNodeDef("newforest_barrows", "Dark Barrow Burial Mounds", "⚰️", 1700, 120, 1.5, 0.5, 50.82, -1.65, "New Forest Barrows", new() { { MaterialKind.DemonBile, 2 }, { MaterialKind.GraveDust, 1 } }, "new_forest_coven"));
 
-    public static readonly ImmutableArray<PromotedRole> PromotedRoles = ImmutableArray.Create(PromotedRole.Zealot, PromotedRole.Scholar, PromotedRole.Infiltrator);
+    public static readonly ImmutableArray<PromotedRole> PromotedRoles = ImmutableArray.Create(PromotedRole.Zealot, PromotedRole.Scholar, PromotedRole.Infiltrator, PromotedRole.Mage);
     public static readonly ImmutableArray<CouncilRole> CouncilRoles = ImmutableArray.Create(CouncilRole.Inquisitor, CouncilRole.Archon, CouncilRole.HighPriest);
 
     public static TechDef Tech(TechId id) => Techs.First(t => t.Id == id);
