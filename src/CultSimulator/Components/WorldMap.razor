@@ -107,14 +107,19 @@
                     }
                     else if (battle.Phase == LocalCultBattlePhase.Fighting)
                     {
-                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" />
+                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" PlayerHp="battle.PlayerHp" PlayerMaxHp="battle.PlayerMaxHp" RivalHp="battle.RivalHp" RivalMaxHp="battle.RivalMaxHp" />
                         <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
                                           ShowReinforce="true" PoolAgents="(int)sw.AvailableAgents"
                                           OnReinforceAgent="args => ReinforceLocalCult(cultDef.Id, args.Item1, args.Item2)" />
                     }
                     else if (battle.Phase == LocalCultBattlePhase.Victory)
                     {
-                        <div class="text-center text-xs text-emerald-300 py-3">Victory! Faith bonus earned.</div>
+                        <div class="p-4 rounded-[14px] mb-3 text-center animate-fade-in" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
+                            <div class="text-3xl mb-2">🏆</div>
+                            <div class="text-base text-emerald-300 font-bold mb-1">VICTORY!</div>
+                            <div class="text-[0.65rem] text-amber-200">+@(cultDef.RewardAmount) Faith bonus earned</div>
+                            <div class="text-[0.6rem] text-slate-400 mt-1">@cultDef.Name has been defeated.</div>
+                        </div>
                     }
 
                     @if (battle?.Log.Count > 0 && battle?.Phase != LocalCultBattlePhase.Fighting)
