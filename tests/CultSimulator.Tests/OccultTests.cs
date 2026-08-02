@@ -303,9 +303,9 @@ public class OccultTests
     {
         var state = NewState();
         state.ActiveCoven.Faith = 1000;
-        var initial = state.Occult.SermonPower;
+        var initial = state.Occult.SermonPowerLevel;
         OccultEngine.BuySermonPower(state);
-        Assert.True(state.Occult.SermonPower > initial);
+        Assert.True(state.Occult.SermonPowerLevel > initial);
     }
 
     [Fact]
