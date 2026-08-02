@@ -150,14 +150,18 @@
                             }
                             else if (convBattle.Phase == BattlePhase.Fighting)
                             {
-                                <BattleView IsFighting="true" RecentRounds="convBattle.RecentRounds" EnemyUnits="convBattle.EnemyUnits" Momentum="convBattle.Momentum" />
+                                <BattleView IsFighting="true" RecentRounds="convBattle.RecentRounds" EnemyUnits="convBattle.EnemyUnits" Momentum="convBattle.Momentum" PlayerHp="convBattle.PlayerHp" PlayerMaxHp="convBattle.PlayerMaxHp" RivalHp="convBattle.RivalHp" RivalMaxHp="convBattle.RivalMaxHp" />
                                 <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="convBattle.DeployedSquad"
                                                   ShowReinforce="true" PoolAgents="poolAgents"
                                                   OnReinforceAgent="args => DeployConvAgent(args.Item1, args.Item2)" />
                             }
                             else if (convBattle.Phase == BattlePhase.Cooldown)
                             {
-                                <div class="text-center text-xs text-emerald-300 py-3">Victory! Finalizing conversion...</div>
+                                <div class="p-4 rounded-[14px] mb-3 text-center animate-fade-in" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
+                                    <div class="text-3xl mb-2">🏆</div>
+                                    <div class="text-base text-emerald-300 font-bold mb-1">VICTORY!</div>
+                                    <div class="text-[0.6rem] text-slate-400 mt-1">The coven has been converted. Finalizing...</div>
+                                </div>
                             }
                         }
                         else
