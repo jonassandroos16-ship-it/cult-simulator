@@ -133,7 +133,14 @@
                 <div class="flex items-center justify-between mt-3">
                     <div class="text-[0.6rem]">
                         <div class="text-cyan-400">Cost: @agentDef.AgentCost pool agents</div>
-                        <div class="text-slate-400">Owned: @owned@(agentDef.Type != AgentType.Initiate ? $" / {maxForType} max" : "")</div>
+                        @if (agentDef.Type != AgentType.Initiate && maxForType == 0)
+                        {
+                            <div class="text-amber-400">Recruit @agentDef.Name in the Sanctum first</div>
+                        }
+                        else
+                        {
+                            <div class="text-slate-400">Owned: @owned@(agentDef.Type != AgentType.Initiate ? $" / {maxForType} max" : "")</div>
+                        }
                     </div>
                     <button class="deploy-btn deploy-btn-recruit" disabled="@(!canAfford || (agentDef.Type != AgentType.Initiate && owned >= maxForType))" @onclick="() => OnRecruit(agentDef.Type, 1)">
                         Recruit

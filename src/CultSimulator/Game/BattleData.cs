@@ -12,7 +12,7 @@ public static class BattleData
             "Fanatical warrior. High attack, low stealth. Recruit Zealots in the Sanctum first.",
             Attack: 6.0, Defense: 4.0, Stealth: 0.3, AgentCost: 20),
         new AgentTypeDef(AgentType.Infiltrator, "Infiltrator", "🗡️",
-            "Stealth operative. Low attack but high stealth — reduces rival counterattack damage.",
+            "Stealth operative. Low attack but high stealth — reduces rival counterattack damage. Recruit Infiltrators in the Sanctum first.",
             Attack: 3.0, Defense: 2.0, Stealth: 3.0, AgentCost: 15)
     );
 
