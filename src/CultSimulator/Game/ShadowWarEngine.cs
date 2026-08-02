@@ -2,7 +2,7 @@ namespace CultSimulator.Game;
 
 public static class ShadowWarEngine
 {
-    public const double BaseAgentProduction = 0.03;
+    public const double BaseAgentProduction = 0.1;
     public const double BaseAgentStrength = 1.0;
     public const double ReconBaseTime = 10.0;
     public const double InfiltrationBaseTime = 5.0;
@@ -43,10 +43,26 @@ public static class ShadowWarEngine
             if (def != null && def.Type == InstitutionType.Government)
                 govBonus += def.RewardValue;
         }
-        double zealotMult = CultistHierarchy.AgentProductionMult(state.Occult);
-        double trainingBonus = state.ActiveCoven.Buildings.GetValueOrDefault(BuildingType.TrainingCamp) * GameBalance.TrainingCampProductionPerLevel;
-        double trainingMult = 1.0 + trainingBonus;
-        return baseRate * govBonus * sw.PrestigeMultiplier * zealotMult * trainingMult;
+        double buildingMult = 1.0;
+        foreach (var coven in state.Covens)
+        {
+            if (!coven.TakenOver) continue;
+            int guilds = coven.Buildings.GetValueOrDefault(BuildingType.ShadowGuild);
+            buildingMult += guilds * GameBalance.ShadowGuildAgentSpeedBonus;
+        }
+        return baseRate * govBonus * sw.PrestigeMultiplier * buildingMult;
+    }
+
+    public static double AgentCapFor(ShadowWarState sw, GameState state)
+    {
+        double cap = sw.AgentCap > 0 ? sw.AgentCap : 100;
+        foreach (var coven in state.Covens)
+        {
+            if (!coven.TakenOver) continue;
+            int safehouses = coven.Buildings.GetValueOrDefault(BuildingType.Safehouse);
+            cap += safehouses * GameBalance.SafehouseAgentCapBonus;
+        }
+        return cap;
     }
 
     public static double AgentStrength(ShadowWarState sw, GameState state)
@@ -62,14 +78,6 @@ public static class ShadowWarEngine
         if (state.Occult.UnlockedTechs.Contains(TechId.ShadowTactics))
             strength *= 1.25;
         return strength;
-    }
-
-    public static int AgentPoolCap(GameState state)
-    {
-        int cap = GameBalance.AgentPoolBaseCap;
-        int barracks = state.ActiveCoven.Buildings.GetValueOrDefault(BuildingType.Barracks);
-        cap += barracks * GameBalance.BarracksAgentCapPerLevel;
-        return cap;
     }
 
     public static double FaithMultiplierBonus(ShadowWarState sw) => 0.0;
@@ -121,10 +129,8 @@ public static class ShadowWarEngine
     public static void Tick(ShadowWarState sw, GameState state, WorldLocationService locations, double deltaSec)
     {
         double agentProd = AgentProductionPerSec(sw, state);
-        int cap = AgentPoolCap(state);
-        double effectiveCap = cap - sw.DeployedAgents;
-        double potentialNew = sw.TotalAgents + agentProd * deltaSec;
-        sw.TotalAgents = Math.Min(potentialNew, effectiveCap);
+        double cap = AgentCapFor(sw, state);
+        sw.TotalAgents = Math.Min(sw.TotalAgents + agentProd * deltaSec, cap);
 
         foreach (var inst in sw.Institutions)
         {
@@ -184,6 +190,9 @@ public static class ShadowWarEngine
                 }
             }
         }
+
+        if (sw.Heat > 0)
+            sw.Heat = Math.Max(0, sw.Heat - 0.1 * deltaSec);
     }
 
     public static (bool, string) StartRecon(ShadowWarState sw, GameState state, WorldLocationService locations, string institutionId, int agentCount)
@@ -236,6 +245,6 @@ public static class ShadowWarEngine
         sw.DeployedAgents += count;
         inst.AssignedAgents += count;
         inst.InvestigationDefense = Math.Min(100, inst.InvestigationDefense + count * 10);
-        return (true, $"Defenders assigned. Investigation defense raised to {(int)inst.InvestigationDefense}%.");
+        return (true, $"Defenders assigned. Investigation defense raised to {(int)inst.InvestigationDefense}%. ");
     }
 }

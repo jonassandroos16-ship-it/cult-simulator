@@ -17,9 +17,10 @@ public class InstitutionState
 
 public class ShadowWarState
 {
+    public double Heat { get; set; }
     public double TotalAgents { get; set; }
+    public double AgentCap { get; set; }
     public double DeployedAgents { get; set; }
-    public double SpentAgents { get; set; }
     public List<InstitutionState> Institutions { get; set; } = new();
     public bool VictoryAchieved { get; set; }
     public double PrestigeMultiplier { get; set; } = 1.0;
@@ -29,7 +30,7 @@ public class ShadowWarState
     public Dictionary<AgentType, int> RecruitedAgents { get; set; } = new();
 
     [JsonIgnore]
-    public double AvailableAgents => Math.Floor(TotalAgents - DeployedAgents - SpentAgents);
+    public double AvailableAgents => Math.Floor(TotalAgents - DeployedAgents);
 
     [JsonIgnore]
     public List<InstitutionState> ControlledInstitutions =>
