@@ -46,26 +46,26 @@
                         </div>
                     </div>
                     <button class="deploy-btn deploy-btn-deploy"
-                            @onclick="() => OnDeployAgent?.Invoke((agentDef.Type, 1))">
+                            @onclick="() => OnDeployAgent.InvokeAsync((agentDef.Type, 1))">
                         Deploy
                     </button>
                 </div>
             }
         </div>
         <div class="flex gap-2 mt-3">
-            @if (OnWithdraw != null)
+            @if (OnWithdraw.HasDelegate)
             {
                 <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
                         style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);"
-                        @onclick="() => OnWithdraw?.Invoke()">
+                        @onclick="() => OnWithdraw.InvokeAsync()">
                     Withdraw
                 </button>
             }
-            @if (OnFight != null)
+            @if (OnFight.HasDelegate)
             {
                 <button class="flex-1 p-2 rounded-[10px] text-xs font-bold text-rose-100 transition-all hover:bg-rose-500/20"
                         style="background: rgba(127,29,29,0.4); border: 1px solid rgba(239,68,68,0.3);"
-                        @onclick="() => OnFight?.Invoke()">
+                        @onclick="() => OnFight.InvokeAsync()">
                     @FightLabel
                 </button>
             }
@@ -94,7 +94,7 @@
                     </div>
                     <button class="deploy-btn deploy-btn-reinforce"
                             disabled="@(PoolAgents < agentDef.AgentCost)"
-                            @onclick="() => OnReinforceAgent?.Invoke((agentDef.Type, 1))">
+                            @onclick="() => OnReinforceAgent.InvokeAsync((agentDef.Type, 1))">
                         +1
                     </button>
                 </div>
