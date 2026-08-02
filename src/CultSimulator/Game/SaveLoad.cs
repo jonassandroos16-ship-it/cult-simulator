@@ -47,7 +47,6 @@ public static class SaveLoad
             if (state == null) return true;
             if (string.IsNullOrWhiteSpace(state.CultName)) return true;
             if (state.Covens == null) return true;
-            if (state.Occult == null) return true;
             if (state.ActiveCovenId == null) return true;
             return false;
         }
@@ -81,7 +80,6 @@ public static class SaveLoad
 
         if (state.SaveVersion < 1)
         {
-            state.Occult ??= new OccultState();
             state.ShadowWar ??= ShadowWarEngine.CreateInitialState();
             state.BattleSystem ??= BattleEngine.CreateInitialState();
             state.RivalCults ??= RivalCultEngine.CreateInitialState();
