@@ -4,30 +4,71 @@
     @if (IsFighting && RecentRounds != null && RecentRounds.Count > 0)
     {
         var latestRound = RecentRounds[RecentRounds.Count - 1];
+        var prevRound = RecentRounds.Count > 1 ? RecentRounds[RecentRounds.Count - 2] : null;
+        var playerHpPct = PlayerMaxHp > 0 ? Math.Clamp(PlayerHp / PlayerMaxHp * 100, 0, 100) : 0;
+        var rivalHpPct = RivalMaxHp > 0 ? Math.Clamp(RivalHp / RivalMaxHp * 100, 0, 100) : 100;
+        var playerDamageDelta = latestRound.PlayerDamageTotal - (prevRound?.PlayerDamageTotal ?? 0);
+        var enemyDamageDelta = latestRound.EnemyDamageTotal - (prevRound?.EnemyDamageTotal ?? 0);
 
+        <!-- HP Bars -->
+        <div class="grid grid-cols-2 gap-3 mb-3">
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[0.6rem] text-emerald-400 uppercase tracking-wider font-medium">Your Forces</span>
+                    <span class="text-[0.6rem] text-emerald-300 font-display">@((int)Math.Max(0, PlayerHp))/@((int)PlayerMaxHp)</span>
+                </div>
+                <div class="relative h-5 rounded-full overflow-hidden" style="background: rgba(15,10,36,0.6); border: 1px solid rgba(16,185,129,0.3);">
+                    <div class="absolute top-0 bottom-0 left-0 rounded-full transition-all duration-500"
+                         style="width: @(playerHpPct)%; background: linear-gradient(90deg, rgba(16,185,129,0.7), rgba(52,211,153,0.5));"></div>
+                    @if (playerHpPct < 30 && playerHpPct > 0)
+                    {
+                        <div class="absolute inset-0 animate-pulse" style="background: rgba(239,68,68,0.15);"></div>
+                    }
+                </div>
+            </div>
+            <div>
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[0.6rem] text-rose-400 uppercase tracking-wider font-medium">Rival</span>
+                    <span class="text-[0.6rem] text-rose-300 font-display">@((int)Math.Max(0, RivalHp))/@((int)RivalMaxHp)</span>
+                </div>
+                <div class="relative h-5 rounded-full overflow-hidden" style="background: rgba(15,10,36,0.6); border: 1px solid rgba(239,68,68,0.3);">
+                    <div class="absolute top-0 bottom-0 left-0 rounded-full transition-all duration-500"
+                         style="width: @(rivalHpPct)%; background: linear-gradient(90deg, rgba(239,68,68,0.7), rgba(248,113,113,0.5));"></div>
+                    @if (rivalHpPct < 30 && rivalHpPct > 0)
+                    {
+                        <div class="absolute inset-0 animate-pulse" style="background: rgba(252,211,77,0.2);"></div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Round header -->
         <div class="flex items-center justify-between mb-2">
-            <div class="text-[0.65rem] text-amber-400 uppercase tracking-wider">Round @latestRound.RoundNumber</div>
+            <div class="text-[0.65rem] text-amber-400 uppercase tracking-wider font-medium">Round @latestRound.RoundNumber</div>
             @if (latestRound.EnemyAction != null)
             {
-                <div class="text-[0.6rem] text-rose-300 animate-pulse font-medium">@latestRound.EnemyAction</div>
+                <div class="text-[0.6rem] text-rose-300 animate-pulse font-medium">⚠ @latestRound.EnemyAction</div>
             }
         </div>
 
+        <!-- Damage exchange with effects -->
         <div class="grid grid-cols-2 gap-3 mb-3">
-            <div class="p-2.5 rounded-[12px]" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(239,68,68,0.2);">
+            <div class="p-2.5 rounded-[12px] relative overflow-hidden" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(239,68,68,0.2);">
                 <div class="text-[0.6rem] text-rose-400 uppercase tracking-wider mb-1.5">Your Attacks</div>
                 @if (latestRound.PlayerAttacks.Count > 0)
                 {
                     @foreach (var atk in latestRound.PlayerAttacks.OrderByDescending(a => a.Damage).Take(4))
                     {
-                        <div class="flex items-center gap-1.5 text-[0.65rem] mb-0.5">
-                            <span class="text-base">@atk.Icon</span>
-                            <span class="text-amber-100">@atk.UnitName ×@atk.Count</span>
-                            <span class="text-rose-300 font-medium ml-auto">→ @atk.Damage:F0 dmg</span>
+                        var isTopDamage = atk.Damage == latestRound.PlayerAttacks.Max(a => a.Damage);
+                        <div class="flex items-center gap-1.5 text-[0.65rem] mb-0.5 @(isTopDamage ? "animate-pulse" : "")">
+                            <span class="text-base">@(atk.Icon)</span>
+                            <span class="text-amber-100">@(atk.UnitName) ×@(atk.Count)</span>
+                            <span class="text-slate-500 text-[0.55rem]">→ @(atk.TargetName)</span>
+                            <span class="text-rose-300 font-bold ml-auto @(isTopDamage ? "text-base" : "")">-@atk.Damage.ToString("F0")</span>
                         </div>
                     }
-                    <div class="text-[0.6rem] text-rose-300 mt-1 pt-1 border-t border-rose-900/30">
-                        Total: @latestRound.PlayerDamageTotal:F0
+                    <div class="text-[0.6rem] text-rose-300 mt-1 pt-1 border-t border-rose-900/30 font-bold">
+                        Total: @latestRound.PlayerDamageTotal.ToString("F0") dmg
                     </div>
                 }
                 else
@@ -36,20 +77,22 @@
                 }
             </div>
 
-            <div class="p-2.5 rounded-[12px]" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(239,68,68,0.2);">
+            <div class="p-2.5 rounded-[12px] relative overflow-hidden" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(34,211,238,0.2);">
                 <div class="text-[0.6rem] text-cyan-400 uppercase tracking-wider mb-1.5">Enemy Attacks</div>
                 @if (latestRound.EnemyAttacks.Count > 0)
                 {
                     @foreach (var atk in latestRound.EnemyAttacks.OrderByDescending(a => a.Damage).Take(4))
                     {
-                        <div class="flex items-center gap-1.5 text-[0.65rem] mb-0.5">
-                            <span class="text-base">@atk.Icon</span>
-                            <span class="text-slate-300">@atk.UnitName ×@atk.Count</span>
-                            <span class="text-cyan-300 font-medium ml-auto">→ @atk.Damage:F0 dmg</span>
+                        var isTopDamage = atk.Damage == latestRound.EnemyAttacks.Max(a => a.Damage);
+                        <div class="flex items-center gap-1.5 text-[0.65rem] mb-0.5 @(isTopDamage ? "animate-pulse" : "")">
+                            <span class="text-base">@(atk.Icon)</span>
+                            <span class="text-slate-300">@(atk.UnitName) ×@(atk.Count)</span>
+                            <span class="text-slate-500 text-[0.55rem]">→ @(atk.TargetName)</span>
+                            <span class="text-cyan-300 font-bold ml-auto @(isTopDamage ? "text-base" : "")">-@atk.Damage.ToString("F0")</span>
                         </div>
                     }
-                    <div class="text-[0.6rem] text-cyan-300 mt-1 pt-1 border-t border-cyan-900/30">
-                        Total: @latestRound.EnemyDamageTotal:F0
+                    <div class="text-[0.6rem] text-cyan-300 mt-1 pt-1 border-t border-cyan-900/30 font-bold">
+                        Total: @latestRound.EnemyDamageTotal.ToString("F0") dmg
                     </div>
                 }
                 else
@@ -59,6 +102,7 @@
             </div>
         </div>
 
+        <!-- Momentum bar -->
         <div class="mb-3">
             <div class="text-[0.6rem] text-slate-400 mb-1">Battle Momentum</div>
             <div class="relative h-4 rounded-full overflow-hidden" style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);">
@@ -85,20 +129,26 @@
                 <div class="flex flex-wrap gap-1.5">
                     @foreach (var unit in EnemyUnits.Where(u => u.Count > 0))
                     {
-                        <div class="flex items-center gap-1 px-2 py-1 rounded-[8px] text-[0.6rem]"
+                        var healthPct = unit.MaxCount > 0 ? (int)Math.Clamp((double)unit.Count / unit.MaxCount * 100, 0, 100) : 0;
+                        <div class="flex items-center gap-1 px-2 py-1 rounded-[8px] text-[0.6rem] relative overflow-hidden"
                              style="background: rgba(15,10,36,0.5); border: 1px solid rgba(239,68,68,0.15);">
-                            <span class="text-sm">@unit.Icon</span>
-                            <span class="text-slate-300">@unit.Name</span>
-                            <span class="text-rose-300 font-medium">×@unit.Count</span>
+                            <span class="text-sm">@(unit.Icon)</span>
+                            <span class="text-slate-300">@(unit.Name)</span>
+                            <span class="text-rose-300 font-medium">×@(unit.Count)</span>
+                            @if (healthPct < 50)
+                            {
+                                <span class="text-[0.5rem] text-amber-400">(@healthPct%)</span>
+                            }
                         </div>
                     }
                 </div>
             </div>
         }
 
+        <!-- Round summary -->
         <div class="p-2 rounded-[10px] text-[0.65rem] text-slate-300 leading-5 mb-2"
              style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
-            @latestRound.Summary
+            @(latestRound.Summary)
         </div>
 
         @if (RecentRounds.Count > 1)
@@ -109,7 +159,7 @@
                     @for (int i = RecentRounds.Count - 2; i >= 0; i--)
                     {
                         <div class="text-slate-400 leading-4 pl-2 border-l border-slate-700">
-                            @RecentRounds[i].Summary
+                            @(RecentRounds[i].Summary)
                         </div>
                     }
                 </div>
@@ -118,7 +168,7 @@
     }
     else if (IsFighting)
     {
-        <div class="text-xs text-rose-300 text-center py-4 animate-pulse">Battle commencing...</div>
+        <div class="text-xs text-rose-300 text-center py-4 animate-pulse">⚔️ Battle commencing...</div>
     }
 </div>
 
@@ -127,4 +177,8 @@
     [Parameter] public List<BattleRound>? RecentRounds { get; set; }
     [Parameter] public List<EnemyUnitSlot>? EnemyUnits { get; set; }
     [Parameter] public double Momentum { get; set; }
+    [Parameter] public double PlayerHp { get; set; }
+    [Parameter] public double PlayerMaxHp { get; set; }
+    [Parameter] public double RivalHp { get; set; }
+    [Parameter] public double RivalMaxHp { get; set; }
 }
