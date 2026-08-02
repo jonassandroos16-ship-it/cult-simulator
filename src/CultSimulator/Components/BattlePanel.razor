@@ -64,7 +64,7 @@
             }
             else
             {
-                <div class="text-[10px] text-slate-500 mt-0.5">Multiplies all agent ATK</div>
+                <div class="text-[10px] text-slate-500 mt-0.5">Multiplies all agent ATK in battle</div>
             }
         </div>
         <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
@@ -89,6 +89,18 @@
             <div><strong class="text-amber-200">🏰 Barracks</strong> (Lv @barracksLevel) — Raises your agent pool cap by +5 per level. Currently: @agentCap max.</div>
             <div><strong class="text-amber-200">🗡️ Training Camp</strong> (Lv @trainingCampLevel) — Boosts agent production speed by +50% per level. Currently: ×@((1.0 + trainingCampLevel * GameBalance.TrainingCampProductionPerLevel).ToString("F1")) production.</div>
             <div class="text-slate-500 text-[0.65rem] mt-1">Build or upgrade these in the <strong>Build</strong> tab to increase your agent flow.</div>
+        </div>
+    </div>
+
+    <!-- Strength tip -->
+    <div class="mt-2 p-2.5 rounded-[12px] text-xs leading-5" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
+        <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider mb-1">How to Increase Strength</div>
+        <div class="text-slate-400 space-y-0.5">
+            <div><strong class="text-amber-200">⚔️ Military Institutions</strong> — Control Military-type institutions in the Shadow War to add their power to your base Strength.</div>
+            <div><strong class="text-amber-200">🕵️ Intelligence Institutions</strong> — Control Intelligence-type institutions for an additional Strength bonus.</div>
+            <div><strong class="text-amber-200">📖 Shadow Tactics</strong> — Research this tech in the Grimoire to multiply all Strength by ×1.25.</div>
+            <div><strong class="text-amber-200">⚗️ War Elixir</strong> — Brew a War Elixir in the Cauldron for a temporary ×1.5 Strength boost during battle.</div>
+            <div class="text-slate-500 text-[0.65rem] mt-1">Strength multiplies every agent's attack damage in all battles — the higher it is, the faster enemies fall.</div>
         </div>
     </div>
 
