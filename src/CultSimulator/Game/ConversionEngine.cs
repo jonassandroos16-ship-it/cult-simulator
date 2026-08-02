@@ -1,10 +1,5 @@
 namespace CultSimulator.Game;
 
-/// <summary>
-/// Pure functions that drive the narrative-siege conversion flow.
-/// Works over <see cref="GameState"/> + <see cref="ConversionDef"/> data
-/// so it stays modular and testable without the UI.
-/// </summary>
 public static class ConversionEngine
 {
     public static bool IsActive(GameState state) =>
@@ -75,6 +70,7 @@ public static class ConversionEngine
     {
         if (state.Conversion == null) return;
         state.Conversion.BattlePhase = true;
+        var covenId = state.Conversion.CovenId;
     }
 
     public static void OnBattleWon(GameState state, ConversionDataService data)
