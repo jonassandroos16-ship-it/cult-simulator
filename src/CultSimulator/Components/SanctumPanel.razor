@@ -43,10 +43,25 @@
             <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Sermon Power</span><span class="text-xs text-emerald-400">+1 base sermon power (level @occult.SermonPowerLevel)</span></div>
             <div class="flex items-baseline gap-1 flex-shrink-0"><span class="font-display font-semibold text-amber-400 text-base">@NumberFormat.Fmt(OccultEngine.SermonPowerUpgradeCost(occult))</span><span class="text-sm">✨</span></div>
         </button>
-        <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!CultistHierarchy.CanPromote(occult))" @onclick="() => Game.PromoteMinion()">
-            <div class="text-3xl flex-shrink-0">🔮</div>
-            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Promote Disciple</span><span class="text-xs text-violet-300">Spend @OccultBalance.PromoteAcolyteCost Acolytes for a named disciple</span></div>
-        </button>
+        <div class="flex flex-col gap-2">
+            <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider mb-1">Recruit Disciple (choose role)</div>
+            @foreach (var role in OccultData.PromotedRoles)
+            {
+                var cost = CultistHierarchy.RecruitUnitCostForRole(role);
+                var canRecruit = CultistHierarchy.CanRecruitUnitForRole(occult, role);
+                <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!canRecruit)" @onclick="() => Game.RecruitUnitForRole(role)">
+                    <div class="text-3xl flex-shrink-0">@RoleIcon(role)</div>
+                    <div class="flex-1 flex flex-col gap-0.5">
+                        <span class="font-display text-base text-amber-100 font-medium">Recruit @RoleName(role)</span>
+                        <span class="text-xs text-violet-300">@RoleDesc(role) — Costs @cost Initiates</span>
+                    </div>
+                    <div class="flex items-baseline gap-1 flex-shrink-0">
+                        <span class="font-display font-semibold text-amber-400 text-base">@cost</span>
+                        <span class="text-sm">🙇</span>
+                    </div>
+                </button>
+            }
+        </div>
     </div>
 </div>
 
@@ -179,6 +194,7 @@
     private void AppointFromSelect(CouncilRole role, string? minionId) { if (!string.IsNullOrEmpty(minionId)) Game.AppointCouncil(role, minionId); }
     private static string RoleIcon(PromotedRole role) => role switch { PromotedRole.Zealot => "⚔️", PromotedRole.Scholar => "📖", PromotedRole.Infiltrator => "🕵️", PromotedRole.Mage => "🔮", _ => "🔮" };
     private static string RoleName(PromotedRole role) => role switch { PromotedRole.Zealot => "Zealot", PromotedRole.Scholar => "Scholar", PromotedRole.Infiltrator => "Infiltrator", PromotedRole.Mage => "Mage", _ => "Unknown" };
+    private static string RoleDesc(PromotedRole role) => role switch { PromotedRole.Zealot => "Fanatical warrior — boosts raid power and agent production", PromotedRole.Scholar => "Faith multiplier and Mage support in battle", PromotedRole.Infiltrator => "Stealth operative — reduces suspicion and enemy counterattacks", PromotedRole.Mage => "Devastating battle caster — requires a Scholar", _ => "" };
     private static string CouncilRoleName(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Inquisitor", CouncilRole.Archon => "Archon", CouncilRole.HighPriest => "High Priest", _ => "Unknown" };
     private static string CouncilRoleBenefit(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Reduces suspicion generation", CouncilRole.Archon => "Boosts agent production rate", CouncilRole.HighPriest => "Boosts all faith generation", _ => "" };
     public void Dispose() => Game.OnChange -= StateChanged;

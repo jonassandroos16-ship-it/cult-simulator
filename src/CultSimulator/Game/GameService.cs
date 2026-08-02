@@ -201,6 +201,19 @@ public class GameService
     public void BuySermonPower() { OccultEngine.BuySermonPower(_state); NotifyChanged(); }
     public void HireAcolyte() { OccultEngine.HireAcolyte(_state); NotifyChanged(); }
     public void PromoteMinion() { CultistHierarchy.Promote(_state.Occult); NotifyChanged(); }
+    public (bool success, string message) RecruitUnitForRole(PromotedRole role)
+    {
+        var occult = _state.Occult;
+        if (!CultistHierarchy.CanRecruitUnitForRole(occult, role))
+        {
+            int cost = CultistHierarchy.RecruitUnitCostForRole(role);
+            return (false, $"Need {cost} Initiates to recruit a {role}. Have {occult.Initiates}.");
+        }
+        var minion = CultistHierarchy.RecruitUnitForRole(occult, role);
+        if (minion == null) return (false, "Recruitment failed.");
+        NotifyChanged();
+        return (true, $"Recruited {minion.Name} as a {role}!");
+    }
     public void SacrificeMinion(string minionId) { CultistHierarchy.Sacrifice(_state, minionId); NotifyChanged(); }
     public void AppointCouncil(CouncilRole role, string minionId) { CultistHierarchy.AppointCouncil(_state.Occult, role, minionId); NotifyChanged(); }
     public void RemoveCouncil(CouncilRole role) { CultistHierarchy.RemoveCouncil(_state.Occult, role); NotifyChanged(); }
@@ -264,12 +277,14 @@ public class GameService
     public bool HasCovenInContinent(string continentId) => BattleEngine.HasCovenInContinent(_state, _locations, continentId);
     public BattleState? GetBattle(string continentId) => BattleEngine.GetOrCreateBattle(_state, _locations, continentId);
     public List<TerritoryLossEvent> RecentTerritoryLosses => BattleEngine.GetRecentLosses(_state);
+    public int OwnedAgents(AgentType type) { var sw = ShadowWarEngine.EnsureInitialized(_state); sw.RecruitedAgents.TryGetValue(type, out int count); return count; }
+    public int MaxAgentsForType(AgentType type) => BattleEngine.MaxAgentsForType(ShadowWarEngine.EnsureInitialized(_state), _state, type);
 
     public void ActivateFrenzy() { OccultEngine.ActivateFrenzy(_state.Occult); NotifyChanged(); }
     public void ActivateMassHysteria() { OccultEngine.ActivateMassHysteria(_state.Occult); NotifyChanged(); }
     public void SacrificeAcolyte() { OccultEngine.SacrificeAcolyte(_state); NotifyChanged(); }
     public void ActivateBloodOffering() { OccultEngine.ActivateBloodOffering(_state); NotifyChanged(); }
-    public void ActivateDarkVigil() { OccultEngine.ActivateDarkVigil(_state.Occult); NotifyChanged(); }
+    public void ActivateDarkVigil() { OccultEngine.ActivateDarkVigil(_state); NotifyChanged(); }
     public void ActivateWhisperChoir() { OccultEngine.ActivateWhisperChoir(_state.Occult); NotifyChanged(); }
     public void ActivateCovenBlessing() { OccultEngine.ActivateCovenBlessing(_state.Occult); NotifyChanged(); }
     public double PerformGrandSacrifice() { var favor = GrandSacrifice.PerformSacrifice(_state); NotifyChanged(); return favor; }
