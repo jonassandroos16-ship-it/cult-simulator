@@ -34,7 +34,7 @@ public class OccultTests
         var zealot = CultistHierarchy.RecruitUnit(o, PromotedRole.Zealot);
         Assert.NotNull(zealot);
         Assert.Equal(PromotedRole.Zealot, zealot!.Role);
-        Assert.Equal(200, o.Initiates);
+        Assert.Equal(180, o.Initiates);
         var scholar = CultistHierarchy.RecruitUnit(o, PromotedRole.Scholar);
         Assert.Equal(PromotedRole.Scholar, scholar!.Role);
     }
@@ -107,8 +107,8 @@ public class OccultTests
     [Fact]
     public void RecruitUnit_RequiresEnoughInitiates()
     {
-        var o = NewOccult(); o.Initiates = 99;
-        Assert.Null(CultistHierarchy.RecruitUnit(o, PromotedRole.Zealot));
+        var o = NewOccult(); o.Initiates = 79;
+        Assert.Null(CultistHierarchy.RecruitUnit(o, PromotedRole.Scholar));
     }
 
     [Fact]
@@ -116,7 +116,35 @@ public class OccultTests
     {
         var o = NewOccult(); o.Initiates = 300;
         CultistHierarchy.RecruitUnit(o, PromotedRole.Zealot);
-        Assert.Equal(200, o.Initiates);
+        Assert.Equal(180, o.Initiates);
+    }
+
+    [Fact]
+    public void RecruitUnitForRole_HasBalancedCosts()
+    {
+        Assert.Equal(120, CultistHierarchy.RecruitUnitCostForRole(PromotedRole.Zealot));
+        Assert.Equal(100, CultistHierarchy.RecruitUnitCostForRole(PromotedRole.Infiltrator));
+        Assert.Equal(80, CultistHierarchy.RecruitUnitCostForRole(PromotedRole.Scholar));
+        Assert.Equal(200, CultistHierarchy.RecruitUnitCostForRole(PromotedRole.Mage));
+    }
+
+    [Fact]
+    public void RecruitUnitForRole_CreatesSpecificRole()
+    {
+        var o = NewOccult(); o.Initiates = 200;
+        var mage = CultistHierarchy.RecruitUnitForRole(o, PromotedRole.Mage);
+        Assert.NotNull(mage);
+        Assert.Equal(PromotedRole.Mage, mage!.Role);
+        Assert.Equal(0, o.Initiates);
+    }
+
+    [Fact]
+    public void RecruitUnitForRole_FailsIfNotEnoughInitiates()
+    {
+        var o = NewOccult(); o.Initiates = 199;
+        Assert.Null(CultistHierarchy.RecruitUnitForRole(o, PromotedRole.Mage));
+        o.Initiates = 200;
+        Assert.True(CultistHierarchy.CanRecruitUnitForRole(o, PromotedRole.Mage));
     }
 
     [Fact]
@@ -133,10 +161,10 @@ public class OccultTests
     public void AppointCouncil_RequiresMinion()
     {
         var o = NewOccult();
-        Assert.False(CultistHierarchy.CanAppoint(o, CouncilRole.Inquisitor));
+        Assert.False(CultistHierarchy.CanAppointCouncil(o, CouncilRole.Inquisitor));
         o.Initiates = 100;
         var minion = CultistHierarchy.Promote(o);
-        Assert.True(CultistHierarchy.CanAppoint(o, CouncilRole.Inquisitor));
+        Assert.True(CultistHierarchy.CanAppointCouncil(o, CouncilRole.Inquisitor));
     }
 
     [Fact]

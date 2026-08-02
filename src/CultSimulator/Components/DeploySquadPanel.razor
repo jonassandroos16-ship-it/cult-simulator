@@ -31,6 +31,15 @@
         <div class="grid grid-cols-1 gap-1.5">
             @foreach (var agentDef in BattleData.AgentTypes)
             {
+                var owned = OwnedCounts?.GetValueOrDefault(agentDef.Type, 0) ?? 0;
+                var maxForType = MaxForType?.GetValueOrDefault(agentDef.Type, 0) ?? 0;
+                var canAfford = PoolAgents >= agentDef.AgentCost;
+                var isCapped = agentDef.Type != AgentType.Initiate && owned >= maxForType;
+                var canDeploy = owned > 0;
+                var canRecruit = !canDeploy && !isCapped && canAfford;
+                var needMinion = !canDeploy && !isCapped && !canAfford && agentDef.Type != AgentType.Initiate;
+                var needPool = !canDeploy && !isCapped && !canAfford && agentDef.Type == AgentType.Initiate;
+
                 <div class="flex items-center gap-2 p-2 rounded-[10px]" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
                     <span class="text-lg flex-shrink-0">@agentDef.Icon</span>
                     <div class="flex-1 min-w-0">
@@ -43,12 +52,44 @@
                             {
                                 <span class="text-amber-300 ml-1">✨@agentDef.FaithRegen/s</span>
                             }
+                            <span class="text-slate-400 ml-1">| Owned: @owned@(agentDef.Type != AgentType.Initiate ? $"/{maxForType}" : "")</span>
                         </div>
                     </div>
-                    <button class="deploy-btn deploy-btn-deploy"
-                            @onclick="() => OnDeployAgent.InvokeAsync((agentDef.Type, 1))">
-                        Deploy
-                    </button>
+                    @if (canDeploy)
+                    {
+                        <button class="deploy-btn deploy-btn-deploy"
+                                @onclick="() => OnDeployAgent.InvokeAsync((agentDef.Type, 1))">
+                            Deploy
+                        </button>
+                    }
+                    else if (canRecruit)
+                    {
+                        <button class="deploy-btn deploy-btn-recruit"
+                                @onclick="() => OnRecruitAgent?.InvokeAsync(agentDef.Type)">
+                            Recruit (@agentDef.AgentCost)
+                        </button>
+                    }
+                    else if (needMinion)
+                    {
+                        <button class="deploy-btn deploy-btn-locked" disabled
+                                title="Recruit this disciple type in the Sanctum first">
+                            🔒 Sanctum
+                        </button>
+                    }
+                    else if (needPool)
+                    {
+                        <button class="deploy-btn deploy-btn-locked" disabled
+                                title="Not enough agents in pool">
+                            Need @agentDef.AgentCost
+                        </button>
+                    }
+                    else if (isCapped)
+                    {
+                        <button class="deploy-btn deploy-btn-locked" disabled
+                                title="Maximum reached">
+                            Max
+                        </button>
+                    }
                 </div>
             }
         </div>
@@ -120,9 +161,12 @@
     [Parameter] public bool ShowReinforce { get; set; }
     [Parameter] public int PoolAgents { get; set; }
     [Parameter] public List<DeployedAgent>? DeployedSquad { get; set; }
+    [Parameter] public Dictionary<AgentType, int>? OwnedCounts { get; set; }
+    [Parameter] public Dictionary<AgentType, int>? MaxForType { get; set; }
     [Parameter] public string FightLabel { get; set; } = "Fight!";
     [Parameter] public EventCallback<(AgentType, int)> OnDeployAgent { get; set; }
     [Parameter] public EventCallback OnWithdraw { get; set; }
     [Parameter] public EventCallback OnFight { get; set; }
     [Parameter] public EventCallback<(AgentType, int)> OnReinforceAgent { get; set; }
+    [Parameter] public EventCallback<AgentType>? OnRecruitAgent { get; set; }
 }
