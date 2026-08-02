@@ -44,7 +44,9 @@ public static class ShadowWarEngine
                 govBonus += def.RewardValue;
         }
         double zealotMult = CultistHierarchy.AgentProductionMult(state.Occult);
-        return baseRate * govBonus * sw.PrestigeMultiplier * zealotMult;
+        double trainingBonus = state.ActiveCoven.Buildings.GetValueOrDefault(BuildingType.TrainingCamp) * GameBalance.TrainingCampProductionPerLevel;
+        double trainingMult = 1.0 + trainingBonus;
+        return baseRate * govBonus * sw.PrestigeMultiplier * zealotMult * trainingMult;
     }
 
     public static double AgentStrength(ShadowWarState sw, GameState state)
@@ -234,6 +236,6 @@ public static class ShadowWarEngine
         sw.DeployedAgents += count;
         inst.AssignedAgents += count;
         inst.InvestigationDefense = Math.Min(100, inst.InvestigationDefense + count * 10);
-        return (true, $"Defenders assigned. Investigation defense raised to {(int)inst.InvestigationDefense}%.");
+        return (true, $"Defenders assigned. Investigation defense raised to {(int)inst.InvestigationDefense}%." );
     }
 }
