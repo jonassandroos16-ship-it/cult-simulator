@@ -139,11 +139,11 @@ public static class GameEngine
         }
     }
 
-    public static (double faith, double gold, double lostFaith, double lostGold) ApplyOfflineIncome(GameState state, long elapsedMs)
+    public static (double faith, double gold, double lostFaith, double lostGold, double agents) ApplyOfflineIncome(GameState state, long elapsedMs)
     {
         double elapsedSec = elapsedMs / 1000.0;
-        if (elapsedSec <= 0) return (0, 0, 0, 0);
-        double totalFaith = 0, totalGold = 0, totalLostFaith = 0, totalLostGold = 0;
+        if (elapsedSec <= 0) return (0, 0, 0, 0, 0);
+        double totalFaith = 0, totalGold = 0, totalLostFaith = 0, totalLostGold = 0, totalAgents = 0;
 
         foreach (var coven in state.Covens)
         {
@@ -176,10 +176,12 @@ public static class GameEngine
             double agentEffCap = agentCap - state.ShadowWar.DeployedAgents - state.ShadowWar.SpentAgents;
             double agentEff = Math.Min(elapsedSec, IdleCapSeconds(state.ActiveCoven));
             double agentGain = agentProd * agentEff;
+            double before = state.ShadowWar.TotalAgents;
             state.ShadowWar.TotalAgents = Math.Min(state.ShadowWar.TotalAgents + agentGain, agentEffCap);
+            totalAgents = Math.Max(0, state.ShadowWar.TotalAgents - before);
         }
 
-        return (totalFaith, totalGold, totalLostFaith, totalLostGold);
+        return (totalFaith, totalGold, totalLostFaith, totalLostGold, totalAgents);
     }
 
     public static RankDef RankFor(int followers) { RankDef? current = null; foreach (var r in GameData.Ranks) if (followers >= r.MinFollowers) current = r; return current!; }
