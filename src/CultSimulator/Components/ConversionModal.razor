@@ -35,11 +35,15 @@
     var target = Game.ActiveConversion != null ? Locations.Find(Game.State.Conversion!.CovenId) : null;
     var step = Game.CurrentConversionStep;
     var isBattlePhase = Game.IsConversionBattlePhase;
+    var convBattle = Game.ConversionBattle;
+    var sw = Game.State.ShadowWarOrInit;
+    var poolAgents = (int)sw.AvailableAgents;
+    var totalRecruited = sw.RecruitedAgents.Values.Sum();
 
     <div class="event-overlay fixed inset-0 z-[100] flex items-center justify-center p-4 animate-fade-in"
          style="background: rgba(5,3,8,0.85); backdrop-filter: blur(8px);"
          @onclick="HandleOverlayClick">
-        <div class="event-modal relative rounded-3xl p-8 max-w-lg w-full overflow-hidden animate-modal-rise"
+        <div class="event-modal relative rounded-3xl p-8 max-w-lg w-full overflow-hidden animate-modal-rise max-h-[90vh] overflow-y-auto"
              style="background: linear-gradient(135deg, var(--violet-void), var(--void-deep)); border: 1px solid rgba(167,139,250,0.25);"
              @onclick:stopPropagation="true">
             <div class="event-glow absolute -top-[30%] -left-[30%] w-[160%] h-[160%] pointer-events-none"
@@ -103,11 +107,9 @@
                 }
                 else if (isBattlePhase)
                 {
-                    var convBattle = Game.ConversionBattle;
                     <div class="mb-4">
                         <p class="text-sm leading-6 text-rose-300 mb-4">
                             The coven's defenders have been stirred. You must defeat them in battle to complete the conversion.
-                            Deploy your agents and win the continent battle below.
                         </p>
 
                         @if (convBattle != null)
@@ -131,52 +133,27 @@
 
                             @if (convBattle.Phase == BattlePhase.Deploy)
                             {
-                                <p class="text-xs text-slate-400 mb-3">Deploy agents from your recruited pool below, or tap <strong class="text-violet-300">Minimize</strong> to visit the Battle tab and recruit more agents first.</p>
-                                <div class="grid grid-cols-3 gap-2 mb-3">
-                                    @foreach (var agentDef in BattleData.AgentTypes)
-                                    {
-                                        var sw = Game.State.ShadowWarOrInit;
-                                        sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
-                                        <button class="battle-agent-card p-2 rounded-[8px] text-center transition-all hover:-translate-y-0.5 @(avail == 0 ? "opacity-40" : "")"
-                                                style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);"
-                                                disabled="@(avail == 0)"
-                                                @onclick="() => DeployConvAgent(agentDef.Type)">
-                                            <div class="text-lg mb-0.5">@agentDef.Icon</div>
-                                            <div class="text-[0.6rem] text-amber-200">@agentDef.Name</div>
-                                            <div class="text-[0.55rem] text-slate-400">@avail available</div>
-                                        </button>
-                                    }
-                                </div>
-                                @if (convBattle.DeployedSquad.Count > 0)
+                                @if (totalRecruited == 0 && poolAgents == 0)
                                 {
-                                    <div class="flex flex-wrap gap-1.5 mb-3">
-                                        @foreach (var slot in convBattle.DeployedSquad)
-                                        {
-                                            var def = BattleData.AgentDef(slot.Type);
-                                            <div class="text-[0.65rem] px-2 py-1 rounded-[8px] flex items-center gap-1" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
-                                                <span>@def?.Icon</span>
-                                                <span class="text-amber-200">@slot.Count</span>
-                                            </div>
-                                        }
+                                    <div class="deploy-empty-state mb-4">
+                                        <div class="text-2xl mb-2">🏕️</div>
+                                        <p class="text-sm text-slate-400 mb-2">You have no agents to fight with.</p>
+                                        <p class="text-xs text-violet-300 mb-3">Tap <strong>Minimize</strong> below, then go to the <strong>Battle</strong> tab to recruit agents from your pool. Come back when you're ready.</p>
                                     </div>
                                 }
-                                <div class="flex gap-2">
-                                    <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
-                                            style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                            @onclick="WithdrawConvAgents">
-                                        Withdraw
-                                    </button>
-                                    <button class="flex-1 p-2 rounded-[10px] text-xs text-amber-100 font-medium transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
-                                            style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                            disabled="@(convBattle.TotalDeployed == 0)"
-                                            @onclick="StartConvBattle">
-                                        Fight!
-                                    </button>
-                                </div>
+                                else
+                                {
+                                    <DeploySquadPanel CanDeploy="true"
+                                                      DeployedSquad="convBattle.DeployedSquad"
+                                                      FightLabel="Fight!"
+                                                      OnDeployAgent="args => DeployConvAgent(args.Item1, args.Item2)"
+                                                      OnWithdraw="WithdrawConvAgents"
+                                                      OnFight="StartConvBattle" />
+                                }
                             }
                             else if (convBattle.Phase == BattlePhase.Fighting)
                             {
-                                <div class="text-center text-xs text-rose-300 py-3">Battle in progress...</div>
+                                <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="convBattle.DeployedSquad" />
                             }
                             else if (convBattle.Phase == BattlePhase.Cooldown)
                             {
@@ -252,7 +229,7 @@
         Game.ApplyConversionChoice(choice);
     }
 
-    private void DeployConvAgent(AgentType type) => Game.DeployConversionAgents(type, 1);
+    private void DeployConvAgent(AgentType type, int count) => Game.DeployConversionAgents(type, count);
     private void WithdrawConvAgents()
     {
         var continent = Game.ConversionBattleContinent;
