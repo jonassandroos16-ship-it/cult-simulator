@@ -96,25 +96,21 @@
 
                         <DeploySquadPanel CanDeploy="true"
                                           DeployedSquad="battle.DeployedSquad"
+                                          OwnedCounts="@Game.State.ShadowWarOrInit.RecruitedAgents"
+                                          MaxForType="@BuildMaxForType()"
+                                          PoolAgents="(int)sw.AvailableAgents"
                                           FightLabel="Fight!"
                                           OnDeployAgent="args => DeployLocalCult(cultDef.Id, args.Item1, args.Item2)"
                                           OnWithdraw="() => WithdrawLocalCult(cultDef.Id)"
-                                          OnFight="() => FightLocalCult(cultDef.Id)" />
+                                          OnFight="() => FightLocalCult(cultDef.Id)"
+                                          OnRecruitAgent="OnRecruitFromDeploy" />
                     }
                     else if (battle.Phase == LocalCultBattlePhase.Fighting)
                     {
+                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" />
                         <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
                                           ShowReinforce="true" PoolAgents="(int)sw.AvailableAgents"
                                           OnReinforceAgent="args => ReinforceLocalCult(cultDef.Id, args.Item1, args.Item2)" />
-                        @if (battle.Log.Count > 0)
-                        {
-                            <div class="mt-2 p-2 rounded-[8px] text-[0.65rem] space-y-0.5 max-h-20 overflow-y-auto" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
-                                @foreach (var entry in battle.Log.TakeLast(3))
-                                {
-                                    <div class="text-slate-400">@entry</div>
-                                }
-                            </div>
-                        }
                     }
                     else if (battle.Phase == LocalCultBattlePhase.Victory)
                     {
@@ -612,6 +608,17 @@
     {
         Game.ReinforceLocalCultAgents(cultId, type, count);
     }
+
+    private Dictionary<AgentType, int> BuildMaxForType()
+    {
+        var sw = Game.State.ShadowWarOrInit;
+        var dict = new Dictionary<AgentType, int>();
+        foreach (var def in BattleData.AgentTypes)
+            dict[def.Type] = BattleEngine.MaxAgentsForType(sw, Game.State, def.Type);
+        return dict;
+    }
+
+    private EventCallback<AgentType> OnRecruitFromDeploy => EventCallback.Factory.Create<AgentType>(this, type => Game.RecruitAgent(type, 1));
 
     private void Switch(string id)
     {

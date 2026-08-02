@@ -225,15 +225,21 @@
 
                     @if (battle.Phase == RivalBattlePhase.Deploy)
                     {
+                        <EnemyReconCard Recon="@BuildRivalRecon(def, rivalState, battle)" />
                         <DeploySquadPanel CanDeploy="true"
                                           DeployedSquad="battle.DeployedSquad"
+                                          OwnedCounts="@BuildOwnedCounts()"
+                                          MaxForType="@BuildMaxForType()"
+                                          PoolAgents="poolAgents"
                                           FightLabel="Launch Assault"
                                           OnDeployAgent="args => OnDeployRival(def.Id, args.Item1, args.Item2)"
                                           OnWithdraw="() => OnWithdrawRival(def.Id)"
-                                          OnFight="() => OnStartRivalBattle(def.Id)" />
+                                          OnFight="() => OnStartRivalBattle(def.Id)"
+                                          OnRecruitAgent="OnRecruitFromDeploy" />
                     }
                     else if (battle.Phase == RivalBattlePhase.Fighting)
                     {
+                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" />
                         <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
                                           ShowReinforce="true" PoolAgents="poolAgents"
                                           OnReinforceAgent="args => OnReinforceRival(def.Id, args.Item1, args.Item2)" />
@@ -322,15 +328,21 @@
 
                     @if (battle.Phase == BattlePhase.Deploy)
                     {
+                        <EnemyReconCard Recon="@BuildTheaterRecon(theater, battle)" />
                         <DeploySquadPanel CanDeploy="true"
                                           DeployedSquad="battle.DeployedSquad"
+                                          OwnedCounts="@BuildOwnedCounts()"
+                                          MaxForType="@BuildMaxForType()"
+                                          PoolAgents="poolAgents"
                                           FightLabel="Start Battle"
                                           OnDeployAgent="args => OnDeploy(theater.ContinentId, args.Item1, args.Item2)"
                                           OnWithdraw="() => OnWithdraw(theater.ContinentId)"
-                                          OnFight="() => OnStartBattle(theater.ContinentId)" />
+                                          OnFight="() => OnStartBattle(theater.ContinentId)"
+                                          OnRecruitAgent="OnRecruitFromDeploy" />
                     }
                     else if (battle.Phase == BattlePhase.Fighting)
                     {
+                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" />
                         <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
                                           ShowReinforce="true" PoolAgents="poolAgents"
                                           OnReinforceAgent="args => OnReinforce(theater.ContinentId, args.Item1, args.Item2)" />
@@ -377,6 +389,49 @@
     private void OnWithdrawRival(string rivalId) => Game.WithdrawRivalBattleAgents(rivalId);
     private void OnStartRivalBattle(string rivalId) => Game.StartRivalBattle(rivalId);
     private void OnReinforceRival(string rivalId, AgentType type, int count) => Game.ReinforceRivalBattleAgents(rivalId, type, count);
+
+    private EventCallback<AgentType> OnRecruitFromDeploy => EventCallback.Factory.Create<AgentType>(this, type => Game.RecruitAgent(type, 1));
+
+    private Dictionary<AgentType, int> BuildOwnedCounts()
+    {
+        var sw = Game.State.ShadowWarOrInit;
+        var dict = new Dictionary<AgentType, int>();
+        foreach (var def in BattleData.AgentTypes)
+            sw.RecruitedAgents.TryGetValue(def.Type, out int count);
+        return sw.RecruitedAgents;
+    }
+
+    private Dictionary<AgentType, int> BuildMaxForType()
+    {
+        var sw = Game.State.ShadowWarOrInit;
+        var dict = new Dictionary<AgentType, int>();
+        foreach (var def in BattleData.AgentTypes)
+            dict[def.Type] = BattleEngine.MaxAgentsForType(sw, Game.State, def.Type);
+        return dict;
+    }
+
+    private EnemyRecon BuildTheaterRecon(BattleTheaterDef theater, BattleState battle)
+    {
+        var rivalDef = BattleData.RivalForContinent(theater.ContinentId);
+        double scale = RivalCultEngine.ScaleFor(theater.ContinentId);
+        double rivalAttack = (rivalDef?.AgentStrength ?? 5.0) * scale;
+        return BattleRoundEngine.BuildRecon(
+            rivalDef?.Name ?? theater.Name,
+            rivalDef?.Icon ?? theater.Icon,
+            rivalDef?.Description ?? theater.Description,
+            battle.RivalMaxHp, rivalAttack,
+            rivalDef?.Archetype, scale, 20);
+    }
+
+    private EnemyRecon BuildRivalRecon(RivalCultDef def, RivalCultState rivalState, RivalBattleState battle)
+    {
+        double scale = RivalCultEngine.ScaleFor(def.PreferredTerritoryId);
+        double rivalAttack = (def.AgentStrength * 3.0 + rivalState.Power * 0.05) * scale;
+        return BattleRoundEngine.BuildRecon(
+            def.Name, def.Icon, def.Description,
+            battle.RivalMaxHp, rivalAttack,
+            def.Archetype, scale, rivalState.Power);
+    }
     private void OnRetryRival(string rivalId)
     {
         Game.WithdrawRivalBattleAgents(rivalId);

@@ -138,14 +138,19 @@
                                 {
                                     <DeploySquadPanel CanDeploy="true"
                                                       DeployedSquad="convBattle.DeployedSquad"
+                                                      OwnedCounts="@Game.State.ShadowWarOrInit.RecruitedAgents"
+                                                      MaxForType="@BuildMaxForType()"
+                                                      PoolAgents="poolAgents"
                                                       FightLabel="Fight!"
                                                       OnDeployAgent="args => DeployConvAgent(args.Item1, args.Item2)"
                                                       OnWithdraw="WithdrawConvAgents"
-                                                      OnFight="StartConvBattle" />
+                                                      OnFight="StartConvBattle"
+                                                      OnRecruitAgent="OnRecruitFromDeploy" />
                                 }
                             }
                             else if (convBattle.Phase == BattlePhase.Fighting)
                             {
+                                <BattleView IsFighting="true" RecentRounds="convBattle.RecentRounds" EnemyUnits="convBattle.EnemyUnits" Momentum="convBattle.Momentum" />
                                 <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="convBattle.DeployedSquad"
                                                   ShowReinforce="true" PoolAgents="poolAgents"
                                                   OnReinforceAgent="args => DeployConvAgent(args.Item1, args.Item2)" />
@@ -241,4 +246,15 @@
         else
             Game.StartConversionBattle();
     }
+
+    private Dictionary<AgentType, int> BuildMaxForType()
+    {
+        var sw = Game.State.ShadowWarOrInit;
+        var dict = new Dictionary<AgentType, int>();
+        foreach (var def in BattleData.AgentTypes)
+            dict[def.Type] = BattleEngine.MaxAgentsForType(sw, Game.State, def.Type);
+        return dict;
+    }
+
+    private EventCallback<AgentType> OnRecruitFromDeploy => EventCallback.Factory.Create<AgentType>(this, type => Game.RecruitAgent(type, 1));
 }
