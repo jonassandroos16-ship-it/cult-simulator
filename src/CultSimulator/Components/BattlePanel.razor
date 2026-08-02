@@ -252,10 +252,19 @@
                     }
                     else if (battle.Phase == RivalBattlePhase.Fighting)
                     {
-                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" />
+                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" PlayerHp="battle.PlayerHp" PlayerMaxHp="battle.PlayerMaxHp" RivalHp="battle.RivalHp" RivalMaxHp="battle.RivalMaxHp" />
                         <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
                                           ShowReinforce="true" PoolAgents="poolAgents"
                                           OnReinforceAgent="args => OnReinforceRival(def.Id, args.Item1, args.Item2)" />
+                    }
+                    else if (battle.Phase == RivalBattlePhase.Victory)
+                    {
+                        <div class="p-4 rounded-[14px] mb-3 text-center animate-fade-in" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
+                            <div class="text-3xl mb-2">🏆</div>
+                            <div class="text-base text-emerald-300 font-bold mb-1">RIVAL DESTROYED!</div>
+                            <div class="text-[0.65rem] text-amber-200">+@NumberFormat.Fmt(battle.LastFaithReward) Faith earned</div>
+                            <div class="text-[0.6rem] text-slate-400 mt-1">@def.Name has been permanently defeated.</div>
+                        </div>
                     }
                     else if (battle.Phase == RivalBattlePhase.Defeat)
                     {
@@ -339,7 +348,26 @@
                         </div>
                     </div>
 
-                    @if (battle.Phase == BattlePhase.Deploy)
+                    @if (battle.Phase == BattlePhase.Deploy && battle.Status == BattleStatus.Defeat)
+                    {
+                        <div class="p-4 rounded-[14px] mb-3 text-center" style="background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);">
+                            <div class="text-2xl mb-2">💀</div>
+                            <div class="text-sm text-rose-300 font-medium mb-1">Your forces were crushed!</div>
+                            <div class="text-[0.65rem] text-slate-400">Suspicion has risen. Regroup and try again.</div>
+                        </div>
+                        <EnemyReconCard Recon="@BuildTheaterRecon(theater, battle)" />
+                        <DeploySquadPanel CanDeploy="true"
+                                          DeployedSquad="battle.DeployedSquad"
+                                          OwnedCounts="@BuildOwnedCounts()"
+                                          MaxForType="@BuildMaxForType()"
+                                          PoolAgents="poolAgents"
+                                          FightLabel="Start Battle"
+                                          OnDeployAgent="args => OnDeploy(theater.ContinentId, args.Item1, args.Item2)"
+                                          OnWithdraw="() => OnWithdraw(theater.ContinentId)"
+                                          OnFight="() => OnStartBattle(theater.ContinentId)"
+                                          OnRecruitAgent="OnRecruitFromDeploy" />
+                    }
+                    else if (battle.Phase == BattlePhase.Deploy)
                     {
                         <EnemyReconCard Recon="@BuildTheaterRecon(theater, battle)" />
                         <DeploySquadPanel CanDeploy="true"
@@ -355,13 +383,19 @@
                     }
                     else if (battle.Phase == BattlePhase.Fighting)
                     {
-                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" />
+                        <BattleView IsFighting="true" RecentRounds="battle.RecentRounds" EnemyUnits="battle.EnemyUnits" Momentum="battle.Momentum" PlayerHp="battle.PlayerHp" PlayerMaxHp="battle.PlayerMaxHp" RivalHp="battle.RivalHp" RivalMaxHp="battle.RivalMaxHp" />
                         <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
                                           ShowReinforce="true" PoolAgents="poolAgents"
                                           OnReinforceAgent="args => OnReinforce(theater.ContinentId, args.Item1, args.Item2)" />
                     }
                     else if (battle.Phase == BattlePhase.Cooldown)
                     {
+                        <div class="p-4 rounded-[14px] mb-3 text-center animate-fade-in" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
+                            <div class="text-2xl mb-2">🏆</div>
+                            <div class="text-sm text-emerald-300 font-medium mb-1">Victory!</div>
+                            <div class="text-[0.65rem] text-amber-200">+@NumberFormat.Fmt(battle.LastFaithReward) Faith earned</div>
+                            <div class="text-[0.6rem] text-slate-400 mt-1">The rival has been pushed back. Preparing for the next assault...</div>
+                        </div>
                         <DeploySquadPanel CanDeploy="false" IsCooldown="true" DeployedSquad="battle.DeployedSquad" />
                     }
 
