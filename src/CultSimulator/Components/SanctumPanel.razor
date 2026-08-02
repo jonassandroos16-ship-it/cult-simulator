@@ -149,8 +149,9 @@
         <p class="text-violet-300 font-display tracking-[0.1em] uppercase text-xs mb-2">Disciple Roles</p>
         <div class="flex flex-col gap-2">
             <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">⚔️</span><div><span class="text-amber-200 font-medium">Zealot</span><span class="text-slate-400 text-xs ml-1">— Boosts Shadow War agent production. Each Zealot adds +2% agent generation rate.</span></div></div>
-            <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">📖</span><div><span class="text-amber-200 font-medium">Scholar</span><span class="text-slate-400 text-xs ml-1">— Generates passive Faith. Each Scholar produces @OccultBalance.ScholarFaithPerSec/s.</span></div></div>
+            <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">📖</span><div><span class="text-amber-200 font-medium">Scholar</span><span class="text-slate-400 text-xs ml-1">— Support unit. Generates passive Faith (@OccultBalance.ScholarFaithPerSec/s) and regenerates HP during battles. Required to field Mages.</span></div></div>
             <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">🕵️</span><div><span class="text-amber-200 font-medium">Infiltrator</span><span class="text-slate-400 text-xs ml-1">— Generates passive Faith and can auto-suppress Inquisitor raids (requires Inquisitor's Blindfold tech). Each Infiltrator produces @OccultBalance.InfiltratorFaithPerSec/s.</span></div></div>
+            <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">🔮</span><div><span class="text-amber-200 font-medium">Mage</span><span class="text-slate-400 text-xs ml-1">— Devastating spell-caster in battle (12 ATK). Very fragile (1.5 DEF). Requires at least 1 Scholar in the squad to field.</span></div></div>
         </div>
         <p class="text-violet-300 font-display tracking-[0.1em] uppercase text-xs mt-3 mb-2">Disciple Traits</p>
         <div class="flex flex-col gap-1.5">
@@ -176,8 +177,8 @@
     protected override void OnInitialized() => Game.OnChange += StateChanged;
     private void StateChanged() => _ = InvokeAsync(StateHasChanged);
     private void AppointFromSelect(CouncilRole role, string? minionId) { if (!string.IsNullOrEmpty(minionId)) Game.AppointCouncil(role, minionId); }
-    private static string RoleIcon(PromotedRole role) => role switch { PromotedRole.Zealot => "⚔️", PromotedRole.Scholar => "📖", PromotedRole.Infiltrator => "🕵️", _ => "🔮" };
-    private static string RoleName(PromotedRole role) => role switch { PromotedRole.Zealot => "Zealot", PromotedRole.Scholar => "Scholar", PromotedRole.Infiltrator => "Infiltrator", _ => "Unknown" };
+    private static string RoleIcon(PromotedRole role) => role switch { PromotedRole.Zealot => "⚔️", PromotedRole.Scholar => "📖", PromotedRole.Infiltrator => "🕵️", PromotedRole.Mage => "🔮", _ => "🔮" };
+    private static string RoleName(PromotedRole role) => role switch { PromotedRole.Zealot => "Zealot", PromotedRole.Scholar => "Scholar", PromotedRole.Infiltrator => "Infiltrator", PromotedRole.Mage => "Mage", _ => "Unknown" };
     private static string CouncilRoleName(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Inquisitor", CouncilRole.Archon => "Archon", CouncilRole.HighPriest => "High Priest", _ => "Unknown" };
     private static string CouncilRoleBenefit(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Reduces suspicion generation", CouncilRole.Archon => "Boosts agent production rate", CouncilRole.HighPriest => "Boosts all faith generation", _ => "" };
     public void Dispose() => Game.OnChange -= StateChanged;

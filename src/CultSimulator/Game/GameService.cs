@@ -247,6 +247,12 @@ public class GameService
         NotifyChanged();
         return r;
     }
+    public (bool success, string message) ReinforceBattleAgents(string continentId, AgentType type, int count)
+    {
+        var r = BattleEngine.ReinforceAgents(_state, continentId, type, count);
+        NotifyChanged();
+        return r;
+    }
     public (bool success, string message) StartBattle(string continentId)
     {
         var r = BattleEngine.StartBattle(_state, continentId);
@@ -498,6 +504,12 @@ public class GameService
         NotifyChanged();
         return r;
     }
+    public (bool success, string message) ReinforceLocalCultAgents(string cultId, AgentType type, int count)
+    {
+        var r = LocalCultBattleEngine.ReinforceAgents(_state, cultId, type, count);
+        NotifyChanged();
+        return r;
+    }
     public (bool success, string message) StartLocalCultBattle(string cultId)
     {
         var r = LocalCultBattleEngine.StartBattle(_state, cultId);
@@ -590,6 +602,12 @@ public class GameService
     public (bool success, string message) WithdrawRivalBattleAgents(string rivalId)
     {
         var r = RivalCultEngine.WithdrawRivalBattleAgents(_state, rivalId);
+        NotifyChanged();
+        return r;
+    }
+    public (bool success, string message) ReinforceRivalBattleAgents(string rivalId, AgentType type, int count)
+    {
+        var r = RivalCultEngine.ReinforceRivalBattleAgents(_state, rivalId, type, count);
         NotifyChanged();
         return r;
     }
