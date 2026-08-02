@@ -345,16 +345,22 @@ public class GameService
         {
             var continent = ConversionBattleContinent;
             if (continent == null) return null;
-            return _state.BattleSystem?.GetBattle(continent);
+            var battle = _state.BattleSystem?.GetBattle(continent);
+            if (battle != null) return battle;
+            // Auto-initialize the battle when entering battle phase but battle doesn't exist yet
+            if (_state.Conversion != null && _state.Conversion.BattlePhase && !_state.Conversion.Completed)
+            {
+                EnsureConversionBattleInitialized();
+                return _state.BattleSystem?.GetBattle(continent);
+            }
+            return null;
         }
     }
 
-    public void StartConversionBattle()
+    private void EnsureConversionBattleInitialized()
     {
-        if (_state.Conversion == null || !_state.Conversion.BattlePhase) return;
         var continent = ConversionBattleContinent;
         if (continent == null) return;
-
         var battle = BattleEngine.GetOrCreateBattle(_state, _locations, continent);
         if (battle.Phase == BattlePhase.NoThreat || battle.Phase == BattlePhase.Cooldown)
         {
@@ -364,6 +370,12 @@ public class GameService
             battle.PlayerHp = battle.PlayerMaxHp;
             battle.DeployedSquad.Clear();
         }
+    }
+
+    public void StartConversionBattle()
+    {
+        if (_state.Conversion == null || !_state.Conversion.BattlePhase) return;
+        EnsureConversionBattleInitialized();
         NotifyChanged();
     }
 
@@ -371,7 +383,15 @@ public class GameService
     {
         var continent = ConversionBattleContinent;
         if (continent == null) return (false, "No conversion battle active.");
+        EnsureConversionBattleInitialized();
         return DeployAgents(continent, type, count);
+    }
+    public (bool success, string message) RecruitConversionAgents(AgentType type, int count)
+    {
+        var continent = ConversionBattleContinent;
+        if (continent == null) return (false, "No conversion battle active.");
+        EnsureConversionBattleInitialized();
+        return RecruitAgent(type, count);
     }
 
     public (bool success, string message) StartConversionBattleFight()
@@ -386,6 +406,7 @@ public class GameService
         if (_state.Conversion == null || !_state.Conversion.BattlePhase || _state.Conversion.Completed) return;
         var continent = ConversionBattleContinent;
         if (continent == null) return;
+        EnsureConversionBattleInitialized();
         var battle = _state.BattleSystem?.GetBattle(continent);
         if (battle == null) return;
 

@@ -138,7 +138,27 @@
                                     <div class="deploy-empty-state mb-4">
                                         <div class="text-2xl mb-2">🏕️</div>
                                         <p class="text-sm text-slate-400 mb-2">You have no agents to fight with.</p>
-                                        <p class="text-xs text-violet-300 mb-3">Tap <strong>Minimize</strong> below, then go to the <strong>Battle</strong> tab to recruit agents from your pool. Come back when you're ready.</p>
+                                        <p class="text-xs text-violet-300 mb-3">Your agent pool is empty. Agents accumulate automatically over time from your Shadow War operations. You need at least 5 pool agents to recruit an Initiate.</p>
+                                        <div class="text-xs text-slate-500 mt-2">Current pool: <span class="text-amber-300">@poolAgents</span> agents</div>
+                                    </div>
+                                }
+                                else if (totalRecruited == 0 && poolAgents > 0)
+                                {
+                                    <div class="mb-4">
+                                        <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider mb-1.5">Recruit Battle Agents</div>
+                                        <p class="text-xs text-slate-400 mb-3">Recruit Initiates from your agent pool (@poolAgents available), then deploy them to start the battle.</p>
+                                        <div class="flex items-center gap-2 p-2 rounded-[10px] mb-2" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
+                                            <span class="text-lg flex-shrink-0">🧙</span>
+                                            <div class="flex-1 min-w-0">
+                                                <div class="text-xs text-amber-100 font-medium">Initiate</div>
+                                                <div class="text-[0.55rem] text-slate-400">Cost: 5 pool agents each</div>
+                                            </div>
+                                            <button class="deploy-btn deploy-btn-deploy"
+                                                    disabled="@(poolAgents < 5)"
+                                                    @onclick="() => RecruitConvAgent(AgentType.Initiate, Math.Min(5, poolAgents / 5))">
+                                                Recruit ×5
+                                            </button>
+                                        </div>
                                     </div>
                                 }
                                 else
@@ -153,7 +173,9 @@
                             }
                             else if (convBattle.Phase == BattlePhase.Fighting)
                             {
-                                <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="convBattle.DeployedSquad" />
+                                <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="convBattle.DeployedSquad"
+                                                  ShowReinforce="true" PoolAgents="poolAgents"
+                                                  OnReinforceAgent="args => DeployConvAgent(args.Item1, args.Item2)" />
                             }
                             else if (convBattle.Phase == BattlePhase.Cooldown)
                             {
@@ -230,6 +252,7 @@
     }
 
     private void DeployConvAgent(AgentType type, int count) => Game.DeployConversionAgents(type, count);
+    private void RecruitConvAgent(AgentType type, int count) => Game.RecruitConversionAgents(type, count);
     private void WithdrawConvAgents()
     {
         var continent = Game.ConversionBattleContinent;

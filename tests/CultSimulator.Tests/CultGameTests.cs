@@ -375,6 +375,46 @@ public class CultGameTests
     }
 
     [Fact]
+    public void ConversionEngine_BattlePhaseAutoInitializes()
+    {
+        var s = NewState();
+        var conv = CreateConversions();
+        s.HomeCoven.Followers = 100;
+        s.HomeCoven.Faith = 500;
+        s.HomeCoven.Gold = 500;
+        var loc = CreateLocations().Find("la_recta_provincia")!;
+        ConversionEngine.StartConversion(s, conv, loc);
+        var def = conv.Find("la_recta_provincia");
+        foreach (var step in def!.Steps) ConversionEngine.ApplyChoice(s, conv, step.ChoiceA);
+        // After all steps, battle phase should be active
+        Assert.True(s.Conversion!.BattlePhase);
+        Assert.False(s.Conversion.Completed);
+        // The battle system should not yet have a battle for this continent
+        // (it gets created lazily by GameService.ConversionBattle getter)
+        Assert.Null(s.BattleSystem?.GetBattle("south_america"));
+    }
+
+    [Fact]
+    public void ConversionEngine_OnBattleWonFinalizes()
+    {
+        var s = NewState();
+        var conv = CreateConversions();
+        s.HomeCoven.Followers = 100;
+        s.HomeCoven.Faith = 500;
+        s.HomeCoven.Gold = 500;
+        var loc = CreateLocations().Find("la_recta_provincia")!;
+        ConversionEngine.StartConversion(s, conv, loc);
+        var def = conv.Find("la_recta_provincia");
+        foreach (var step in def!.Steps) ConversionEngine.ApplyChoice(s, conv, step.ChoiceA);
+        ConversionEngine.OnBattleWon(s, conv);
+        Assert.True(s.Conversion!.Completed);
+        Assert.True(s.Conversion.BattleWon);
+        var converted = s.FindCoven("la_recta_provincia");
+        Assert.NotNull(converted);
+        Assert.True(converted!.Converted);
+    }
+
+    [Fact]
     public void ConversionData_AllRivalCovensHaveDefinitions()
     {
         var conv = CreateConversions();
