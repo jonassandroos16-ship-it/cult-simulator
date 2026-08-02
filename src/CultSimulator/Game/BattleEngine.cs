@@ -86,6 +86,14 @@ public static class BattleEngine
         if (battle.Phase == BattlePhase.Fighting)
             return (false, "Battle already in progress — withdraw first.");
 
+        if (type == AgentType.Mage)
+        {
+            int scholars = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Scholar)?.Count ?? 0;
+            int mages = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Mage)?.Count ?? 0;
+            if (scholars <= mages + count)
+                return (false, "Each Mage requires at least 1 Scholar in the squad.");
+        }
+
         int alreadyDeployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
         int availableToDeploy = owned - alreadyDeployed;
         if (availableToDeploy < count)
@@ -108,6 +116,40 @@ public static class BattleEngine
 
         battle.DeployedSquad.Clear();
         return (true, "Agents withdrawn.");
+    }
+
+    public static (bool success, string message) ReinforceAgents(GameState state, string continentId, AgentType type, int count)
+    {
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        var bs = EnsureInitialized(state);
+        var battle = bs.GetBattle(continentId);
+        if (battle == null || battle.Phase != BattlePhase.Fighting)
+            return (false, "No active battle to reinforce.");
+
+        if (type == AgentType.Initiate)
+            return (false, "Cannot reinforce with Initiates mid-battle.");
+
+        sw.RecruitedAgents.TryGetValue(type, out int owned);
+        int alreadyDeployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
+        int availableToDeploy = owned - alreadyDeployed;
+        if (availableToDeploy < count)
+            return (false, $"Not enough {type} agents. Have {availableToDeploy} available, need {count}.");
+
+        if (type == AgentType.Mage)
+        {
+            int scholars = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Scholar)?.Count ?? 0;
+            int mages = alreadyDeployed;
+            if (scholars <= mages + count)
+                return (false, "Each Mage requires at least 1 Scholar in the squad.");
+        }
+
+        var slot = battle.DeployedSquad.FirstOrDefault(d => d.Type == type);
+        if (slot != null) slot.Count += count;
+        else battle.DeployedSquad.Add(new DeployedAgent { Type = type, Count = count });
+
+        sw.RecruitedAgents[type] = Math.Max(0, owned - count);
+        AppendLog(battle, $"Reinforced with {count} {type}.");
+        return (true, $"Reinforced with {count} {type}!");
     }
 
     public static (bool success, string message) StartBattle(GameState state, string continentId)
@@ -179,15 +221,13 @@ public static class BattleEngine
 
         var rivalDef = BattleData.RivalForContinent(continentId);
         double rivalAttack = (rivalDef?.AgentStrength ?? 5.0) * RivalCultEngine.ScaleFor(continentId);
-        double playerAttack = CalculatePlayerAttack(battle, sw, state);
-        double playerDefense = CalculatePlayerDefense(battle, sw, state);
-        double stealth = CalculatePlayerStealth(battle);
+        var (mitigated, playerDamage) = BattleCommon.ExchangeDamage(battle.DeployedSquad, rivalAttack, sw, state, deltaSec);
 
-        double rivalDamage = rivalAttack * (1.0 - stealth * 0.3) * deltaSec;
-        double playerDamage = playerAttack * deltaSec;
+        double faithRegen = BattleCommon.CalculateFaithRegen(battle.DeployedSquad);
+        battle.PlayerHp = Math.Min(battle.PlayerMaxHp, battle.PlayerHp + faithRegen * deltaSec);
 
         battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
-        battle.PlayerHp = Math.Max(0, battle.PlayerHp - Math.Max(0, rivalDamage - playerDefense * 0.1 * deltaSec));
+        battle.PlayerHp = Math.Max(0, battle.PlayerHp - mitigated);
 
         if (battle.RivalHp <= 0)
         {
@@ -218,44 +258,10 @@ public static class BattleEngine
             AgentType.Initiate => (int)Math.Floor(sw.TotalAgents),
             AgentType.Zealot => state.Occult.Minions.Count(m => m.Role == PromotedRole.Zealot),
             AgentType.Infiltrator => state.Occult.Minions.Count(m => m.Role == PromotedRole.Infiltrator),
+            AgentType.Scholar => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
+            AgentType.Mage => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
             _ => 0
         };
-
-    private static double CalculatePlayerAttack(BattleState battle, ShadowWarState sw, GameState state)
-    {
-        double strength = ShadowWarEngine.AgentStrength(sw, state);
-        strength *= state.Occult.ElixirWarStrengthMult;
-        double attack = 0;
-        foreach (var slot in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(slot.Type);
-            if (def != null) attack += def.Attack * slot.Count * strength;
-        }
-        return attack;
-    }
-
-    private static double CalculatePlayerDefense(BattleState battle, ShadowWarState sw, GameState state)
-    {
-        double defense = 0;
-        foreach (var slot in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(slot.Type);
-            if (def != null) defense += def.Defense * slot.Count;
-        }
-        return defense;
-    }
-
-    private static double CalculatePlayerStealth(BattleState battle)
-    {
-        if (battle.TotalDeployed == 0) return 0;
-        double stealth = 0;
-        foreach (var slot in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(slot.Type);
-            if (def != null) stealth += def.Stealth * slot.Count;
-        }
-        return stealth / battle.TotalDeployed;
-    }
 
     private static void ApplyVictoryReward(GameState state, string continentId)
     {
@@ -269,10 +275,6 @@ public static class BattleEngine
         state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 10);
     }
 
-    private static void AppendLog(BattleState battle, string message)
-    {
-        battle.Log.Add($"[{DateTime.UtcNow:HH:mm:ss}] {message}");
-        if (battle.Log.Count > MaxLogEntries)
-            battle.Log.RemoveAt(0);
-    }
+    private static void AppendLog(BattleState battle, string message) =>
+        BattleCommon.AppendLog(battle.Log, message, MaxLogEntries);
 }

@@ -32,7 +32,7 @@ public enum ArtifactSuit { Blood, Void, Mind, Flesh }
 
 public enum MinionTier { Acolyte, Promoted, HighCouncil }
 
-public enum PromotedRole { Zealot, Scholar, Infiltrator }
+public enum PromotedRole { Zealot, Scholar, Infiltrator, Mage }
 
 public enum CouncilRole { Inquisitor, Archon, HighPriest }
 

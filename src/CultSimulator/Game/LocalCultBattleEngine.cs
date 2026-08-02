@@ -53,8 +53,19 @@ public static class LocalCultBattleEngine
         if (def == null) return (false, "Local cult not found.");
 
         var battle = GetOrCreateBattle(state, def);
-        if (battle.Phase != LocalCultBattlePhase.Deploy)
-            return (false, "Battle is not in deploy phase.");
+        if (battle.Phase != LocalCultBattlePhase.Deploy && battle.Phase != LocalCultBattlePhase.Fighting)
+            return (false, "Battle is not in deploy or fighting phase.");
+
+        if (battle.Phase == LocalCultBattlePhase.Fighting && type == AgentType.Initiate)
+            return (false, "Cannot deploy Initiates mid-battle.");
+
+        if (type == AgentType.Mage)
+        {
+            int scholars = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Scholar)?.Count ?? 0;
+            int mages = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Mage)?.Count ?? 0;
+            if (scholars <= mages + count)
+                return (false, "Each Mage requires at least 1 Scholar in the squad.");
+        }
 
         int alreadyDeployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
         int availableToDeploy = owned - alreadyDeployed;
@@ -77,6 +88,11 @@ public static class LocalCultBattleEngine
 
         battle.DeployedSquad.Clear();
         return (true, "Agents withdrawn.");
+    }
+
+    public static (bool success, string message) ReinforceAgents(GameState state, string cultId, AgentType type, int count)
+    {
+        return DeployAgents(state, cultId, type, count);
     }
 
     public static (bool success, string message) StartBattle(GameState state, string cultId)
@@ -107,18 +123,16 @@ public static class LocalCultBattleEngine
             if (battle.Phase != LocalCultBattlePhase.Fighting) continue;
 
             var sw = ShadowWarEngine.EnsureInitialized(state);
-            double playerAttack = CalculatePlayerAttack(battle, sw, state);
-            double playerDefense = CalculatePlayerDefense(battle, sw, state);
-            double stealth = CalculatePlayerStealth(battle);
-
             var def = LocalCultData.Find(battle.CultId);
             double rivalAttack = def != null ? 2.0 + def.FollowersRequired * 0.01 : 3.0;
 
-            double rivalDamage = rivalAttack * (1.0 - stealth * 0.3) * deltaSec;
-            double playerDamage = playerAttack * deltaSec;
+            var (mitigated, playerDamage) = BattleCommon.ExchangeDamage(battle.DeployedSquad, rivalAttack, sw, state, deltaSec);
+
+            double faithRegen = BattleCommon.CalculateFaithRegen(battle.DeployedSquad);
+            battle.PlayerHp = Math.Min(battle.PlayerMaxHp, battle.PlayerHp + faithRegen * deltaSec);
 
             battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
-            battle.PlayerHp = Math.Max(0, battle.PlayerHp - Math.Max(0, rivalDamage - playerDefense * 0.1 * deltaSec));
+            battle.PlayerHp = Math.Max(0, battle.PlayerHp - mitigated);
 
             if (battle.RivalHp <= 0)
             {
@@ -146,41 +160,6 @@ public static class LocalCultBattleEngine
         if (battle != null) state.LocalCultBattles.Remove(battle);
     }
 
-    private static double CalculatePlayerAttack(LocalCultBattleState battle, ShadowWarState sw, GameState state)
-    {
-        double strength = ShadowWarEngine.AgentStrength(sw, state);
-        double attack = 0;
-        foreach (var slot in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(slot.Type);
-            if (def != null) attack += def.Attack * slot.Count * strength;
-        }
-        return attack;
-    }
-
-    private static double CalculatePlayerDefense(LocalCultBattleState battle, ShadowWarState sw, GameState state)
-    {
-        double defense = 0;
-        foreach (var slot in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(slot.Type);
-            if (def != null) defense += def.Defense * slot.Count;
-        }
-        return defense;
-    }
-
-    private static double CalculatePlayerStealth(LocalCultBattleState battle)
-    {
-        if (battle.TotalDeployed == 0) return 0;
-        double stealth = 0;
-        foreach (var slot in battle.DeployedSquad)
-        {
-            var def = BattleData.AgentDef(slot.Type);
-            if (def != null) stealth += def.Stealth * slot.Count;
-        }
-        return stealth / battle.TotalDeployed;
-    }
-
     private static void ApplyVictory(GameState state, LocalCultBattleState battle)
     {
         var def = LocalCultData.Find(battle.CultId);
@@ -190,9 +169,6 @@ public static class LocalCultBattleEngine
         ClearBattle(state, battle.CultId);
     }
 
-    private static void AppendLog(LocalCultBattleState battle, string message)
-    {
-        battle.Log.Add($"[{DateTime.UtcNow:HH:mm:ss}] {message}");
-        if (battle.Log.Count > MaxLogEntries) battle.Log.RemoveAt(0);
-    }
+    private static void AppendLog(LocalCultBattleState battle, string message) =>
+        BattleCommon.AppendLog(battle.Log, message, MaxLogEntries);
 }
