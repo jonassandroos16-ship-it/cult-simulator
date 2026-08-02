@@ -305,7 +305,7 @@ public static class BattleEngine
     public static int MaxAgentsForType(ShadowWarState sw, GameState state, AgentType type) =>
         type switch
         {
-            AgentType.Initiate => (int)Math.Floor(sw.TotalAgents),
+            AgentType.Initiate => (int)sw.AvailableAgents,
             AgentType.Zealot => state.Occult.Minions.Count(m => m.Role == PromotedRole.Zealot),
             AgentType.Infiltrator => state.Occult.Minions.Count(m => m.Role == PromotedRole.Infiltrator),
             AgentType.Scholar => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
