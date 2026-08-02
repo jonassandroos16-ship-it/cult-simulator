@@ -372,6 +372,8 @@ public static class RivalCultEngine
             {
                 double faithReward = (5000 + rival.Power * 50) * scale;
                 battle.Phase = RivalBattlePhase.Victory;
+                battle.LastFaithReward = faithReward;
+                battle.VictoryAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 rival.Defeated = true;
                 rival.Status = RivalCultStatus.Dormant;
                 rival.Power = 0;
@@ -407,7 +409,8 @@ public static class RivalCultEngine
             }
         }
 
-        rs.RivalBattles.RemoveAll(b => b.Phase == RivalBattlePhase.Victory);
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        rs.RivalBattles.RemoveAll(b => b.Phase == RivalBattlePhase.Victory && now - b.VictoryAt > 5000);
     }
 
     private static void AppendLog(RivalBattleState battle, string message) =>

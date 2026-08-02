@@ -120,6 +120,7 @@ public static class LocalCultBattleEngine
     public static void Tick(GameState state, double deltaSec)
     {
         state.LocalCultBattles ??= new();
+        CleanupVictories(state);
         foreach (var battle in state.LocalCultBattles.ToList())
         {
             if (battle.Phase != LocalCultBattlePhase.Fighting) continue;
@@ -165,6 +166,7 @@ public static class LocalCultBattleEngine
             {
                 battle.Phase = LocalCultBattlePhase.Victory;
                 battle.Status = LocalCultBattleStatus.Victory;
+                battle.VictoryAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                 battle.EnemyUnits.Clear();
                 battle.RecentRounds.Clear();
                 battle.RoundNumber = 0;
@@ -200,7 +202,13 @@ public static class LocalCultBattleEngine
         if (def == null) return;
         var instance = state.ActiveLocalCults.FirstOrDefault(i => i.CultId == battle.CultId);
         if (instance != null) state.ActiveLocalCults.Remove(instance);
-        ClearBattle(state, battle.CultId);
+    }
+
+    public static void CleanupVictories(GameState state)
+    {
+        if (state.LocalCultBattles == null) return;
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        state.LocalCultBattles.RemoveAll(b => b.Phase == LocalCultBattlePhase.Victory && now - b.VictoryAt > 5000);
     }
 
     private static void AppendLog(LocalCultBattleState battle, string message) =>

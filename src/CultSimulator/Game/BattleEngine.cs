@@ -269,16 +269,19 @@ public static class BattleEngine
 
         if (battle.RivalHp <= 0)
         {
+            double faithBonus = state.Covens.Count(c => c.Converted) * 200.0;
             battle.Phase = BattlePhase.Cooldown;
             battle.Status = BattleStatus.Victory;
             battle.CooldownUntil = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + (long)(CooldownSec * 1000);
+            battle.VictoryAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            battle.LastFaithReward = faithBonus;
             battle.DeployedSquad.Clear();
             battle.EnemyUnits.Clear();
             battle.RecentRounds.Clear();
             battle.RoundNumber = 0;
             battle.Momentum = 0;
             ApplyVictoryReward(state, continentId);
-            AppendLog(battle, $"Victory! Rival cult defeated in {continentId}.");
+            AppendLog(battle, $"Victory! Rival cult defeated in {continentId}. +{NumberFormat.Fmt(faithBonus)} Faith!");
         }
         else if (battle.PlayerHp <= 0)
         {
@@ -288,12 +291,14 @@ public static class BattleEngine
             battle.Phase = BattlePhase.Deploy;
             battle.Status = BattleStatus.Defeat;
             battle.PlayerHp = PlayerBaseHp;
+            battle.RivalHp = battle.RivalMaxHp;
             battle.DeployedSquad.Clear();
             battle.RecentRounds.Clear();
             battle.RoundNumber = 0;
             battle.Momentum = 0;
+            if (rivalDef != null) { battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(rivalDef.Archetype, scale, 20); }
             ApplyDefeatPenalty(state);
-            AppendLog(battle, $"Defeat! Your agents were repelled in {continentId}.");
+            AppendLog(battle, $"Defeat! Your agents were repelled in {continentId}. Suspicion rises.");
         }
     }
 
