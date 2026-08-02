@@ -34,8 +34,10 @@ public class GameService
     public double OfflineSeconds { get; private set; }
     public double OfflineLostFaith { get; private set; }
     public double OfflineLostGold { get; private set; }
-    public bool HasOfflineReport => OfflineFaith > 0 || OfflineGold > 0;
+    public bool HasOfflineReport => OfflineFaith > 0 || OfflineGold > 0 || OfflineAgents > 0;
     public bool OfflinePopupPending { get; private set; }
+    public double OfflineAgents { get; private set; }
+    public bool LoadSucceeded { get; private set; }
     public event Action? OnChange;
 
     public string? PendingLocalCultId { get; private set; }
@@ -66,6 +68,7 @@ public class GameService
             _state = loaded;
         }
         catch { _state = GameEngine.InitialState(); }
+        LoadSucceeded = true;
         _locations.SyncFootholds(_state);
         EnsureHomeCoven();
         ApplyOfflineIncome();
@@ -86,14 +89,14 @@ public class GameService
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         var elapsed = now - _state.LastSavedAt;
         if (elapsed <= 0) { _state.LastSavedAt = now; return; }
-        var (faith, gold, lostFaith, lostGold) = GameEngine.ApplyOfflineIncome(_state, elapsed);
+        var (faith, gold, lostFaith, lostGold, agents) = GameEngine.ApplyOfflineIncome(_state, elapsed);
         OfflineFaith = faith; OfflineGold = gold; OfflineSeconds = elapsed / 1000.0;
-        OfflineLostFaith = lostFaith; OfflineLostGold = lostGold;
-        OfflinePopupPending = faith > 0 || gold > 0 || lostFaith > 0 || lostGold > 0;
+        OfflineLostFaith = lostFaith; OfflineLostGold = lostGold; OfflineAgents = agents;
+        OfflinePopupPending = faith > 0 || gold > 0 || lostFaith > 0 || lostGold > 0 || agents > 0;
         _state.LastSavedAt = now;
     }
 
-    public void DismissOfflineReport() { OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflinePopupPending = false; NotifyChanged(); }
+    public void DismissOfflineReport() { OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflineAgents = 0; OfflinePopupPending = false; NotifyChanged(); }
 
     public void StartTimers()
     {
@@ -512,7 +515,21 @@ public class GameService
         return r;
     }
 
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
+    public (bool success, string message) StartRivalBattle(string rivalId)
+    {
+        var r = RivalCultEngine.StartRivalBattle(_state, rivalId);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) ReinforceLocalCultAgents(string cultId, AgentType type, int count)
+    {
+        var r = LocalCultBattleEngine.ReinforceAgents(_state, cultId, type, count);
+        NotifyChanged();
+        return r;
+    }
+
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflineAgents = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
     {

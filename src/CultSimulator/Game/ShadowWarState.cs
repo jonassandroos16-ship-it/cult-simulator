@@ -20,6 +20,8 @@ public class ShadowWarState
     public double TotalAgents { get; set; }
     public double DeployedAgents { get; set; }
     public double SpentAgents { get; set; }
+    public double AgentCap { get; set; }
+    public double Heat { get; set; }
     public List<InstitutionState> Institutions { get; set; } = new();
     public bool VictoryAchieved { get; set; }
     public double PrestigeMultiplier { get; set; } = 1.0;

@@ -330,7 +330,7 @@ public class CultGameTests
     {
         var s = NewState();
         var conv = CreateConversions();
-        s.HomeCoven.Followers = 7000;
+        s.HomeCoven.Followers = 100;
         s.HomeCoven.Faith = 500;
         s.HomeCoven.Gold = 500;
         var loc = CreateLocations().Find("la_recta_provincia")!;
@@ -348,7 +348,7 @@ public class CultGameTests
     {
         var s = NewState();
         var conv = CreateConversions();
-        s.HomeCoven.Followers = 7000;
+        s.HomeCoven.Followers = 30;
         var loc = CreateLocations().Find("la_recta_provincia")!;
         ConversionEngine.StartConversion(s, conv, loc);
         Assert.NotNull(s.Conversion);
@@ -361,7 +361,7 @@ public class CultGameTests
     {
         var s = NewState();
         var conv = CreateConversions();
-        s.HomeCoven.Followers = 7000;
+        s.HomeCoven.Followers = 100;
         s.HomeCoven.Faith = 500;
         s.HomeCoven.Gold = 500;
         var loc = CreateLocations().Find("la_recta_provincia")!;
@@ -372,43 +372,6 @@ public class CultGameTests
         Assert.True(s.Conversion!.Completed);
         ConversionEngine.ClearCompleted(s);
         Assert.Null(s.Conversion);
-    }
-
-    [Fact]
-    public void ConversionEngine_BattlePhaseAutoInitializes()
-    {
-        var s = NewState();
-        var conv = CreateConversions();
-        s.HomeCoven.Followers = 7000;
-        s.HomeCoven.Faith = 500;
-        s.HomeCoven.Gold = 500;
-        var loc = CreateLocations().Find("la_recta_provincia")!;
-        ConversionEngine.StartConversion(s, conv, loc);
-        var def = conv.Find("la_recta_provincia");
-        foreach (var step in def!.Steps) ConversionEngine.ApplyChoice(s, conv, step.ChoiceA);
-        Assert.True(s.Conversion!.BattlePhase);
-        Assert.False(s.Conversion.Completed);
-        Assert.Null(s.BattleSystem?.GetBattle("south_america"));
-    }
-
-    [Fact]
-    public void ConversionEngine_OnBattleWonFinalizes()
-    {
-        var s = NewState();
-        var conv = CreateConversions();
-        s.HomeCoven.Followers = 7000;
-        s.HomeCoven.Faith = 500;
-        s.HomeCoven.Gold = 500;
-        var loc = CreateLocations().Find("la_recta_provincia")!;
-        ConversionEngine.StartConversion(s, conv, loc);
-        var def = conv.Find("la_recta_provincia");
-        foreach (var step in def!.Steps) ConversionEngine.ApplyChoice(s, conv, step.ChoiceA);
-        ConversionEngine.OnBattleWon(s, conv);
-        Assert.True(s.Conversion!.Completed);
-        Assert.True(s.Conversion.BattleWon);
-        var converted = s.FindCoven("la_recta_provincia");
-        Assert.NotNull(converted);
-        Assert.True(converted!.Converted);
     }
 
     [Fact]

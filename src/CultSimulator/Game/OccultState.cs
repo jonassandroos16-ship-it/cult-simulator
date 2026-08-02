@@ -48,6 +48,7 @@ public class OccultState
     public List<string> OwnedArtifacts { get; set; } = new();
     public List<MapNodeState> MapNodes { get; set; } = new();
     public double Suspicion { get; set; }
+    public double ArmyPower { get; set; }
     public Dictionary<MaterialKind, int> Materials { get; set; } = new();
     public double FrenzyTimer { get; set; }
     public double MassHysteriaTimer { get; set; }

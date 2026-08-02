@@ -53,6 +53,8 @@ public static class ShadowWarEngine
         return baseRate * govBonus * sw.PrestigeMultiplier * buildingMult;
     }
 
+    public static int AgentPoolCap(GameState state) => (int)AgentCapFor(state.ShadowWarOrInit, state);
+
     public static double AgentCapFor(ShadowWarState sw, GameState state)
     {
         double cap = sw.AgentCap > 0 ? sw.AgentCap : 100;
