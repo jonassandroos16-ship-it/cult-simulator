@@ -169,6 +169,16 @@ public static class GameEngine
             }
         }
 
+        if (state.ShadowWar != null)
+        {
+            double agentProd = ShadowWarEngine.AgentProductionPerSec(state.ShadowWar, state);
+            int agentCap = ShadowWarEngine.AgentPoolCap(state);
+            double agentEffCap = agentCap - state.ShadowWar.DeployedAgents - state.ShadowWar.SpentAgents;
+            double agentEff = Math.Min(elapsedSec, IdleCapSeconds(state.ActiveCoven));
+            double agentGain = agentProd * agentEff;
+            state.ShadowWar.TotalAgents = Math.Min(state.ShadowWar.TotalAgents + agentGain, agentEffCap);
+        }
+
         return (totalFaith, totalGold, totalLostFaith, totalLostGold);
     }
 
