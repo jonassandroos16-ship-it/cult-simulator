@@ -13,7 +13,13 @@ public static class BattleData
             Attack: 6.0, Defense: 4.0, Stealth: 0.3, AgentCost: 20),
         new AgentTypeDef(AgentType.Infiltrator, "Infiltrator", "🗡️",
             "Stealth operative. Low attack but high stealth — reduces rival counterattack damage. Recruit Infiltrators in the Sanctum first.",
-            Attack: 3.0, Defense: 2.0, Stealth: 3.0, AgentCost: 15)
+            Attack: 3.0, Defense: 2.0, Stealth: 3.0, AgentCost: 15),
+        new AgentTypeDef(AgentType.Scholar, "Scholar", "📖",
+            "Support unit. Generates Faith during battle to sustain your forces. Recruit Scholars in the Sanctum first.",
+            Attack: 0.5, Defense: 2.0, Stealth: 1.0, AgentCost: 10, FaithRegen: 2.0, IsSupport: true),
+        new AgentTypeDef(AgentType.Mage, "Mage", "🔮",
+            "Devastating spell-caster. Very high attack but fragile. Requires at least 1 Scholar in the squad.",
+            Attack: 12.0, Defense: 1.5, Stealth: 0.5, AgentCost: 30)
     );
 
     public static AgentTypeDef? AgentDef(AgentType type) =>

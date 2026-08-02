@@ -4,7 +4,9 @@ public enum AgentType
 {
     Initiate,
     Zealot,
-    Infiltrator
+    Infiltrator,
+    Scholar,
+    Mage
 }
 
 public enum BattleStatus

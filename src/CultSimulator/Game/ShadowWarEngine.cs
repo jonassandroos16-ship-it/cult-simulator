@@ -124,7 +124,7 @@ public static class ShadowWarEngine
         int cap = AgentPoolCap(state);
         double effectiveCap = cap - sw.DeployedAgents - sw.SpentAgents;
         double potentialNew = sw.TotalAgents + agentProd * deltaSec;
-        sw.TotalAgents = Math.Min(potentialNew, cap);
+        sw.TotalAgents = Math.Min(potentialNew, effectiveCap);
 
         foreach (var inst in sw.Institutions)
         {
@@ -236,6 +236,6 @@ public static class ShadowWarEngine
         sw.DeployedAgents += count;
         inst.AssignedAgents += count;
         inst.InvestigationDefense = Math.Min(100, inst.InvestigationDefense + count * 10);
-        return (true, $"Defenders assigned. Investigation defense raised to {(int)inst.InvestigationDefense}%." );
+        return (true, $"Defenders assigned. Investigation defense raised to {(int)inst.InvestigationDefense}%.");
     }
 }
