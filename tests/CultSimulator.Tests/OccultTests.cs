@@ -508,7 +508,7 @@ public class OccultTests
         Assert.False(SaveLoad.IsValidSave("{bad json"));
         Assert.True(SaveLoad.IsCorrupted(null));
         Assert.True(SaveLoad.IsCorrupted("{bad json"));
-        Assert.False(SaveLoad.IsCorrupted("{\"CultName\":\"Test\",\"ActiveCovenId\":\"skanor\",\"Covens\":[],\"Occult\":{}}"));
+        Assert.False(SaveLoad.IsCorrupted("{\"CultName\":\"Test\",\"ActiveCovenId\":\"skanor\",\"Covens\":[]}"));
     }
 
     [Fact]
