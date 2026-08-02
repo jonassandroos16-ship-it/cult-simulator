@@ -122,7 +122,7 @@ public static class ShadowWarEngine
     {
         double agentProd = AgentProductionPerSec(sw, state);
         int cap = AgentPoolCap(state);
-        double effectiveCap = cap - sw.DeployedAgents - sw.SpentAgents;
+        double effectiveCap = cap - sw.DeployedAgents;
         double potentialNew = sw.TotalAgents + agentProd * deltaSec;
         sw.TotalAgents = Math.Min(potentialNew, effectiveCap);
 

@@ -173,7 +173,7 @@ public static class GameEngine
         {
             double agentProd = ShadowWarEngine.AgentProductionPerSec(state.ShadowWar, state);
             int agentCap = ShadowWarEngine.AgentPoolCap(state);
-            double agentEffCap = agentCap - state.ShadowWar.DeployedAgents - state.ShadowWar.SpentAgents;
+            double agentEffCap = agentCap - state.ShadowWar.DeployedAgents;
             double agentEff = Math.Min(elapsedSec, IdleCapSeconds(state.ActiveCoven));
             double agentGain = agentProd * agentEff;
             double before = state.ShadowWar.TotalAgents;
