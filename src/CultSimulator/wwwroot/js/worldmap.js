@@ -64,8 +64,10 @@ function buildMarkerHtml(loc) {
     if (loc.isNextTarget) cls += ' next-target';
     if (loc.isActive) cls += ' active-coven';
     if (loc.locked) cls += ' locked';
+    var targetBadge = loc.isNextTarget ? '<span class="coven-marker-target">🎯</span>' : '';
     return '<div class="' + cls + '" data-id="' + loc.id + '">' +
            '<span class="coven-marker-flag">' + (loc.flag || '📍') + '</span>' +
+           targetBadge +
            '<span class="coven-marker-label">' + loc.name + '</span>' +
            '</div>';
 }

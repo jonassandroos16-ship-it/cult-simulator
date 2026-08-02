@@ -107,6 +107,13 @@
 
 .coven-marker.next-target {
     animation: target-pulse 1.6s ease-in-out infinite;
+    border-color: rgba(248, 113, 113, 0.8);
+    box-shadow: 0 0 16px rgba(248, 113, 113, 0.5);
+}
+
+.coven-marker.next-target.locked {
+    opacity: 0.75;
+    filter: none;
 }
 
 .coven-marker.locked {

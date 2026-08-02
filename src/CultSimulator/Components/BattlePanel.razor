@@ -74,7 +74,7 @@
         <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider mb-1">How to Get More Agents</div>
         <div class="text-slate-400 space-y-0.5">
             <div><strong class="text-amber-200">🏰 Barracks</strong> (Lv @barracksLevel) — Raises your agent pool cap by +5 per level. Currently: @agentCap max.</div>
-            <div><strong class="text-amber-200">🗡️ Training Camp</strong> (Lv @trainingCampLevel) — Boosts agent production speed by +50% per level. Currently: ×@(1.0 + trainingCampLevel * GameBalance.TrainingCampProductionPerLevel).ToString("F1") production.</div>
+            <div><strong class="text-amber-200">🗡️ Training Camp</strong> (Lv @trainingCampLevel) — Boosts agent production speed by +50% per level. Currently: ×@((1.0 + trainingCampLevel * GameBalance.TrainingCampProductionPerLevel).ToString("F1")) production.</div>
             <div class="text-slate-500 text-[0.65rem] mt-1">Build or upgrade these in the <strong>Build</strong> tab to increase your agent flow.</div>
         </div>
     </div>
@@ -354,7 +354,7 @@
 
     private void StateChanged() => StateHasChanged();
 
-    protected override void OnInitialized() => Game.OnChange += StateChanged;
+    protected override OnInitialized() => Game.OnChange += StateChanged;
 
     private void OnRecruit(AgentType type, int count) => Game.RecruitAgent(type, count);
     private void OnDeploy(string continentId, AgentType type, int count) => Game.DeployAgents(continentId, type, count);
