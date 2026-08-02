@@ -22,8 +22,9 @@
         <div class="deploy-agent-grid">
             @foreach (var agentDef in BattleData.AgentTypes)
             {
-                sw.RecruitedAgents.TryGetValue(agentDef.Type, out int available);
+                sw.RecruitedAgents.TryGetValue(agentDef.Type, out int owned);
                 var deployedCount = DeployedCount(agentDef.Type);
+                var available = owned - deployedCount;
                 var canDeploy = available > 0 && CanDeploy;
                 <div class="deploy-agent-card @(available == 0 && deployedCount == 0 ? "deploy-agent-empty" : "")">
                     <div class="deploy-agent-header">

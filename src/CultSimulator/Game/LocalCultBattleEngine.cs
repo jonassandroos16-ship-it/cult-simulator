@@ -47,9 +47,7 @@ public static class LocalCultBattleEngine
     public static (bool success, string message) DeployAgents(GameState state, string cultId, AgentType type, int count)
     {
         var sw = ShadowWarEngine.EnsureInitialized(state);
-        sw.RecruitedAgents.TryGetValue(type, out int available);
-        if (available < count)
-            return (false, $"Not enough {type} agents. Have {available}, need {count}.");
+        sw.RecruitedAgents.TryGetValue(type, out int owned);
 
         var def = LocalCultData.Find(cultId);
         if (def == null) return (false, "Local cult not found.");
@@ -58,7 +56,11 @@ public static class LocalCultBattleEngine
         if (battle.Phase != LocalCultBattlePhase.Deploy)
             return (false, "Battle is not in deploy phase.");
 
-        sw.RecruitedAgents[type] = available - count;
+        int alreadyDeployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
+        int availableToDeploy = owned - alreadyDeployed;
+        if (availableToDeploy < count)
+            return (false, $"Not enough {type} agents. Have {availableToDeploy} available, need {count}.");
+
         var slot = battle.DeployedSquad.FirstOrDefault(d => d.Type == type);
         if (slot != null) slot.Count += count;
         else battle.DeployedSquad.Add(new DeployedAgent { Type = type, Count = count });
@@ -73,11 +75,6 @@ public static class LocalCultBattleEngine
         if (battle.Phase == LocalCultBattlePhase.Fighting)
             return (false, "Cannot withdraw during an active battle.");
 
-        foreach (var slot in battle.DeployedSquad)
-        {
-            sw.RecruitedAgents.TryGetValue(slot.Type, out int cur);
-            sw.RecruitedAgents[slot.Type] = cur + slot.Count;
-        }
         battle.DeployedSquad.Clear();
         return (true, "Agents withdrawn.");
     }
@@ -89,6 +86,14 @@ public static class LocalCultBattleEngine
             return (false, "Not in deploy phase.");
         if (battle.TotalDeployed == 0)
             return (false, "Deploy at least one agent before starting.");
+
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        foreach (var slot in battle.DeployedSquad)
+        {
+            sw.RecruitedAgents.TryGetValue(slot.Type, out int cur);
+            sw.RecruitedAgents[slot.Type] = Math.Max(0, cur - slot.Count);
+        }
+
         battle.Phase = LocalCultBattlePhase.Fighting;
         AppendLog(battle, $"Battle started with {battle.TotalDeployed} agents.");
         return (true, "Battle started!");

@@ -8,8 +8,6 @@ public static class RivalCultEngine
     public const double RivalBattleRivalBaseHp = 300;
     public const int MaxLogEntries = 15;
 
-    // HP/attack multipliers per continent in progression order — later continents
-    // have much tougher rivals, so the player needs a fully developed power base.
     private static readonly Dictionary<string, double> ContinentScale = new()
     {
         ["europe"] = 1.0,
@@ -225,9 +223,7 @@ public static class RivalCultEngine
     public static (bool success, string message) DeployRivalBattleAgents(GameState state, string rivalId, AgentType type, int count)
     {
         var sw = ShadowWarEngine.EnsureInitialized(state);
-        sw.RecruitedAgents.TryGetValue(type, out int available);
-        if (available < count)
-            return (false, $"Not enough {type} agents. Have {available}, need {count}.");
+        sw.RecruitedAgents.TryGetValue(type, out int owned);
 
         try
         {
@@ -235,7 +231,11 @@ public static class RivalCultEngine
             if (battle.Phase != RivalBattlePhase.Deploy)
                 return (false, "Battle is not in deploy phase.");
 
-            sw.RecruitedAgents[type] = available - count;
+            int alreadyDeployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
+            int availableToDeploy = owned - alreadyDeployed;
+            if (availableToDeploy < count)
+                return (false, $"Not enough {type} agents. Have {availableToDeploy} available, need {count}.");
+
             var slot = battle.DeployedSquad.FirstOrDefault(d => d.Type == type);
             if (slot != null) slot.Count += count;
             else battle.DeployedSquad.Add(new DeployedAgent { Type = type, Count = count });
@@ -253,11 +253,6 @@ public static class RivalCultEngine
         if (battle.Phase == RivalBattlePhase.Fighting)
             return (false, "Cannot withdraw during an active battle.");
 
-        foreach (var slot in battle.DeployedSquad)
-        {
-            sw.RecruitedAgents.TryGetValue(slot.Type, out int cur);
-            sw.RecruitedAgents[slot.Type] = cur + slot.Count;
-        }
         battle.DeployedSquad.Clear();
         return (true, "Agents withdrawn.");
     }
@@ -270,6 +265,14 @@ public static class RivalCultEngine
             return (false, "Not in deploy phase.");
         if (battle.TotalDeployed == 0)
             return (false, "Deploy at least one agent before starting.");
+
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        foreach (var slot in battle.DeployedSquad)
+        {
+            sw.RecruitedAgents.TryGetValue(slot.Type, out int cur);
+            sw.RecruitedAgents[slot.Type] = Math.Max(0, cur - slot.Count);
+        }
+
         battle.Phase = RivalBattlePhase.Fighting;
         AppendLog(battle, $"Assault on {rivalId} begun with {battle.TotalDeployed} agents!");
         return (true, "Battle started!");
