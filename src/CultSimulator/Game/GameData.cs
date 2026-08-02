@@ -22,9 +22,9 @@ public static class GameData
         new UpgradeDef(UpgradeId.Visions, "Prophetic Visions", "🔮", 600, 0, 0, "Followers give 2× Faith", 40),
         new UpgradeDef(UpgradeId.Ascendance, "Rite of Ascendance", "🌟", 1500, 1000, 0, "All production ×1.5", 120),
         new UpgradeDef(UpgradeId.BankVault, "Iron Vault", "🔒", 500, 2000, 5, "Bank idle cap ×1.5", 10),
-        new UpgradeId.OffshoreAccounts, "Shadow Ledger", "📓", 2000, 6000, 15, "Bank idle cap ×1.5", 30),
-        new UpgradeId.DarkLedger, "Blood Pact", "🩸", 5000, 20000, 40, "Bank idle cap ×2", 60),
-        new UpgradeId.SoulEndowment, "Eternal Reserves", "💀", 15000, 60000, 100, "Bank idle cap ×2", 120));
+        new UpgradeDef(UpgradeId.OffshoreAccounts, "Shadow Ledger", "📓", 2000, 6000, 15, "Bank idle cap ×1.5", 30),
+        new UpgradeDef(UpgradeId.DarkLedger, "Blood Pact", "🩸", 5000, 20000, 40, "Bank idle cap ×2", 60),
+        new UpgradeDef(UpgradeId.SoulEndowment, "Eternal Reserves", "💀", 15000, 60000, 100, "Bank idle cap ×2", 120));
 
     public static readonly ImmutableArray<UpgradeId> BankUpgrades = ImmutableArray.Create(
         UpgradeId.BankVault,
