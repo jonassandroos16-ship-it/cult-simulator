@@ -339,23 +339,11 @@ public class OccultTests
     }
 
     [Fact]
-    public void OccultEngine_Tick_BloodMoonDoublesFaith()
-    {
-        var state = NewState();
-        state.Occult.Acolytes = 10;
-        state.Occult.BloodMoonActive = true;
-        var faithNormal = OccultEngine.Tap(state);
-        state.Occult.BloodMoonActive = false;
-        var faithBloodMoon = faithNormal;
-        Assert.True(faithBloodMoon > 0);
-    }
-
-    [Fact]
     public void GrandSacrifice_PerformSacrifice_GrantsFavor()
     {
         var state = NewState();
         state.CultName = "Test";
-        state.Occult.LifetimeFaith = 10000;
+        state.Occult.LifetimeFaith = 2_000_000;
         state.EldritchFavor = 0;
         var favor = GrandSacrifice.PerformSacrifice(state);
         Assert.True(favor > 0);
@@ -367,7 +355,7 @@ public class OccultTests
     {
         var state = NewState();
         state.CultName = "Test";
-        state.Occult.LifetimeFaith = 10000;
+        state.Occult.LifetimeFaith = 2_000_000;
         state.ActiveCoven.Faith = 5000;
         state.Occult.Initiates = 50;
         GrandSacrifice.PerformSacrifice(state);
@@ -380,42 +368,10 @@ public class OccultTests
     {
         var state = NewState();
         state.CultName = "Test";
-        state.Occult.LifetimeFaith = 10000;
+        state.Occult.LifetimeFaith = 2_000_000;
         var count = state.GrandSacrificeCount;
         GrandSacrifice.PerformSacrifice(state);
         Assert.True(state.GrandSacrificeCount > count);
-    }
-
-    [Fact]
-    public void GrandSacrifice_PerformSacrifice_GrantsFavorAndResets()
-    {
-        var state = NewState();
-        state.CultName = "Test";
-        state.Occult.LifetimeFaith = 10000;
-        state.EldritchFavor = 0;
-        state.ActiveCoven.Faith = 5000;
-        state.Occult.Initiates = 50;
-        var favor = GrandSacrifice.PerformSacrifice(state);
-        Assert.True(favor > 0);
-        Assert.True(state.EldritchFavor > 0);
-        Assert.Equal(0, state.ActiveCoven.Faith);
-        Assert.Equal(0, state.Occult.Initiates);
-    }
-
-    [Fact]
-    public void PerformSacrifice_GrantsFavorAndResets()
-    {
-        var state = NewState();
-        state.CultName = "Test";
-        state.Occult.LifetimeFaith = 10000;
-        state.EldritchFavor = 0;
-        state.ActiveCoven.Faith = 5000;
-        state.Occult.Initiates = 50;
-        var favor = GrandSacrifice.PerformSacrifice(state);
-        Assert.True(favor > 0);
-        Assert.True(state.EldritchFavor > 0);
-        Assert.Equal(0, state.ActiveCoven.Faith);
-        Assert.Equal(0, state.Occult.Initiates);
     }
 
     [Fact]
