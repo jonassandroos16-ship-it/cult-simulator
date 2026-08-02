@@ -6,8 +6,7 @@ public class RivalBattleState
 {
     public string RivalId { get; set; } = "";
     public string ContinentId { get; set; } = "";
-    public RivalBattlePhase Phase { get; set; }
-    public RivalBattleStatus Status { get; set; }
+    public RivalBattlePhase Phase { get; set; } = RivalBattlePhase.Available;
     public double RivalHp { get; set; }
     public double RivalMaxHp { get; set; }
     public double PlayerHp { get; set; }
@@ -24,4 +23,13 @@ public class RivalBattleState
 
     [JsonIgnore]
     public int TotalDeployed => DeployedSquad.Sum(d => d.Count);
+}
+
+public enum RivalBattlePhase
+{
+    Available,
+    Deploy,
+    Fighting,
+    Victory,
+    Defeat
 }
