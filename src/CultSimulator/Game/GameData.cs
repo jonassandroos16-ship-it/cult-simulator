@@ -13,7 +13,8 @@ public static class GameData
         new BuildingDef(BuildingType.Observatory, "Observatory", "🔭", 800, ResourceKind.Gold, 1.22, "+6% Faith generation"),
         new BuildingDef(BuildingType.Reliquary, "Reliquary", "📿", 1500, ResourceKind.Gold, 1.24, "+6% Gold generation"),
         new BuildingDef(BuildingType.Undercroft, "Undercroft", "⚰️", 3000, ResourceKind.Gold, 1.28, "+2 Acolyte cap per level"),
-        new BuildingDef(BuildingType.Barracks, "Barracks", "🏰", 600, ResourceKind.Gold, 1.20, "+5 Agent pool cap per level"));
+        new BuildingDef(BuildingType.Barracks, "Barracks", "🏰", 600, ResourceKind.Gold, 1.20, "+5 Agent pool cap per level"),
+        new BuildingDef(BuildingType.TrainingCamp, "Training Camp", "🗡️", 1200, ResourceKind.Gold, 1.22, "+50% Agent production speed per level"));
 
     public static readonly ImmutableArray<UpgradeDef> Upgrades = ImmutableArray.Create(
         new UpgradeDef(UpgradeId.Hymnal, "Sacred Hymnal", "📜", 120, 0, 0, "Preaching yields 2× Faith", 0),
@@ -39,7 +40,8 @@ public static class GameData
         BuildingType.Observatory,
         BuildingType.Reliquary,
         BuildingType.Undercroft,
-        BuildingType.Barracks);
+        BuildingType.Barracks,
+        BuildingType.TrainingCamp);
 
 public static readonly Dictionary<string, Dictionary<BuildingType, string>> CovenBuildingNames = new()
     {
@@ -53,6 +55,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Bone Reliquary" },
             { BuildingType.Undercroft, "Frost Crypt" },
             { BuildingType.Barracks, "Viking War Camp" },
+            { BuildingType.TrainingCamp, "Viking Drill Ground" },
         },
         ["uppsala_gothi"] = new()
         {
@@ -64,6 +67,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "King's Reliquary" },
             { BuildingType.Undercroft, "Burial Mound" },
             { BuildingType.Barracks, "Royal Guard Hall" },
+            { BuildingType.TrainingCamp, "Gothi Training Field" },
         },
         ["hedeby_vikings"] = new()
         {
@@ -75,6 +79,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Amber Reliquary" },
             { BuildingType.Undercroft, "Keel Vault" },
             { BuildingType.Barracks, "Raiding Camp" },
+            { BuildingType.TrainingCamp, "Raid Training Ground" },
         },
         ["trossky_berserkers"] = new()
         {
@@ -86,6 +91,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Pelt Reliquary" },
             { BuildingType.Undercroft, "Ice Cellar" },
             { BuildingType.Barracks, "Berserker Den" },
+            { BuildingType.TrainingCamp, "Berserker Pit" },
         },
         ["jomsborg_elite"] = new()
         {
@@ -97,6 +103,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Oath Reliquary" },
             { BuildingType.Undercroft, "Sea Vault" },
             { BuildingType.Barracks, "Jomsviking Camp" },
+            { BuildingType.TrainingCamp, "Jomsviking Drill Yard" },
         },
         ["salem_remnant"] = new()
         {
@@ -108,6 +115,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Trial Reliquary" },
             { BuildingType.Undercroft, "Colonial Cellar" },
             { BuildingType.Barracks, "Witch Hunter Cabin" },
+            { BuildingType.TrainingCamp, "Witch Training Lodge" },
         },
         ["voodoo_quarter"] = new()
         {
@@ -119,6 +127,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Gris-Gris Reliquary" },
             { BuildingType.Undercroft, "Crypt Vault" },
             { BuildingType.Barracks, "Voodoo Lodge" },
+            { BuildingType.TrainingCamp, "Spirit Training Ground" },
         },
         ["silicon_circle"] = new()
         {
@@ -130,6 +139,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Code Reliquary" },
             { BuildingType.Undercroft, "Cooling Crypt" },
             { BuildingType.Barracks, "Private Security Hub" },
+            { BuildingType.TrainingCamp, "Cyber Training Lab" },
         },
         ["hudson_witches"] = new()
         {
@@ -141,6 +151,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Colonial Reliquary" },
             { BuildingType.Undercroft, "Wine Cellar" },
             { BuildingType.Barracks, "Estate Guard House" },
+            { BuildingType.TrainingCamp, "Estate Training Ground" },
         },
         ["montreal_night"] = new()
         {
@@ -152,6 +163,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Saint Reliquary" },
             { BuildingType.Undercroft, "Ice Vault" },
             { BuildingType.Barracks, "Underground Bunker" },
+            { BuildingType.TrainingCamp, "Underground Fight Club" },
         },
         ["la_recta_provincia"] = new()
         {
@@ -163,6 +175,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Relicario Patagón" },
             { BuildingType.Undercroft, "Bóveda de Chiloé" },
             { BuildingType.Barracks, "Guarnición Secreta" },
+            { BuildingType.TrainingCamp, "Campo de Entrenamiento" },
         },
         ["amazon_curanderos"] = new()
         {
@@ -174,6 +187,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Plant Reliquary" },
             { BuildingType.Undercroft, "Root Vault" },
             { BuildingType.Barracks, "Jungle Outpost" },
+            { BuildingType.TrainingCamp, "Jungle Training Camp" },
         },
         ["andean_pacha"] = new()
         {
@@ -185,6 +199,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Mummy Reliquary" },
             { BuildingType.Undercroft, "Mountain Crypt" },
             { BuildingType.Barracks, "Warrior Barracks" },
+            { BuildingType.TrainingCamp, "Warrior Training Ground" },
         },
         ["pantanal_feiticeira"] = new()
         {
@@ -196,6 +211,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Caiman Reliquary" },
             { BuildingType.Undercroft, "Mud Vault" },
             { BuildingType.Barracks, "Swamp Hideout" },
+            { BuildingType.TrainingCamp, "Swamp Training Camp" },
         },
         ["guarani_shadows"] = new()
         {
@@ -207,6 +223,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Ancestor Reliquary" },
             { BuildingType.Undercroft, "Earth Vault" },
             { BuildingType.Barracks, "Shadow Camp" },
+            { BuildingType.TrainingCamp, "Shadow Training Ground" },
         },
         ["kush_sorcerers"] = new()
         {
@@ -218,6 +235,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Pharaoh Reliquary" },
             { BuildingType.Undercroft, "Tomb Vault" },
             { BuildingType.Barracks, "Nubian War Camp" },
+            { BuildingType.TrainingCamp, "Nubian Training Camp" },
         },
         ["ifa_oracles"] = new()
         {
@@ -229,6 +247,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Orunmila Reliquary" },
             { BuildingType.Undercroft, "Ancestral Vault" },
             { BuildingType.Barracks, "Oracle Guard" },
+            { BuildingType.TrainingCamp, "Oracle Training Lodge" },
         },
         ["dogon_star_priests"] = new()
         {
@@ -240,6 +259,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Nommo Reliquary" },
             { BuildingType.Undercroft, "Cliff Vault" },
             { BuildingType.Barracks, "Cliff Garrison" },
+            { BuildingType.TrainingCamp, "Star Training Ground" },
         },
         ["zulu_sangoma"] = new()
         {
@@ -251,6 +271,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Bone Reliquary" },
             { BuildingType.Undercroft, "Ancestor Vault" },
             { BuildingType.Barracks, "Warrior Kraal" },
+            { BuildingType.TrainingCamp, "Warrior Training Kraal" },
         },
         ["axum_guardians"] = new()
         {
@@ -262,6 +283,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Covenant Reliquary" },
             { BuildingType.Undercroft, "Ancient Vault" },
             { BuildingType.Barracks, "Guardian Fortress" },
+            { BuildingType.TrainingCamp, "Guardian Training Ground" },
         },
         ["babylon_mages"] = new()
         {
@@ -273,6 +295,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Tablet Reliquary" },
             { BuildingType.Undercroft, "Clay Vault" },
             { BuildingType.Barracks, "Ziggurat Guard" },
+            { BuildingType.TrainingCamp, "Mage Training Tower" },
         },
         ["djinn_binders"] = new()
         {
@@ -284,6 +307,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Brass Reliquary" },
             { BuildingType.Undercroft, "Sand Vault" },
             { BuildingType.Barracks, "Djinn Guard Camp" },
+            { BuildingType.TrainingCamp, "Djinn Training Camp" },
         },
         ["hashashin_shadow"] = new()
         {
@@ -295,6 +319,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Dagger Reliquary" },
             { BuildingType.Undercroft, "Alamut Vault" },
             { BuildingType.Barracks, "Assassin Stronghold" },
+            { BuildingType.TrainingCamp, "Assassin Training Ground" },
         },
         ["sumerian_deep"] = new()
         {
@@ -306,6 +331,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Abyss Reliquary" },
             { BuildingType.Undercroft, "Subterranean Vault" },
             { BuildingType.Barracks, "Deep Garrison" },
+            { BuildingType.TrainingCamp, "Deep Training Pit" },
         },
         ["qabbalah_masters"] = new()
         {
@@ -317,6 +343,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Letter Reliquary" },
             { BuildingType.Undercroft, "Safed Vault" },
             { BuildingType.Barracks, "Mystic Guard House" },
+            { BuildingType.TrainingCamp, "Mystic Training Lodge" },
         },
         ["iga_shinobi"] = new()
         {
@@ -328,6 +355,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Ninjutsu Reliquary" },
             { BuildingType.Undercroft, "Shadow Vault" },
             { BuildingType.Barracks, "Shinobi Dojo" },
+            { BuildingType.TrainingCamp, "Shinobi Training Ground" },
         },
         ["koga_nightblades"] = new()
         {
@@ -339,6 +367,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Venom Reliquary" },
             { BuildingType.Undercroft, "Poison Vault" },
             { BuildingType.Barracks, "Nightblade Camp" },
+            { BuildingType.TrainingCamp, "Nightblade Training Pit" },
         },
         ["takeda_ronin"] = new()
         {
@@ -350,6 +379,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Spirit Blade Reliquary" },
             { BuildingType.Undercroft, "Warrior Vault" },
             { BuildingType.Barracks, "Ronin Barracks" },
+            { BuildingType.TrainingCamp, "Ronin Training Field" },
         },
         ["wu_dang_immortals"] = new()
         {
@@ -361,6 +391,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Alchemy Reliquary" },
             { BuildingType.Undercroft, "Cave Vault" },
             { BuildingType.Barracks, "Immortal Training Hall" },
+            { BuildingType.TrainingCamp, "Immortal Training Peak" },
         },
         ["shadow_shogun"] = new()
         {
@@ -372,6 +403,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Shogun Reliquary" },
             { BuildingType.Undercroft, "Castle Vault" },
             { BuildingType.Barracks, "Shogun Barracks" },
+            { BuildingType.TrainingCamp, "Shogun Training Dojo" },
         },
         ["maori_tohunga"] = new()
         {
@@ -383,6 +415,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Tiki Reliquary" },
             { BuildingType.Undercroft, "Burial Cave" },
             { BuildingType.Barracks, "War Canoe Lodge" },
+            { BuildingType.TrainingCamp, "War Canoe Training Ground" },
         },
         ["dreamtime_elders"] = new()
         {
@@ -394,6 +427,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Ancestor Reliquary" },
             { BuildingType.Undercroft, "Dreamtime Vault" },
             { BuildingType.Barracks, "Outback Camp" },
+            { BuildingType.TrainingCamp, "Outback Training Camp" },
         },
         ["polynesian_navigators"] = new()
         {
@@ -405,6 +439,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Navigation Reliquary" },
             { BuildingType.Undercroft, "Deep Vault" },
             { BuildingType.Barracks, "Voyager Camp" },
+            { BuildingType.TrainingCamp, "Voyager Training Camp" },
         },
         ["papuan_spirits"] = new()
         {
@@ -416,6 +451,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Mask Reliquary" },
             { BuildingType.Undercroft, "Highland Vault" },
             { BuildingType.Barracks, "Highland Garrison" },
+            { BuildingType.TrainingCamp, "Highland Training Ground" },
         },
         ["pacific_abyss"] = new()
         {
@@ -427,6 +463,7 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
             { BuildingType.Reliquary, "Deep One Reliquary" },
             { BuildingType.Undercroft, "Mariana Vault" },
             { BuildingType.Barracks, "Abyssal Garrison" },
+            { BuildingType.TrainingCamp, "Abyssal Training Pit" },
         },
     };
 
