@@ -99,10 +99,10 @@
         @if (CanDeploy)
         {
             <div class="deploy-actions">
-                <button class="deploy-btn deploy-btn-withdraw" disabled="@(SquadTotal == 0)" @onclick="OnWithdraw>
+                <button class="deploy-btn deploy-btn-withdraw" disabled="@(SquadTotal == 0)" @onclick="OnWithdraw">
                     ↩ Withdraw All
                 </button>
-                <button class="deploy-btn deploy-btn-fight @(SquadTotal == 0 ? "deploy-btn-disabled" : "")" disabled="@(SquadTotal == 0)" @onclick="OnFight>
+                <button class="deploy-btn deploy-btn-fight @(SquadTotal == 0 ? "deploy-btn-disabled" : "")" disabled="@(SquadTotal == 0)" @onclick="OnFight">
                     ⚔️ @(FightLabel)
                 </button>
             </div>

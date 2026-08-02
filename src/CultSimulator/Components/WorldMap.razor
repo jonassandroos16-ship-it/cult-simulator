@@ -94,45 +94,12 @@
                             </div>
                         </div>
 
-                        @if (battle.DeployedSquad.Count > 0)
-                        {
-                            <div class="flex flex-wrap gap-1.5 mb-3">
-                                @foreach (var slot in battle.DeployedSquad)
-                                {
-                                    var agentDef = BattleData.AgentDef(slot.Type);
-                                    <div class="text-[0.65rem] px-2 py-1 rounded-[8px] flex items-center gap-1" style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);">
-                                        <span>@agentDef?.Icon</span>
-                                        <span class="text-amber-200">@slot.Count</span>
-                                    </div>
-                                }
-                            </div>
-                        }
-
-                        <div class="grid grid-cols-3 gap-2 mb-3">
-                            @foreach (var agentDef in BattleData.AgentTypes)
-                            {
-                                sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
-                                <button class="p-2 rounded-[8px] text-center transition-all hover:-translate-y-0.5"
-                                        style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);"
-                                        @onclick="() => DeployLocalCult(cultDef.Id, agentDef.Type)">
-                                    <div class="text-lg mb-0.5">@agentDef.Icon</div>
-                                    <div class="text-[0.6rem] text-amber-200">@agentDef.Name</div>
-                                    <div class="text-[0.55rem] text-slate-400">@avail</div>
-                                </button>
-                            }
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
-                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                    @onclick="() => WithdrawLocalCult(cultDef.Id)">
-                                Withdraw
-                            </button>
-                            <button class="flex-1 p-2 rounded-[10px] text-xs text-amber-100 font-medium transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
-                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                    @onclick="() => FightLocalCult(cultDef.Id)">
-                                Fight!
-                            </button>
-                        </div>
+                        <DeploySquadPanel CanDeploy="true"
+                                          DeployedSquad="battle.DeployedSquad"
+                                          FightLabel="Fight!"
+                                          OnDeployAgent="args => DeployLocalCult(cultDef.Id, args.Item1, args.Item2)"
+                                          OnWithdraw="() => WithdrawLocalCult(cultDef.Id)"
+                                          OnFight="() => FightLocalCult(cultDef.Id)" />
                     }
                     else if (battle.Phase == LocalCultBattlePhase.Fighting)
                     {
@@ -624,9 +591,9 @@
         StateHasChanged();
     }
 
-    private void DeployLocalCult(string cultId, AgentType type)
+    private void DeployLocalCult(string cultId, AgentType type, int count)
     {
-        Game.DeployLocalCultAgents(cultId, type, 1);
+        Game.DeployLocalCultAgents(cultId, type, count);
     }
 
     private void WithdrawLocalCult(string cultId)
