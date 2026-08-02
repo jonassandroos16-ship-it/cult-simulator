@@ -43,4 +43,5 @@ public static class GameBalance
 
     public const int AgentPoolBaseCap = 10;
     public const int BarracksAgentCapPerLevel = 5;
+    public const double TrainingCampProductionPerLevel = 0.5;
 }
