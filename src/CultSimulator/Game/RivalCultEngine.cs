@@ -374,13 +374,15 @@ public static class RivalCultEngine
                 battle.Phase = RivalBattlePhase.Victory;
                 battle.LastFaithReward = faithReward;
                 battle.VictoryAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                var controlledInsts = rival.ControlledInstitutions.ToList();
                 rival.Defeated = true;
                 rival.Status = RivalCultStatus.Dormant;
                 rival.Power = 0;
                 rival.ControlledInstitutions.Clear();
                 rival.TerritoryControl = 0;
 
-                foreach (var instId in rival.ControlledInstitutions.ToList())
+                foreach (var instId in controlledInsts)
                 {
                     var inst = sw.GetInstitution(instId);
                     if (inst != null && inst.Status == InstitutionStatus.Alerted)
@@ -397,7 +399,7 @@ public static class RivalCultEngine
             }
             else if (battle.PlayerHp <= 0)
             {
-                battle.Phase = RivalBattlePhase.Defeat;
+                battle.Phase = RivalBattlePhase.Deploy;
                 battle.PlayerHp = battle.PlayerMaxHp;
                 battle.RivalHp = battle.RivalMaxHp;
                 battle.DeployedSquad.Clear();
@@ -405,7 +407,7 @@ public static class RivalCultEngine
                 battle.RoundNumber = 0;
                 battle.Momentum = 0;
                 state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 20);
-                AppendLog(battle, $"DEFEAT! Your assault force was annihilated. Suspicion rises.");
+                AppendLog(battle, $"DEFEAT! Your assault force was annihilated. Suspicion rises. Regroup and try again.");
             }
         }
 
