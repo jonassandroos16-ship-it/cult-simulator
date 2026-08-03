@@ -87,7 +87,35 @@ public static class LocalCultBattleEngine
 
     public static (bool success, string message) ReinforceAgents(GameState state, string cultId, AgentType type, int count)
     {
-        return DeployAgents(state, cultId, type, count);
+        var sw = ShadowWarEngine.EnsureInitialized(state);
+        var battle = GetBattle(state, cultId);
+        if (battle == null || battle.Phase != LocalCultBattlePhase.Fighting)
+            return (false, "No active battle to reinforce.");
+
+        if (type == AgentType.Initiate)
+            return (false, "Cannot reinforce with Initiates mid-battle.");
+
+        sw.RecruitedAgents.TryGetValue(type, out int owned);
+        int alreadyDeployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
+        int availableToDeploy = owned - alreadyDeployed;
+        if (availableToDeploy < count)
+            return (false, $"Not enough {type} agents. Have {availableToDeploy} available, need {count}.");
+
+        if (type == AgentType.Mage)
+        {
+            int scholars = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Scholar)?.Count ?? 0;
+            int mages = alreadyDeployed;
+            if (scholars <= mages + count)
+                return (false, "Each Mage requires at least 1 Scholar in the squad.");
+        }
+
+        var slot = battle.DeployedSquad.FirstOrDefault(d => d.Type == type);
+        if (slot != null) slot.Count += count;
+        else battle.DeployedSquad.Add(new DeployedAgent { Type = type, Count = count });
+
+        sw.RecruitedAgents[type] = Math.Max(0, owned - count);
+        AppendLog(battle, $"Reinforced with {count} {type}.");
+        return (true, $"Reinforced with {count} {type}!");
     }
 
     public static (bool success, string message) StartBattle(GameState state, string cultId)
