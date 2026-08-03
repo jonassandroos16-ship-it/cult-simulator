@@ -109,7 +109,7 @@ public class GameService
         _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
     }
 
-    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); LocalCultBattleEngine.Tick(_state, delta); NotifyChanged(); }
+    private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); BattleEngine.Tick(_state, _locations, delta); LocalCultBattleEngine.Tick(_state, delta); RivalCultEngine.Tick(_state, _locations, delta); NotifyChanged(); }
     private void Tick() { GameEngine.TickAllCovens(_state, _locations); CheckConversionBattle(); NotifyChanged(); }
 
     private void TryEvent()
@@ -395,6 +395,24 @@ public class GameService
         _ = SaveAsync();
         NotifyChanged();
     }
+    public EnemyRecon? ConversionBattleRecon
+    {
+        get
+        {
+            var continent = ConversionBattleContinent;
+            if (continent == null) return null;
+            var rival = BattleData.RivalForContinent(continent);
+            if (rival == null) return null;
+            var battle = ConversionBattle;
+            if (battle == null) return null;
+            double scale = RivalCultEngine.ScaleFor(continent);
+            return BattleRoundEngine.BuildRecon(
+                rival.Name, rival.Icon, rival.Description,
+                battle.RivalMaxHp, rival.AgentStrength * scale,
+                rival.Archetype, scale, 20);
+        }
+    }
+
     public bool IsConversionActive => ConversionEngine.IsActive(_state);
     public ConversionStep? CurrentConversionStep => ConversionEngine.CurrentStep(_state, _conversions);
     public ConversionDef? ActiveConversion => _state.Conversion == null ? null : _conversions.Find(_state.Conversion.CovenId);
@@ -518,6 +536,47 @@ public class GameService
         var r = RivalCultEngine.StartRivalBattle(_state, rivalId);
         NotifyChanged();
         return r;
+    }
+
+    public RivalBattleState? GetRivalBattleState(string rivalId)
+    {
+        var rs = RivalCultEngine.EnsureInitialized(_state);
+        return rs.GetRivalBattle(rivalId);
+    }
+
+    public (bool success, string message) DeployRivalBattleAgents(string rivalId, AgentType type, int count)
+    {
+        var r = RivalCultEngine.DeployRivalBattleAgents(_state, rivalId, type, count);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) WithdrawRivalBattleAgents(string rivalId)
+    {
+        var r = RivalCultEngine.WithdrawRivalBattleAgents(_state, rivalId);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) ReinforceRivalBattleAgents(string rivalId, AgentType type, int count)
+    {
+        var r = RivalCultEngine.ReinforceRivalBattleAgents(_state, rivalId, type, count);
+        NotifyChanged();
+        return r;
+    }
+
+    public EnemyRecon? BuildRivalBattleRecon(string rivalId)
+    {
+        var rs = RivalCultEngine.EnsureInitialized(_state);
+        var battle = rs.GetRivalBattle(rivalId);
+        if (battle == null) return null;
+        var def = RivalCultData.Find(rivalId);
+        if (def == null) return null;
+        double scale = RivalCultEngine.ScaleFor(def.PreferredTerritoryId);
+        return BattleRoundEngine.BuildRecon(
+            def.Name, def.Icon, def.Description,
+            battle.RivalMaxHp, def.AgentStrength * 3.0 * scale,
+            def.Archetype, scale, 20);
     }
 
     public (bool success, string message) ReinforceLocalCultAgents(string cultId, AgentType type, int count)
