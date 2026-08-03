@@ -173,7 +173,12 @@ public static class GameEngine
         {
             double agentProd = ShadowWarEngine.AgentProductionPerSec(state.ShadowWar, state);
             int agentCap = ShadowWarEngine.AgentPoolCap(state);
-            double agentEffCap = agentCap - state.ShadowWar.DeployedAgents;
+            // AvailableAgents = TotalAgents - DeployedAgents - SpentAgents.
+            // Cap TotalAgents at cap + Deployed + Spent so AvailableAgents
+            // correctly maxes at cap. The old code used cap - Deployed, which
+            // double-subtracted Deployed and ignored Spent — so offline agent
+            // production never accumulated after spending on battle units.
+            double agentEffCap = agentCap + state.ShadowWar.DeployedAgents + state.ShadowWar.SpentAgents;
             double agentEff = Math.Min(elapsedSec, IdleCapSeconds(state.ActiveCoven));
             double agentGain = agentProd * agentEff;
             double before = state.ShadowWar.TotalAgents;
