@@ -67,6 +67,7 @@ public static class OccultEngine
         baseFaith *= GrandSacrifice.GlobalProductionMult(state);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
+        if (LocalCultEngine.AllOnCooldown(state, state.ActiveCovenId)) baseFaith *= GameBalance.AllCultsCooldownFaithMult;
         return baseFaith;
     }
 
@@ -149,6 +150,7 @@ public static class OccultEngine
         baseFaith *= GrandSacrifice.GlobalProductionMult(state);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
+        if (LocalCultEngine.AllOnCooldown(state, state.ActiveCovenId)) baseFaith *= GameBalance.AllCultsCooldownFaithMult;
         return baseFaith;
     }
 

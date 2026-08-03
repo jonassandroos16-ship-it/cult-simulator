@@ -9,7 +9,7 @@ public class GameService
     private readonly WorldLocationService _locations;
     private readonly ConversionDataService _conversions;
     private GameState _state;
-    private Timer? _tickTimer, _eventTimer, _occultTimer, _periodicSaveTimer, _localCultTimer;
+    private Timer? _tickTimer, _eventTimer, _occultTimer, _periodicSaveTimer;
     private bool _eventPending;
     private DateTime _lastOccultTick;
     private DateTime _lastSave = DateTime.UtcNow;
@@ -43,11 +43,6 @@ public class GameService
     public string? PendingLocalCultId { get; private set; }
     public bool LocalCultRewardPending => PendingLocalCultId != null;
 
-    public string? SpawnedLocalCultId { get; private set; }
-    public bool LocalCultSpawnPending => SpawnedLocalCultId != null;
-    public LocalCultDef? SpawnedLocalCultDef =>
-        SpawnedLocalCultId == null ? null : LocalCultData.Find(SpawnedLocalCultId);
-
     public GameService(IJSRuntime js, WorldLocationService locations, ConversionDataService conversions)
     {
         _js = js;
@@ -71,6 +66,7 @@ public class GameService
         LoadSucceeded = true;
         _locations.SyncFootholds(_state);
         EnsureHomeCoven();
+        LocalCultEngine.EnsureCultsForCoven(_state, _state.ActiveCovenId);
         ApplyOfflineIncome();
         RestorePendingFoothold();
         NotifyChanged();
@@ -100,13 +96,13 @@ public class GameService
 
     public void StartTimers()
     {
-        _tickTimer?.Dispose(); _eventTimer?.Dispose(); _occultTimer?.Dispose(); _periodicSaveTimer?.Dispose(); _localCultTimer?.Dispose();
+        _tickTimer?.Dispose(); _eventTimer?.Dispose(); _occultTimer?.Dispose(); _periodicSaveTimer?.Dispose();
         _tickTimer = new Timer(_ => Tick(), null, 1000, 1000);
         _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
         _lastOccultTick = DateTime.UtcNow;
         _occultTimer = new Timer(_ => OccultTick(), null, 100, 100);
         _periodicSaveTimer = new Timer(async _ => await SaveAsync(), null, 5000, 5000);
-        _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
+        LocalCultEngine.EnsureCultsForCoven(_state, _state.ActiveCovenId);
     }
 
     private void OccultTick() { var now = DateTime.UtcNow; var delta = (now - _lastOccultTick).TotalSeconds; _lastOccultTick = now; OccultEngine.Tick(_state, delta); BattleEngine.Tick(_state, _locations, delta); LocalCultBattleEngine.Tick(_state, delta); RivalCultEngine.TickRivalBattles(_state, _locations, delta); NotifyChanged(); }
@@ -131,22 +127,6 @@ public class GameService
         }
         _eventPending = true; NotifyChanged();
     }
-
-    private void TrySpawnLocalCult()
-    {
-        if (ConversionEngine.IsActive(_state)) return;
-        var before = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId).Count;
-        LocalCultEngine.SpawnOne(_state, _state.ActiveCovenId);
-        var after = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId);
-        if (after.Count > before)
-        {
-            var spawned = after[^1];
-            SpawnedLocalCultId = spawned.CultId;
-        }
-        NotifyChanged();
-    }
-
-    public void DismissLocalCultSpawn() { SpawnedLocalCultId = null; NotifyChanged(); }
 
     public double Preach() { var gained = GameEngine.Preach(_state); NotifyChanged(); return gained; }
     public void Recruit() { GameEngine.Recruit(_state.ActiveCoven); NotifyChanged(); }
@@ -231,7 +211,7 @@ public class GameService
         var favor = GrandSacrifice.PerformSacrifice(_state);
         ActiveEvent = null; _eventPending = false;
         ConvertedCovenName = null; PopupMessage = null; PopupTitle = null;
-        PendingFoothold = null; PendingLocalCultId = null; SpawnedLocalCultId = null;
+        PendingFoothold = null; PendingLocalCultId = null;
         _ = SaveAsync();
         NotifyChanged();
         return favor;
@@ -437,7 +417,10 @@ public class GameService
     public bool CanConvertLocalCult(string cultId)
     {
         var def = LocalCultData.Find(cultId);
-        return def != null && LocalCultEngine.CanConvert(_state, def);
+        if (def == null) return false;
+        var instance = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId).FirstOrDefault(i => i.CultId == cultId);
+        if (instance == null || !instance.IsCharged) return false;
+        return LocalCultEngine.CanConvert(_state, def);
     }
 
     public void RequestLocalCultConversion(string cultId)
@@ -490,7 +473,10 @@ public class GameService
     public bool CanStartLocalCultBattle(string cultId)
     {
         var def = LocalCultData.Find(cultId);
-        return def != null && LocalCultEngine.CanStartBattle(_state, def);
+        if (def == null) return false;
+        var instance = LocalCultEngine.ActiveForCoven(_state, _state.ActiveCovenId).FirstOrDefault(i => i.CultId == cultId);
+        if (instance == null || !instance.IsCharged) return false;
+        return LocalCultEngine.CanStartBattle(_state, def);
     }
 
     public LocalCultDef? PendingLocalCultDef =>
@@ -498,7 +484,7 @@ public class GameService
 
     public void TakeoverCoven(string covenId) { var loc = _locations.Find(covenId); if (loc == null || !CovenProgress.CanConvert(_state, loc)) return; CovenProgress.Takeover(_state, loc); ConvertedCovenName = loc.Name; CheckContinentCompletion(); NotifyChanged(); }
     public void DismissTakeover() { ConvertedCovenName = null; NotifyChanged(); }
-    public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
+    public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); LocalCultEngine.EnsureCultsForCoven(_state, covenId); NotifyChanged(); }
 
     public ShadowWarState ShadowWar => _state.ShadowWarOrInit;
     public bool ShadowWarVictory => false;
@@ -605,7 +591,7 @@ public class GameService
         return r;
     }
 
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflineAgents = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflineAgents = 0; OfflinePopupPending = false; PendingLocalCultId = null; PendingFoothold = null; LocalCultEngine.EnsureCultsForCoven(_state, _state.ActiveCovenId); await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
     {
