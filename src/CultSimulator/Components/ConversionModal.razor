@@ -300,6 +300,11 @@
 
     private double CalcConvDeployedStrength(List<DeployedAgent> squad)
     {
+        var sw = Game.State.ShadowWarOrInit;
+        var strengthMult = ShadowWarEngine.AgentStrength(sw, Game.State);
+        if (Game.State.Occult.ElixirWarStrengthMult > 1.0 && Game.State.Occult.ElixirTimer > 0)
+            strengthMult *= Game.State.Occult.ElixirWarStrengthMult;
+
         double attack = 0;
         foreach (var slot in squad)
         {
