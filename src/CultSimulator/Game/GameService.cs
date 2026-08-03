@@ -520,6 +520,94 @@ public class GameService
         return r;
     }
 
+    public RivalBattleState? GetRivalBattleState(string rivalId)
+    {
+        var rs = RivalCultEngine.EnsureInitialized(_state);
+        return rs.GetRivalBattle(rivalId);
+    }
+
+    public (bool success, string message) DeployRivalBattleAgents(string rivalId, AgentType type, int count)
+    {
+        var r = RivalCultEngine.DeployRivalBattleAgents(_state, rivalId, type, count);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) WithdrawRivalBattleAgents(string rivalId)
+    {
+        var r = RivalCultEngine.WithdrawRivalBattleAgents(_state, rivalId);
+        NotifyChanged();
+        return r;
+    }
+
+    public (bool success, string message) ReinforceRivalBattleAgents(string rivalId, AgentType type, int count)
+    {
+        var r = RivalCultEngine.ReinforceRivalBattleAgents(_state, rivalId, type, count);
+        NotifyChanged();
+        return r;
+    }
+
+    public EnemyRecon? BuildRivalBattleRecon(string rivalId)
+    {
+        var rs = RivalCultEngine.EnsureInitialized(_state);
+        var battle = rs.GetRivalBattle(rivalId);
+        if (battle == null) return null;
+        var def = RivalCultData.Find(rivalId);
+        if (def == null) return null;
+        double scale = RivalCultEngine.ScaleFor(def.PreferredTerritoryId);
+        return BattleRoundEngine.BuildRecon(
+            def.Name, def.Icon, def.Description,
+            battle.RivalMaxHp, def.AgentStrength * 3.0 * scale,
+            def.Archetype, scale, 20);
+    }
+
+    public EnemyRecon? ConversionBattleRecon
+    {
+        get
+        {
+            var continent = ConversionBattleContinent;
+            if (continent == null) return null;
+            var rival = BattleData.RivalForContinent(continent);
+            if (rival == null) return null;
+            var battle = ConversionBattle;
+            if (battle == null) return null;
+            double scale = RivalCultEngine.ScaleFor(continent);
+            return BattleRoundEngine.BuildRecon(
+                rival.Name, rival.Icon, rival.Description,
+                battle.RivalMaxHp, rival.AgentStrength * scale,
+                rival.Archetype, scale, 20);
+        }
+    }
+
+    public EnemyRecon? BuildTheaterRecon(string continentId)
+    {
+        var battle = GetBattle(continentId);
+        if (battle == null) return null;
+        var rival = BattleData.RivalForContinent(continentId);
+        if (rival == null) return null;
+        double scale = RivalCultEngine.ScaleFor(continentId);
+        return BattleRoundEngine.BuildRecon(
+            rival.Name, rival.Icon, rival.Description,
+            battle.RivalMaxHp, rival.AgentStrength * scale,
+            rival.Archetype, scale, 20);
+    }
+
+    public EnemyRecon? BuildLocalCultRecon(string cultId)
+    {
+        var battle = GetLocalCultBattle(cultId);
+        if (battle == null) return null;
+        var def = LocalCultData.Find(cultId);
+        if (def == null) return null;
+        double scale = 0.5;
+        double rivalHp = battle.RivalMaxHp;
+        double rivalAttack = def.FollowersRequired * 0.01;
+        var archetype = battle.EnemyArchetype ?? RivalCultArchetype.TheOrderOfTheDawn;
+        return BattleRoundEngine.BuildRecon(
+            def.Name, "🗡️", def.Description,
+            rivalHp, rivalAttack,
+            archetype, scale, def.FollowersRequired / 10.0);
+    }
+
     public (bool success, string message) ReinforceLocalCultAgents(string cultId, AgentType type, int count)
     {
         var r = LocalCultBattleEngine.ReinforceAgents(_state, cultId, type, count);

@@ -278,6 +278,11 @@
 
                     @if (battle.Phase == BattlePhase.Deploy)
                     {
+                        @{ var theaterRecon = BuildTheaterRecon(theater); }
+                        @if (theaterRecon != null)
+                        {
+                            <EnemyReconCard Recon="theaterRecon" />
+                        }
                         <div class="grid grid-cols-3 gap-2 mb-3">
                             @foreach (var agentDef in BattleData.AgentTypes)
                             {
@@ -306,7 +311,14 @@
                     }
                     else if (battle.Phase == BattlePhase.Fighting)
                     {
-                        <div class="text-center text-xs text-rose-300 py-2">Battle in progress...</div>
+                        <BattleView IsFighting="true"
+                                    RecentRounds="battle.RecentRounds"
+                                    EnemyUnits="battle.EnemyUnits"
+                                    Momentum="battle.Momentum"
+                                    PlayerHp="battle.PlayerHp"
+                                    PlayerMaxHp="battle.PlayerMaxHp"
+                                    RivalHp="battle.RivalHp"
+                                    RivalMaxHp="battle.RivalMaxHp" />
                     }
                     else if (battle.Phase == BattlePhase.Cooldown)
                     {
@@ -337,6 +349,98 @@
     </div>
 </div>
 
+<!-- Step 3: Rival Cult Bosses -->
+@{
+    var rivalSystem = Game.State.RivalCultsOrInit;
+    var activeRivals = rivalSystem.Rivals.Where(r => r.Status != RivalCultStatus.Dormant && !r.Defeated).ToList();
+}
+@if (activeRivals.Count > 0)
+{
+<div class="panel glass-panel rounded-[20px] p-5">
+    <div class="flex items-center gap-2 mb-1">
+        <span class="deploy-step-badge">Step 3</span>
+        <h2 class="panel-title">Rival Cult Bosses</h2>
+    </div>
+    <p class="text-xs text-slate-400 mb-4 leading-relaxed">These are the final bosses for each continent. Defeat them to complete your conquest. They are much stronger than regular battle theatre rivals.</p>
+
+    <div class="flex flex-col gap-3">
+        @foreach (var rival in activeRivals)
+        {
+            var def = RivalCultData.Find(rival.Id);
+            if (def == null) continue;
+            var rb = Game.GetRivalBattleState(rival.Id);
+
+            <div class="p-4 rounded-[16px]" style="background: rgba(15,10,36,0.5); border: 1px solid rgba(239,68,68,0.3);">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg">@def.Icon</span>
+                        <span class="font-display text-sm font-semibold text-rose-200">@def.Name</span>
+                    </div>
+                    <span class="text-[0.6rem] px-2 py-0.5 rounded-full @(rb?.Phase == RivalBattlePhase.Fighting ? "bg-rose-500/20 text-rose-300" : rb?.Phase == RivalBattlePhase.Deploy ? "bg-amber-500/20 text-amber-300" : "bg-slate-500/20 text-slate-300")">@(rb?.Phase == RivalBattlePhase.Deploy ? "Ready" : rb?.Phase == RivalBattlePhase.Fighting ? "Fighting" : rb?.Phase == RivalBattlePhase.Victory ? "Defeated" : "Dormant")</span>
+                </div>
+
+                @if (rb != null && rb.Phase == RivalBattlePhase.Deploy)
+                {
+                    @{ var rivalRecon = Game.BuildRivalBattleRecon(rival.Id); }
+                    @if (rivalRecon != null)
+                    {
+                        <EnemyReconCard Recon="rivalRecon" />
+                    }
+                    <div class="grid grid-cols-3 gap-2 mb-3">
+                        @foreach (var agentDef in BattleData.AgentTypes)
+                        {
+                            sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
+                            <button class="battle-agent-card p-2 rounded-[8px] text-center transition-all hover:-translate-y-0.5"
+                                    style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);"
+                                    @onclick="() => Game.DeployRivalBattleAgents(rival.Id, agentDef.Type, 1)">
+                                <div class="text-lg mb-0.5">@agentDef.Icon</div>
+                                <div class="text-[0.6rem] text-amber-200">@agentDef.Name</div>
+                                <div class="text-[0.55rem] text-slate-400">@avail available</div>
+                            </button>
+                        }
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
+                                style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
+                                @onclick="() => Game.WithdrawRivalBattleAgents(rival.Id)">
+                            Withdraw
+                        </button>
+                        <button class="flex-1 p-2 rounded-[10px] text-xs text-rose-100 font-medium transition-all hover:bg-rose-500/10 hover:border-rose-500/30"
+                                style="background: rgba(127,29,29,0.4); border: 1px solid rgba(239,68,68,0.3);"
+                                @onclick="() => Game.StartRivalBattle(rival.Id)">
+                            Fight Boss
+                        </button>
+                    </div>
+                }
+                else if (rb != null && rb.Phase == RivalBattlePhase.Fighting)
+                {
+                    <BattleView IsFighting="true"
+                                RecentRounds="rb.RecentRounds"
+                                EnemyUnits="rb.EnemyUnits"
+                                Momentum="rb.Momentum"
+                                PlayerHp="rb.PlayerHp"
+                                PlayerMaxHp="rb.PlayerMaxHp"
+                                RivalHp="rb.RivalHp"
+                                RivalMaxHp="rb.RivalMaxHp" />
+                }
+                else if (rb != null && rb.Phase == RivalBattlePhase.Victory)
+                {
+                    <div class="p-4 rounded-[14px] mb-3 text-center animate-fade-in" style="background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25);">
+                        <div class="text-2xl mb-2">👑</div>
+                        <div class="text-sm text-emerald-300 font-medium mb-1">Boss Defeated!</div>
+                        <div class="text-[0.65rem] text-amber-200">@def.Name has been conquered.</div>
+                    </div>
+                }
+                else
+                {
+                    <div class="text-xs text-slate-500 text-center py-2">This rival is dormant. Gain more influence to provoke them.</div>
+                }
+            </div>
+        }
+    </div>
+</div>
+}
+
 
 @code {
     [Parameter] public EventCallback OnViewMap { get; set; }
@@ -344,6 +448,19 @@
     private void StateChanged() => StateHasChanged();
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
+
+    private EnemyRecon? BuildTheaterRecon(BattleTheaterDef theater)
+    {
+        var battle = Game.GetBattle(theater.ContinentId);
+        if (battle == null) return null;
+        var rival = BattleData.RivalForContinent(theater.ContinentId);
+        if (rival == null) return null;
+        double scale = RivalCultEngine.ScaleFor(theater.ContinentId);
+        return BattleRoundEngine.BuildRecon(
+            rival.Name, rival.Icon, rival.Description,
+            battle.RivalMaxHp, rival.AgentStrength * scale,
+            rival.Archetype, scale, 20);
+    }
 
     private void OnRecruit(AgentType type, int count)
     {
