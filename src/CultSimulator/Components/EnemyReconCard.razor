@@ -47,6 +47,24 @@
         <div class="text-[0.6rem] text-amber-200 leading-4 p-2 rounded-[8px]" style="background: rgba(120,53,15,0.2);">
             @Recon.Recommendation
         </div>
+
+        @if (Recon.Composition.Count > 0)
+        {
+            var totalEnemyAttack = Recon.Composition.Where(u => !u.IsSupport).Sum(u => u.Attack * u.Count);
+            var totalEnemyArmor = Recon.Composition.Sum(u => u.Defense * u.Count);
+            <div class="grid grid-cols-2 gap-1.5 mt-2">
+                <div class="p-1.5 rounded-[8px] text-center" style="background: rgba(15,10,36,0.4); border: 1px solid rgba(239,68,68,0.15);">
+                    <div class="text-[0.5rem] text-slate-400 uppercase">Enemy Total ATK</div>
+                    <div class="text-xs text-rose-300 font-medium">@totalEnemyAttack:F0</div>
+                    <div class="text-[0.5rem] text-slate-500 mt-0.5">Bring DEF ≥ this to survive</div>
+                </div>
+                <div class="p-1.5 rounded-[8px] text-center" style="background: rgba(15,10,36,0.4); border: 1px solid rgba(34,211,238,0.15);">
+                    <div class="text-[0.5rem] text-slate-400 uppercase">Enemy Total DEF</div>
+                    <div class="text-xs text-cyan-300 font-medium">@totalEnemyArmor:F0</div>
+                    <div class="text-[0.5rem] text-slate-500 mt-0.5">Bring ATK ≥ this to win</div>
+                </div>
+            </div>
+        }
     </div>
 }
 
