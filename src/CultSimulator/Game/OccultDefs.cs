@@ -11,7 +11,7 @@ public record TechDef(
 
 public record MinionTraitDef(
     string Id, string Name, string Description,
-    double RaidPowerMult, double SuspicionMult, double FaithMult);
+    double RaidPowerMult, double TapMult, double FaithMult);
 
 public record CauldronRecipeDef(
     CauldronRecipeId Id, string Name, string Icon,
@@ -21,7 +21,7 @@ public record CauldronRecipeDef(
 public record MapNodeDef(
     string Id, string Name, string Icon,
     int FaithCost, double ArmyPowerRequired,
-    double FaithPerSec, double SuspicionPerSec,
+    double FaithPerSec,
     double Latitude, double Longitude,
     string LocationName,
     Dictionary<MaterialKind, int>? Materials,
