@@ -77,11 +77,6 @@
                     }
                     else if (battle.Phase == LocalCultBattlePhase.Deploy)
                     {
-                        @{ var localRecon = BuildLocalCultRecon(cultDef); }
-                        @if (localRecon != null)
-                        {
-                            <EnemyReconCard Recon="localRecon" />
-                        }
                         <div class="grid grid-cols-2 gap-2 mb-3">
                             <div>
                                 <div class="text-slate-400 text-[0.65rem] mb-0.5">Your HP</div>
@@ -626,20 +621,6 @@
         foreach (var def in BattleData.AgentTypes)
             dict[def.Type] = BattleEngine.MaxAgentsForType(sw, Game.State, def.Type);
         return dict;
-    }
-
-    private EnemyRecon? BuildLocalCultRecon(LocalCultDef cultDef)
-    {
-        var battle = Game.GetLocalCultBattle(cultDef.Id);
-        if (battle == null) return null;
-        double scale = 0.5; // Local cults are easiest
-        double rivalHp = battle.RivalMaxHp;
-        double rivalAttack = cultDef.FollowersRequired * 0.01;
-        var archetype = battle.EnemyArchetype ?? RivalCultArchetype.TheOrderOfTheDawn;
-        return BattleRoundEngine.BuildRecon(
-            cultDef.Name, "🗡️", cultDef.Description,
-            rivalHp, rivalAttack,
-            archetype, scale, cultDef.FollowersRequired / 10.0);
     }
 
     private EventCallback<AgentType> OnRecruitFromDeploy => EventCallback.Factory.Create<AgentType>(this, type => Game.RecruitAgent(type, 1));
