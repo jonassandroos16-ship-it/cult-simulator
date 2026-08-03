@@ -283,6 +283,8 @@ public class GameService
     public string? ApplyConversionChoice(ConversionChoice choice)
     {
         var outcome = ConversionEngine.ApplyChoice(_state, _conversions, choice);
+        if (_state.Conversion != null && _state.Conversion.BattlePhase && !_state.Conversion.Completed)
+            StartConversionBattle();
         NotifyChanged();
         return outcome;
     }
@@ -317,6 +319,13 @@ public class GameService
             battle.RivalHp = battle.RivalMaxHp;
             battle.PlayerHp = battle.PlayerMaxHp;
             battle.DeployedSquad.Clear();
+            var rivalDef = BattleData.RivalForContinent(continent);
+            if (rivalDef != null)
+            {
+                double scale = RivalCultEngine.ScaleFor(continent);
+                battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(rivalDef.Archetype, scale, 20);
+                battle.EnemyArchetype = rivalDef.Archetype;
+            }
         }
         NotifyChanged();
     }
@@ -341,7 +350,7 @@ public class GameService
         var continent = ConversionBattleContinent;
         if (continent == null) return;
         var battle = _state.BattleSystem?.GetBattle(continent);
-        if (battle == null)
+        if (battle == null || battle.Phase == BattlePhase.NoThreat)
         {
             StartConversionBattle();
             battle = _state.BattleSystem?.GetBattle(continent);
