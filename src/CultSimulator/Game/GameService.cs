@@ -225,7 +225,17 @@ public class GameService
     public void ActivateDarkVigil() { OccultEngine.ActivateDarkVigil(_state.Occult); NotifyChanged(); }
     public void ActivateWhisperChoir() { OccultEngine.ActivateWhisperChoir(_state.Occult); NotifyChanged(); }
     public void ActivateCovenBlessing() { OccultEngine.ActivateCovenBlessing(_state.Occult); NotifyChanged(); }
-    public double PerformGrandSacrifice() { var favor = GrandSacrifice.PerformSacrifice(_state); NotifyChanged(); return favor; }
+
+    public double PerformGrandSacrifice()
+    {
+        var favor = GrandSacrifice.PerformSacrifice(_state);
+        ActiveEvent = null; _eventPending = false;
+        ConvertedCovenName = null; PopupMessage = null; PopupTitle = null;
+        PendingFoothold = null; PendingLocalCultId = null; SpawnedLocalCultId = null;
+        _ = SaveAsync();
+        NotifyChanged();
+        return favor;
+    }
 
     public void ChooseEvent(EventChoice choice)
     {
@@ -458,7 +468,6 @@ public class GameService
 
     public void CancelLocalCultReward() { PendingLocalCultId = null; NotifyChanged(); }
 
-    // ── Local Cult Battle System ──
     public LocalCultBattleState? GetLocalCultBattle(string cultId) => LocalCultBattleEngine.GetBattle(_state, cultId);
     public (bool success, string message) DeployLocalCultAgents(string cultId, AgentType type, int count)
     {
