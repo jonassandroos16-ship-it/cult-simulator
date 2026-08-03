@@ -15,7 +15,6 @@ const ASSETS = [
   BASE + "css/tabs.css",
   BASE + "css/worldmap.css",
   BASE + "css/rankup.css",
-  BASE + "css/shadowwar.css",
   BASE + "css/themes.css",
   BASE + "css/tailwind.css",
   BASE + "js/worldmap.js",

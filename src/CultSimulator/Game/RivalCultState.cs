@@ -7,8 +7,6 @@ public class RivalCultState
     public string Id { get; set; } = "";
     public RivalCultStatus Status { get; set; } = RivalCultStatus.Dormant;
     public double Power { get; set; }
-    public double TerritoryControl { get; set; }
-    public List<string> ControlledInstitutions { get; set; } = new();
     public long NextActionAt { get; set; }
     public bool Defeated { get; set; }
 }

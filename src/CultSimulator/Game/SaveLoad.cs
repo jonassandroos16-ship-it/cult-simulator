@@ -90,11 +90,6 @@ public static class SaveLoad
             state.LocalCultBattles ??= new List<LocalCultBattleState>();
             state.RivalCults ??= RivalCultEngine.CreateInitialState();
             state.RivalCults.RivalBattles ??= new List<RivalBattleState>();
-            if (state.RivalCults.Rivals != null)
-            {
-                foreach (var rival in state.RivalCults.Rivals)
-                    rival.ControlledInstitutions ??= new List<string>();
-            }
         }
 
         state.SaveVersion = CurrentVersion;
@@ -121,14 +116,11 @@ public static class SaveLoad
             coven.Occult.LeyLines ??= new List<string[]>();
         }
         state.ShadowWar ??= ShadowWarEngine.CreateInitialState();
-        state.ShadowWar.Institutions ??= new List<InstitutionState>();
         state.ShadowWar.RecruitedAgents ??= new Dictionary<AgentType, int>();
         state.BattleSystem ??= BattleEngine.CreateInitialState();
         state.BattleSystem.Battles ??= new List<BattleState>();
         state.RivalCults ??= RivalCultEngine.CreateInitialState();
         state.RivalCults.Rivals ??= new List<RivalCultState>();
         state.RivalCults.RivalBattles ??= new List<RivalBattleState>();
-        foreach (var rival in state.RivalCults.Rivals)
-            rival.ControlledInstitutions ??= new List<string>();
     }
 }
