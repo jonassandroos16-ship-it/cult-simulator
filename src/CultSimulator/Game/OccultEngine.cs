@@ -33,7 +33,6 @@ public static class OccultEngine
     public static bool CanHireInitiate(GameState state) => state.ActiveCoven.Faith >= InitiateHireCost(state) && state.Occult.Initiates < CultistHierarchy.InitiateCap(state.Occult, state.ActiveCoven);
     public static bool HireInitiate(GameState state) { if (!CanHireInitiate(state)) return false; state.ActiveCoven.Faith -= InitiateHireCost(state); state.Occult.Initiates++; return true; }
 
-    // Legacy aliases so existing callers compile
     public static int AcolyteHireCost(GameState state) => InitiateHireCost(state);
     public static bool CanHireAcolyte(GameState state) => CanHireInitiate(state);
     public static bool HireAcolyte(GameState state) => HireInitiate(state);
@@ -65,6 +64,7 @@ public static class OccultEngine
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Scholar) * OccultBalance.ScholarFaithPerSec;
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Infiltrator) * OccultBalance.InfiltratorFaithPerSec;
         baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult;
+        baseFaith *= GrandSacrifice.GlobalProductionMult(state);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
         return baseFaith;
@@ -146,6 +146,7 @@ public static class OccultEngine
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Scholar) * OccultBalance.ScholarFaithPerSec;
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Infiltrator) * OccultBalance.InfiltratorFaithPerSec;
         baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult;
+        baseFaith *= GrandSacrifice.GlobalProductionMult(state);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
         return baseFaith;

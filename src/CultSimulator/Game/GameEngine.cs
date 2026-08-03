@@ -70,10 +70,17 @@ public static class GameEngine
         return (faith, gold);
     }
 
+    public static (double faith, double gold) TickIncome(CovenState s, GameState state)
+    {
+        var (faith, gold) = TickIncome(s);
+        double globalMult = GrandSacrifice.GlobalProductionMult(state);
+        return (faith * globalMult, gold * globalMult);
+    }
+
     public static (double faith, double gold) TotalTickIncome(GameState state)
     {
         double faith = 0, gold = 0;
-        foreach (var coven in state.Covens) { if (!coven.TakenOver) continue; var (f, g) = TickIncome(coven); faith += f; gold += g; }
+        foreach (var coven in state.Covens) { if (!coven.TakenOver) continue; var (f, g) = TickIncome(coven, state); faith += f; gold += g; }
         return (faith, gold);
     }
 
@@ -113,7 +120,7 @@ public static class GameEngine
         foreach (var coven in state.Covens)
         {
             if (!coven.TakenOver) continue;
-            var (faith, gold) = TickIncome(coven);
+            var (faith, gold) = TickIncome(coven, state);
             coven.Faith += faith; coven.Gold += gold;
         }
         OccultEngine.Tick(state, 1.0);
@@ -122,12 +129,6 @@ public static class GameEngine
         BattleEngine.Tick(state, locations, 1.0);
     }
 
-    /// <summary>
-    /// Copies BaseMultiplier from each coven's WorldLocationDef into its
-    /// CovenState. Called during ticks so newly-converted covens pick up
-    /// their multiplier automatically. Safe to call every tick — it's a
-    /// simple field copy that only changes when a coven is first converted.
-    /// </summary>
     public static void SyncBaseMultipliers(GameState state, WorldLocationService locations)
     {
         foreach (var coven in state.Covens)
@@ -148,7 +149,7 @@ public static class GameEngine
         foreach (var coven in state.Covens)
         {
             if (!coven.TakenOver) continue;
-            var (fps, gps) = TickIncome(coven);
+            var (fps, gps) = TickIncome(coven, state);
             double cap = IdleCapSeconds(coven);
             double eff = Math.Min(elapsedSec, cap);
             double f = fps * eff; double g = gps * eff;
@@ -173,11 +174,6 @@ public static class GameEngine
         {
             double agentProd = ShadowWarEngine.AgentProductionPerSec(state.ShadowWar, state);
             int agentCap = ShadowWarEngine.AgentPoolCap(state);
-            // AvailableAgents = TotalAgents - DeployedAgents - SpentAgents.
-            // Cap TotalAgents at cap + Deployed + Spent so AvailableAgents
-            // correctly maxes at cap. The old code used cap - Deployed, which
-            // double-subtracted Deployed and ignored Spent — so offline agent
-            // production never accumulated after spending on battle units.
             double agentEffCap = agentCap + state.ShadowWar.DeployedAgents + state.ShadowWar.SpentAgents;
             double agentEff = Math.Min(elapsedSec, IdleCapSeconds(state.ActiveCoven));
             double agentGain = agentProd * agentEff;
@@ -218,14 +214,14 @@ public static class GameEngine
 
     public static GameState InitialState() => new() { CultName = "", StoryShown = false, ActiveCovenId = "skanor", Covens = new List<CovenState> { new CovenState { Id = "skanor", TakenOver = true, BaseMultiplier = 1.0, Occult = new OccultState() } }, ShadowWar = ShadowWarEngine.CreateInitialState(), StartedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(), LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
 
-    public static double FaithMultiplier(GameState s) => FaithMultiplier(s.ActiveCoven);
+    public static double Faith_multiplier(GameState s) => FaithMultiplier(s.ActiveCoven);
     public static double GoldMultiplier(GameState s) => GoldMultiplier(s.ActiveCoven);
     public static int RecruitCostFor(GameState s) => RecruitCostFor(s.ActiveCoven);
     public static bool CanRecruit(GameState s) => CanRecruit(s.ActiveCoven);
     public static bool UpgradeUnlocked(GameState s, UpgradeDef def) => UpgradeUnlocked(s.ActiveCoven, def);
     public static bool CanBuyUpgrade(GameState s, UpgradeDef def) => CanBuyUpgrade(s.ActiveCoven, def, s);
     public static bool CanAfford(GameState s, int faithCost, int goldCost) => CanAfford(s.ActiveCoven, faithCost, goldCost);
-    public static (double faith, double gold) TickIncome(GameState s) => TickIncome(s.ActiveCoven);
+    public static (double faith, double gold) TickIncome(GameState s) => TickIncome(s.ActiveCoven, s);
     public static double Preach(GameState s) { s.ActiveCoven.PreachCount++; var gained = PreachMultiplier(s); s.ActiveCoven.Faith += gained; return gained; }
     public static void Recruit(GameState s) => Recruit(s.ActiveCoven);
     public static int RecruitMultiple(GameState s, int max) => RecruitMultiple(s.ActiveCoven, max);
