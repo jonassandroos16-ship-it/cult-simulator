@@ -180,19 +180,31 @@ public static class BattleEngine
             .ToList();
     }
 
-    public static int MaxMagesPerBattle(GameState state) =>
-        state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar) + 1;
+    public static int MaxMagesPerBattle(GameState state)
+    {
+        var o = state.Occult;
+        return o.Minions.Count(m => m.Role == PromotedRole.Scholar)
+             + o.HighCouncil.Count(c => c.OriginalRole == PromotedRole.Scholar)
+             + 1;
+    }
 
-    public static int MaxAgentsForType(ShadowWarState sw, GameState state, AgentType type) =>
-        type switch
+    public static int MaxAgentsForType(ShadowWarState sw, GameState state, AgentType type)
+    {
+        var o = state.Occult;
+        return type switch
         {
             AgentType.Initiate => (int)sw.AvailableAgents,
-            AgentType.Zealot => state.Occult.Minions.Count(m => m.Role == PromotedRole.Zealot),
-            AgentType.Infiltrator => state.Occult.Minions.Count(m => m.Role == PromotedRole.Infiltrator),
-            AgentType.Scholar => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
-            AgentType.Mage => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
+            AgentType.Zealot => o.Minions.Count(m => m.Role == PromotedRole.Zealot)
+                + o.HighCouncil.Count(c => c.OriginalRole == PromotedRole.Zealot),
+            AgentType.Infiltrator => o.Minions.Count(m => m.Role == PromotedRole.Infiltrator)
+                + o.HighCouncil.Count(c => c.OriginalRole == PromotedRole.Infiltrator),
+            AgentType.Scholar => o.Minions.Count(m => m.Role == PromotedRole.Scholar)
+                + o.HighCouncil.Count(c => c.OriginalRole == PromotedRole.Scholar),
+            AgentType.Mage => o.Minions.Count(m => m.Role == PromotedRole.Scholar)
+                + o.HighCouncil.Count(c => c.OriginalRole == PromotedRole.Scholar),
             _ => 0
         };
+    }
 
     public static void Tick(GameState state, WorldLocationService locations, double deltaSec)
     {
