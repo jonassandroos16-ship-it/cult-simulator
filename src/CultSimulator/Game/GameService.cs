@@ -105,7 +105,7 @@ public class GameService
         _eventTimer = new Timer(_ => TryEvent(), null, GameBalance.EventIntervalSeconds * 1000, GameBalance.EventIntervalSeconds * 1000);
         _lastOccultTick = DateTime.UtcNow;
         _occultTimer = new Timer(_ => OccultTick(), null, 100, 100);
-        _periodicSaveTimer = new Timer(async _ => await SaveAsync(), null, 5000, 5000);
+        _periodicSaveTimer = new Timer(async _ => await SaveAsync(), null, 10000, 10000);
         _localCultTimer = new Timer(_ => TrySpawnLocalCult(), null, GameBalance.LocalCultSpawnIntervalSeconds * 1000, GameBalance.LocalCultSpawnIntervalSeconds * 1000);
     }
 
@@ -237,7 +237,7 @@ public class GameService
 
     public void DismissPopup() { PopupMessage = null; PopupTitle = null; NotifyChanged(); }
     private static void Clamp(CovenState c) { if (c.Faith < 0) c.Faith = 0; if (c.Gold < 0) c.Gold = 0; if (c.Followers < 0) c.Followers = 0; }
-    public void ConfirmName(string name) { _state.CultName = name.Trim(); NotifyChanged(); }
+    public void ConfirmName(string name) { _state.CultName = name.Trim(); LoadSucceeded = true; StartTimers(); NotifyChanged(); }
     public void MarkStoryShown() { _state.StoryShown = true; NotifyChanged(); }
 
     public bool CanConvert(string covenId)
@@ -527,7 +527,7 @@ public class GameService
         return r;
     }
 
-    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflineAgents = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; await SaveAsync(); NotifyChanged(); }
+    public async Task ResetAsync() { _state = GameEngine.InitialState(); ActiveEvent = null; _eventPending = false; ConvertedCovenName = null; PopupMessage = null; PopupTitle = null; OfflineFaith = 0; OfflineGold = 0; OfflineSeconds = 0; OfflineLostFaith = 0; OfflineLostGold = 0; OfflineAgents = 0; OfflinePopupPending = false; PendingLocalCultId = null; SpawnedLocalCultId = null; PendingFoothold = null; LoadSucceeded = true; await SaveAsync(); NotifyChanged(); }
 
     private void NotifyChanged()
     {
@@ -546,20 +546,32 @@ public class GameService
         catch { }
     }
 
+    public async Task SaveOnExit()
+    {
+        await SaveAsync();
+    }
+
     public async Task SaveAsync()
     {
+        if (!LoadSucceeded && string.IsNullOrWhiteSpace(_state.CultName))
+            return;
+
         await _saveLock.WaitAsync();
         try
         {
             _state.LastSavedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             var json = SaveLoad.SaveGame(_state);
+
+            if (!SaveLoad.IsValidSave(json))
+                return;
+
             try
             {
                 var prev = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.SaveKey);
-                if (!string.IsNullOrWhiteSpace(prev))
+                if (!string.IsNullOrWhiteSpace(prev) && !SaveLoad.IsCorrupted(prev))
                 {
                     var prevBackup = await _js.InvokeAsync<string>("localStorage.getItem", GameBalance.BackupSaveKey);
-                    if (!string.IsNullOrWhiteSpace(prevBackup))
+                    if (!string.IsNullOrWhiteSpace(prevBackup) && !SaveLoad.IsCorrupted(prevBackup))
                         await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey2, prevBackup);
                     await _js.InvokeVoidAsync("localStorage.setItem", GameBalance.BackupSaveKey, prev);
                 }

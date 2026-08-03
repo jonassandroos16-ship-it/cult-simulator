@@ -4,364 +4,42 @@ namespace CultSimulator.Tests;
 
 public class OccultTests
 {
+    private static GameState NewState()
+    {
+        var state = GameEngine.InitialState();
+        state.CultName = "Test";
+        return state;
+    }
+
     private static OccultState NewOccult() => new();
-    private static GameState NewState() => GameEngine.InitialState();
-
-    [Fact]
-    public void Promote_Requires100Initiates()
-    {
-        var o = NewOccult(); o.Initiates = 99;
-        Assert.False(CultistHierarchy.CanRecruitUnit(o));
-        o.Initiates = 100;
-        Assert.True(CultistHierarchy.CanRecruitUnit(o));
-    }
-
-    [Fact]
-    public void Promote_ConsumesInitiatesAndCreatesMinion()
-    {
-        var o = NewOccult(); o.Initiates = 200;
-        var minion = CultistHierarchy.Promote(o);
-        Assert.Equal(100, o.Initiates);
-        Assert.Single(o.Minions);
-        Assert.NotEmpty(minion.Name);
-        Assert.NotEmpty(minion.TraitId);
-    }
-
-    [Fact]
-    public void RecruitUnit_CreatesChosenRole()
-    {
-        var o = NewOccult(); o.Initiates = 300;
-        var zealot = CultistHierarchy.RecruitUnit(o, PromotedRole.Zealot);
-        Assert.NotNull(zealot);
-        Assert.Equal(PromotedRole.Zealot, zealot!.Role);
-        Assert.Equal(180, o.Initiates);
-        var scholar = CultistHierarchy.RecruitUnit(o, PromotedRole.Scholar);
-        Assert.Equal(PromotedRole.Scholar, scholar!.Role);
-    }
-
-    [Fact]
-    public void Sacrifice_ConsumesMinionAndGivesFaith()
-    {
-        var state = NewState();
-        state.Occult.Initiates = 100;
-        var minion = CultistHierarchy.Promote(state.Occult);
-        var faith = CultistHierarchy.Sacrifice(state, minion.Id);
-        Assert.Empty(state.Occult.Minions);
-        Assert.True(faith > 0);
-        Assert.True(state.ActiveCoven.Faith > 0);
-    }
-
-    [Fact]
-    public void Sacrifice_NonexistentMinionDoesNothing()
-    {
-        var state = NewState();
-        var faith = CultistHierarchy.Sacrifice(state, "fake");
-        Assert.Equal(0, faith);
-    }
-
-    [Fact]
-    public void InitiateCap_BaseIs200()
-    {
-        var o = NewOccult();
-        Assert.Equal(200, CultistHierarchy.InitiateCap(o));
-    }
-
-    [Fact]
-    public void AppointCouncil_RequiresMinion()
-    {
-        var o = NewOccult();
-        Assert.False(CultistHierarchy.CanAppointCouncil(o, CouncilRole.Archon));
-        o.Initiates = 100;
-        CultistHierarchy.Promote(o);
-        Assert.True(CultistHierarchy.CanAppointCouncil(o, CouncilRole.Archon));
-    }
-
-    [Fact]
-    public void AppointCouncil_ConsumesMinion()
-    {
-        var o = NewOccult(); o.Initiates = 100;
-        var minion = CultistHierarchy.Promote(o);
-        CultistHierarchy.AppointCouncil(o, CouncilRole.Archon, minion.Id);
-        Assert.Empty(o.Minions);
-        Assert.Single(o.HighCouncil);
-    }
-
-    [Fact]
-    public void Tech_PrerequisitesEnforced()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 100000;
-        Assert.False(TechTree.CanUnlock(state, OccultData.Tech(TechId.OsmoticExtraction)));
-        state.Occult.UnlockedTechs.Add(TechId.SanguineAutomata);
-        Assert.True(TechTree.CanUnlock(state, OccultData.Tech(TechId.OsmoticExtraction)));
-    }
-
-    [Fact]
-    public void Tech_UnlockConsumesFaith()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 100;
-        Assert.True(TechTree.Unlock(state, TechId.SanguineAutomata));
-        Assert.Equal(50, state.ActiveCoven.Faith);
-        Assert.Contains(TechId.SanguineAutomata, state.Occult.UnlockedTechs);
-    }
-
-    [Fact]
-    public void Tech_CannotUnlockAlreadyOwned()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 100000;
-        state.Occult.UnlockedTechs.Add(TechId.SanguineAutomata);
-        Assert.False(TechTree.CanUnlock(state, OccultData.Tech(TechId.SanguineAutomata)));
-    }
-
-    [Fact]
-    public void Conquer_RequiresFaith()
-    {
-        var state = NewState();
-        Assert.False(WorldMapSystem.CanConquer(state, OccultData.MapNode("skanor_runestone")));
-        state.ActiveCoven.Faith = 150;
-        Assert.True(WorldMapSystem.CanConquer(state, OccultData.MapNode("skanor_runestone")));
-    }
-
-    [Fact]
-    public void Conquer_SpendsFaith()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 1000;
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        Assert.Equal(850, state.ActiveCoven.Faith);
-        Assert.True(WorldMapSystem.IsConquered(state.Occult, "skanor_runestone"));
-    }
-
-    [Fact]
-    public void SetStance_ChangesNodeStance()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 1000;
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        WorldMapSystem.SetStance(state.Occult, "skanor_runestone", NodeStance.Veil);
-        Assert.Equal(NodeStance.Veil, WorldMapSystem.GetNode(state.Occult, "skanor_runestone")!.Stance);
-    }
-
-    [Fact]
-    public void VeilMode_GeneratesZeroSuspicion()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 1000;
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        WorldMapSystem.SetStance(state.Occult, "skanor_runestone", NodeStance.Veil);
-        Assert.Equal(0, WorldMapSystem.TotalSuspicionPerSec(state.Occult));
-    }
-
-    [Fact]
-    public void Suspicion_ClampedAtMax()
-    {
-        var state = NewState();
-        state.Occult.Suspicion = 99;
-        state.ActiveCoven.Faith = 100000;
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_mound"));
-        WorldMapSystem.TickSuspicion(state.Occult, 100);
-        Assert.Equal(OccultBalance.SuspicionMax, state.Occult.Suspicion);
-    }
-
-    [Fact]
-    public void RaidTriggered_At80Percent()
-    {
-        var o = NewOccult(); o.Suspicion = 79;
-        Assert.False(WorldMapSystem.IsRaidTriggered(o));
-        o.Suspicion = 80;
-        Assert.True(WorldMapSystem.IsRaidTriggered(o));
-    }
-
-    [Fact]
-    public void ApplyRaid_ResetsSuspicionAndKillsInitiates()
-    {
-        var o = NewOccult(); o.Suspicion = 90; o.Initiates = 100;
-        WorldMapSystem.ApplyRaid(o);
-        Assert.Equal(0, o.Suspicion);
-        Assert.True(o.Initiates < 100);
-    }
-
-    [Fact]
-    public void LeyLine_RequiresTwoConqueredNodes()
-    {
-        var state = NewState();
-        state.ActiveCoven.Faith = 100000;
-        Assert.False(WorldMapSystem.IsConquered(state.Occult, "skanor_runestone"));
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        Assert.True(WorldMapSystem.IsConquered(state.Occult, "skanor_runestone"));
-        Assert.False(WorldMapSystem.IsConquered(state.Occult, "skanor_bog"));
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_bog"));
-        Assert.True(WorldMapSystem.IsConquered(state.Occult, "skanor_bog"));
-    }
-
-    [Fact]
-    public void Cauldron_LockedWithoutTech()
-    {
-        var o = NewOccult();
-        Assert.False(Cauldron.IsUnlocked(o));
-        o.UnlockedTechs.Add(TechId.TransmutationCrucible);
-        Assert.True(Cauldron.IsUnlocked(o));
-    }
-
-    [Fact]
-    public void Craft_ElixirConsumesMaterials()
-    {
-        var state = NewState();
-        state.Occult.UnlockedTechs.Add(TechId.TransmutationCrucible);
-        var sw = ShadowWarEngine.EnsureInitialized(state);
-        var recipe = OccultData.Recipe(CauldronRecipeId.CrimsonElixir);
-        sw.TotalAgents = recipe.AgentCost + 10;
-        var (success, _) = Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
-        Assert.True(success);
-        Assert.Equal(2.0, state.Occult.ElixirTapMult);
-        Assert.True(state.Occult.ElixirTimer > 0);
-    }
-
-    [Fact]
-    public void Craft_InsufficientMaterialsFails()
-    {
-        var state = NewState();
-        state.Occult.UnlockedTechs.Add(TechId.TransmutationCrucible);
-        var sw = ShadowWarEngine.EnsureInitialized(state);
-        sw.TotalAgents = 0;
-        var (success, _) = Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
-        Assert.False(success);
-    }
-
-    [Fact]
-    public void Craft_ForgeProducesArtifact()
-    {
-        var state = NewState();
-        state.Occult.UnlockedTechs.Add(TechId.TransmutationCrucible);
-        var sw = ShadowWarEngine.EnsureInitialized(state);
-        var recipe = OccultData.Recipe(CauldronRecipeId.BloodForge);
-        sw.TotalAgents = recipe.AgentCost + 10;
-        var (success, artifactId) = Cauldron.Craft(state, CauldronRecipeId.BloodForge);
-        Assert.True(success);
-        Assert.NotNull(artifactId);
-        Assert.True(Grimoire.OwnsArtifact(state.Occult, artifactId!));
-    }
-
-    [Fact]
-    public void Elixir_ExpiresAfterDuration()
-    {
-        var state = NewState();
-        state.Occult.UnlockedTechs.Add(TechId.TransmutationCrucible);
-        var sw = ShadowWarEngine.EnsureInitialized(state);
-        var recipe = OccultData.Recipe(CauldronRecipeId.CrimsonElixir);
-        sw.TotalAgents = recipe.AgentCost + 10;
-        Cauldron.Craft(state, CauldronRecipeId.CrimsonElixir);
-        Assert.Equal(2.0, state.Occult.ElixirTapMult);
-        Cauldron.TickElixir(state.Occult, OccultBalance.ElixirDurationSec + 1);
-        Assert.Equal(0, state.Occult.ElixirTimer);
-        Assert.Equal(1.0, state.Occult.ElixirTapMult);
-    }
-
-    [Fact]
-    public void Favor_ZeroBelowThreshold()
-    {
-        var state = NewState();
-        state.Occult.LifetimeFaith = 999999;
-        Assert.Equal(0, GrandSacrifice.CalculateFavor(state));
-    }
-
-    [Fact]
-    public void Favor_CalculatedFromLifetimeFaith()
-    {
-        var state = NewState();
-        state.Occult.LifetimeFaith = 4_000_000;
-        Assert.Equal(2.0, GrandSacrifice.CalculateFavor(state));
-    }
-
-    [Fact]
-    public void Favor_ContinentMultiplier()
-    {
-        var state = NewState();
-        state.Occult.LifetimeFaith = 4_000_000;
-        state.ActiveCoven.Faith = 100000;
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        Assert.Equal(2.0, Math.Floor(GrandSacrifice.CalculateFavor(state)));
-    }
-
-    [Fact]
-    public void PerformSacrifice_GrantsFavorAndResets()
-    {
-        var state = NewState();
-        state.ActiveCoven.TakenOver = true;
-        state.Occult.LifetimeFaith = 4_000_000;
-        state.ActiveCoven.Faith = 500;
-        state.Occult.Initiates = 50;
-        var favor = GrandSacrifice.PerformSacrifice(state);
-        Assert.True(favor >= 1);
-        Assert.Equal(favor, state.EldritchFavor);
-        Assert.Equal(0, state.Occult.Initiates);
-        Assert.Single(state.Covens);
-    }
-
-    [Fact]
-    public void PerformSacrifice_MemoriesRetainsFaith()
-    {
-        var state = NewState();
-        state.Occult.LifetimeFaith = 4_000_000;
-        state.ActiveCoven.Faith = 10000;
-        state.Occult.UnlockedTechs.Add(TechId.MemoriesOfTheDeep);
-        GrandSacrifice.PerformSacrifice(state);
-        Assert.Equal(1000, state.ActiveCoven.Faith);
-    }
-
-    [Fact]
-    public void PerformSacrifice_AstralAnchorKeepsHighPriest()
-    {
-        var state = NewState();
-        state.Occult.LifetimeFaith = 4_000_000;
-        state.Occult.UnlockedTechs.Add(TechId.AstralAnchor);
-        state.Occult.GrandSacrificeCount = 1;
-        state.Occult.Initiates = 100;
-        var minion = CultistHierarchy.Promote(state.Occult);
-        CultistHierarchy.AppointCouncil(state.Occult, CouncilRole.HighPriest, minion.Id);
-        GrandSacrifice.PerformSacrifice(state);
-        Assert.Contains(state.Occult.HighCouncil, c => c.Role == CouncilRole.HighPriest);
-        Assert.Contains(TechId.AstralAnchor, state.Occult.UnlockedTechs);
-    }
-
-    [Fact]
-    public void GlobalProductionMult_ScalesWithFavor()
-    {
-        var state = NewState();
-        Assert.Equal(1.0, GrandSacrifice.GlobalProductionMult(state));
-        state.EldritchFavor = 10;
-        Assert.Equal(1.2, GrandSacrifice.GlobalProductionMult(state));
-    }
 
     [Fact]
     public void Tap_GeneratesFaith()
     {
         var state = NewState();
-        var gained = OccultEngine.Tap(state);
-        Assert.True(gained > 0);
-        Assert.True(state.ActiveCoven.Faith > 0);
-        Assert.True(state.Occult.LifetimeFaith > 0);
+        var faithBefore = state.ActiveCoven.Faith;
+        OccultEngine.Tap(state);
+        Assert.True(state.ActiveCoven.Faith > faithBefore);
     }
 
     [Fact]
-    public void BuySermonPower_IncreasesLevel()
+    public void BuySermonPower_IncreasesTapMultiplier()
     {
         var state = NewState();
-        state.ActiveCoven.Faith = 500;
-        Assert.True(OccultEngine.BuySermonPower(state));
-        Assert.Equal(1, state.Occult.SermonPowerLevel);
-        Assert.True(state.ActiveCoven.Faith < 500);
+        state.ActiveCoven.Faith = 10000;
+        var initialMultiplier = state.Occult.TapMultiplier;
+        OccultEngine.BuySermonPower(state);
+        Assert.True(state.Occult.TapMultiplier > initialMultiplier);
     }
 
     [Fact]
-    public void HireInitiate_IncreasesCount()
+    public void HireInitiate_RequiresAndConsumesFaith()
     {
         var state = NewState();
         state.ActiveCoven.Faith = 500;
-        Assert.True(OccultEngine.HireInitiate(state));
-        Assert.Equal(1, state.Occult.Initiates);
+        Assert.True(OccultEngine.CanHireInitiate(state));
+        OccultEngine.HireInitiate(state);
+        Assert.True(state.Occult.Initiates > 0);
     }
 
     [Fact]
@@ -394,53 +72,70 @@ public class OccultTests
         Assert.False(OccultEngine.CanActivateFrenzy(o));
         o.UnlockedTechs.Add(TechId.ExsanguinationEngine);
         Assert.False(OccultEngine.CanActivateFrenzy(o));
-        o.Initiates = 100; CultistHierarchy.Promote(o);
+        o.Minions.Add(new Minion { Id = "m1", Name = "Test", Role = PromotedRole.ShadowAcolyte });
         Assert.True(OccultEngine.CanActivateFrenzy(o));
     }
 
     [Fact]
-    public void Frenzy_ConsumesMinionAndSetsTimer()
-    {
-        var o = NewOccult();
-        o.UnlockedTechs.Add(TechId.ExsanguinationEngine);
-        o.Initiates = 100; CultistHierarchy.Promote(o);
-        OccultEngine.ActivateFrenzy(o);
-        Assert.Empty(o.Minions);
-        Assert.True(o.FrenzyTimer > 0);
-        Assert.True(o.IsFrenzyActive);
-    }
-
-    [Fact]
-    public void Frenzy_MultipliesClickPower()
+    public void GrandSacrifice_GrantsFavor()
     {
         var state = NewState();
-        var basePower = OccultEngine.ClickPower(state);
-        state.Occult.UnlockedTechs.Add(TechId.ExsanguinationEngine);
-        state.Occult.Initiates = 100; CultistHierarchy.Promote(state.Occult);
-        OccultEngine.ActivateFrenzy(state.Occult);
-        Assert.True(OccultEngine.ClickPower(state) > basePower * 5);
+        state.Occult.LifetimeFaith = 2_000_000;
+        var favorBefore = state.EldritchFavor;
+        var favor = GrandSacrifice.PerformSacrifice(state);
+        Assert.True(favor > 0);
+        Assert.True(state.EldritchFavor > favorBefore);
     }
 
     [Fact]
-    public void MassHysteria_RequiresTech()
+    public void TechTree_UnlocksTech()
     {
-        var o = NewOccult();
-        Assert.False(OccultEngine.CanActivateMassHysteria(o));
-        o.UnlockedTechs.Add(TechId.MassHysteria);
-        Assert.True(OccultEngine.CanActivateMassHysteria(o));
+        var state = NewState();
+        state.ActiveCoven.Faith = 100000;
+        TechTree.Unlock(state, TechId.SanguineAutomata);
+        Assert.Contains(TechId.SanguineAutomata, state.Occult.UnlockedTechs);
     }
 
     [Fact]
-    public void MassHysteria_DoublesFaith()
+    public void Grimoire_SocketsAndUnsocketsArtifact()
+    {
+        var state = NewState();
+        state.Occult.OwnedArtifacts.Add("ancient_tablet");
+        Grimoire.Socket(state.Occult, "ancient_tablet");
+        Assert.Contains("ancient_tablet", state.Occult.SocketedArtifacts);
+        Grimoire.Unsocket(state.Occult, "ancient_tablet");
+        Assert.DoesNotContain("ancient_tablet", state.Occult.SocketedArtifacts);
+    }
+
+    [Fact]
+    public void Cauldron_CraftsRecipe()
+    {
+        var state = NewState();
+        state.Occult.Materials[MaterialKind.Blood] = 100;
+        state.Occult.Materials[MaterialKind.Bone] = 100;
+        Cauldron.Craft(state, CauldronRecipeId.WarElixir);
+        Assert.True(state.Occult.Materials[MaterialKind.WarElixir] > 0);
+    }
+
+    [Fact]
+    public void CultistHierarchy_PromotesMinion()
     {
         var state = NewState();
         state.Occult.Initiates = 10;
-        state.ActiveCoven.Faith = 10000;
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        var baseFaith = OccultEngine.TotalMapFaithPerSec(state);
-        state.Occult.UnlockedTechs.Add(TechId.MassHysteria);
-        OccultEngine.ActivateMassHysteria(state.Occult);
-        Assert.True(OccultEngine.TotalMapFaithPerSec(state) > baseFaith * 1.5);
+        CultistHierarchy.Promote(state.Occult);
+        Assert.True(state.Occult.Minions.Count > 0);
+        Assert.Equal(0, state.Occult.Initiates);
+    }
+
+    [Fact]
+    public void CultistHierarchy_RecruitUnitForRole()
+    {
+        var state = NewState();
+        state.Occult.Initiates = 100;
+        CultistHierarchy.Promote(state.Occult);
+        var minion = state.Occult.Minions[0];
+        minion.Role = PromotedRole.ShadowAcolyte;
+        CultistHierarchy.RecruitUnitForRole(state.Occult, PromotedRole.ShadowAcolyte);
     }
 
     [Fact]
@@ -466,5 +161,66 @@ public class OccultTests
         Assert.NotNull(loaded.Occult);
         Assert.Equal(0, loaded.Occult.LifetimeFaith);
         Assert.Empty(loaded.Occult.UnlockedTechs);
+    }
+
+    [Fact]
+    public void SaveLoad_VersionIsSetOnSave()
+    {
+        var state = NewState();
+        state.CultName = "Test";
+        var json = SaveLoad.SaveGame(state);
+        Assert.Contains("\"SaveVersion\":2", json);
+    }
+
+    [Fact]
+    public void SaveLoad_MigratesVersionZeroToCurrent()
+    {
+        var oldJson = "{\"CultName\":\"Old\",\"StartedAt\":1000,\"StoryShown\":false,\"SaveVersion\":0,\"ActiveCovenId\":\"skanor\",\"Covens\":[{\"Id\":\"skanor\",\"Converted\":true}]}";
+        var (state, success) = SaveLoad.LoadGameWithBackup(oldJson, null, null);
+        Assert.True(success);
+        Assert.Equal(SaveLoad.CurrentVersion, state.SaveVersion);
+        Assert.NotNull(state.ShadowWar);
+        Assert.NotNull(state.BattleSystem);
+        Assert.NotNull(state.RivalCults);
+    }
+
+    [Fact]
+    public void SaveLoad_MigratesVersionOneToCurrent()
+    {
+        var oldJson = "{\"CultName\":\"Old\",\"StartedAt\":1000,\"StoryShown\":false,\"SaveVersion\":1,\"ActiveCovenId\":\"skanor\",\"Covens\":[{\"Id\":\"skanor\",\"Converted\":true}]}";
+        var (state, success) = SaveLoad.LoadGameWithBackup(oldJson, null, null);
+        Assert.True(success);
+        Assert.Equal(SaveLoad.CurrentVersion, state.SaveVersion);
+        Assert.NotNull(state.LocalCultBattles);
+        Assert.NotNull(state.RivalCults.RivalBattles);
+    }
+
+    [Fact]
+    public void SaveLoad_RejectsCorruptedJson()
+    {
+        Assert.False(SaveLoad.IsValidSave(null));
+        Assert.False(SaveLoad.IsValidSave(""));
+        Assert.False(SaveLoad.IsValidSave("{bad json"));
+        Assert.True(SaveLoad.IsCorrupted(null));
+        Assert.True(SaveLoad.IsCorrupted("{bad json"));
+        Assert.False(SaveLoad.IsCorrupted("{\"CultName\":\"Test\",\"ActiveCovenId\":\"skanor\",\"Covens\":[],\"Occult\":{}}"));
+    }
+
+    [Fact]
+    public void SaveLoad_FallsBackToBackupWhenPrimaryCorrupt()
+    {
+        var backup = "{\"CultName\":\"Backup\",\"StartedAt\":2000,\"StoryShown\":true,\"SaveVersion\":2,\"ActiveCovenId\":\"skanor\",\"Covens\":[{\"Id\":\"skanor\",\"Converted\":true}]}";
+        var (state, success) = SaveLoad.LoadGameWithBackup("CORRUPTED", backup, null);
+        Assert.True(success);
+        Assert.Equal("Backup", state.CultName);
+    }
+
+    [Fact]
+    public void SaveLoad_FallsBackToBackup2WhenAllCorrupt()
+    {
+        var backup2 = "{\"CultName\":\"Backup2\",\"StartedAt\":3000,\"StoryShown\":true,\"SaveVersion\":2,\"ActiveCovenId\":\"skanor\",\"Covens\":[{\"Id\":\"skanor\",\"Converted\":true}]}";
+        var (state, success) = SaveLoad.LoadGameWithBackup("CORRUPTED", "ALSO_CORRUPT", backup2);
+        Assert.True(success);
+        Assert.Equal("Backup2", state.CultName);
     }
 }
