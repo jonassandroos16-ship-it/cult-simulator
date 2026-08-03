@@ -51,10 +51,8 @@ public static class BattleEngine
             RivalMaxHp = rivalHp,
             PlayerHp = PlayerBaseHp,
             PlayerMaxHp = PlayerBaseHp,
-            LastTickAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()
+            Status = BattleStatus.NotStarted
         };
-        if (rivalDef != null)
-            battle.EnemyArchetype = rivalDef.Archetype;
         bs.Battles.Add(battle);
         return battle;
     }
@@ -92,8 +90,8 @@ public static class BattleEngine
         {
             int scholars = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Scholar)?.Count ?? 0;
             int mages = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Mage)?.Count ?? 0;
-            if (scholars <= mages + count)
-                return (false, "Each Mage requires at least 1 Scholar in the squad.");
+            if (scholars + mages + count > MaxMagesPerBattle(state))
+                return (false, $"Max {MaxMagesPerBattle(state)} mages/scholars per battle.");
         }
 
         int alreadyDeployed = battle.DeployedSquad.FirstOrDefault(d => d.Type == type)?.Count ?? 0;
@@ -141,17 +139,14 @@ public static class BattleEngine
         {
             int scholars = battle.DeployedSquad.FirstOrDefault(d => d.Type == AgentType.Scholar)?.Count ?? 0;
             int mages = alreadyDeployed;
-            if (scholars <= mages + count)
-                return (false, "Each Mage requires at least 1 Scholar in the squad.");
+            if (scholars + mages + count > MaxMagesPerBattle(state))
+                return (false, $"Max {MaxMagesPerBattle(state)} mages/scholars per battle.");
         }
 
         var slot = battle.DeployedSquad.FirstOrDefault(d => d.Type == type);
         if (slot != null) slot.Count += count;
         else battle.DeployedSquad.Add(new DeployedAgent { Type = type, Count = count });
-
-        sw.RecruitedAgents[type] = Math.Max(0, owned - count);
-        AppendLog(battle, $"Reinforced with {count} {type}.");
-        return (true, $"Reinforced with {count} {type}!");
+        return (true, $"Reinforced with {count} {type}.");
     }
 
     public static (bool success, string message) StartBattle(GameState state, string continentId)
@@ -185,6 +180,20 @@ public static class BattleEngine
             .ToList();
     }
 
+    public static int MaxMagesPerBattle(GameState state) =>
+        state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar) + 1;
+
+    public static int MaxAgentsForType(ShadowWarState sw, GameState state, AgentType type) =>
+        type switch
+        {
+            AgentType.Initiate => (int)sw.AvailableAgents,
+            AgentType.Zealot => state.Occult.Minions.Count(m => m.Role == PromotedRole.Zealot),
+            AgentType.Infiltrator => state.Occult.Minions.Count(m => m.Role == PromotedRole.Infiltrator),
+            AgentType.Scholar => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
+            AgentType.Mage => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
+            _ => 0
+        };
+
     public static void Tick(GameState state, WorldLocationService locations, double deltaSec)
     {
         foreach (var theater in BattleData.Theaters)
@@ -199,6 +208,7 @@ public static class BattleEngine
         if (battle.Phase == BattlePhase.NoThreat && IsTheaterActive(state, locations, continentId))
         {
             battle.Phase = BattlePhase.Deploy;
+            battle.Status = BattleStatus.NotStarted;
             var rivalDef0 = BattleData.RivalForContinent(continentId);
             if (rivalDef0 != null)
             {
@@ -221,6 +231,7 @@ public static class BattleEngine
                 battle.RivalMaxHp = rivalHp2;
                 battle.PlayerHp = PlayerBaseHp;
                 battle.Phase = BattlePhase.Deploy;
+                battle.Status = BattleStatus.NotStarted;
                 var rivalDef3 = BattleData.RivalForContinent(continentId);
                 if (rivalDef3 != null) { double scale3 = RivalCultEngine.ScaleFor(continentId); battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(rivalDef3.Archetype, scale3, 20); battle.EnemyArchetype = rivalDef3.Archetype; }
                 AppendLog(battle, "A new rival cult has risen. Prepare your agents.");
@@ -242,29 +253,29 @@ public static class BattleEngine
         double faithRegen = BattleCommon.CalculateFaithRegen(battle.DeployedSquad);
         battle.PlayerHp = Math.Min(battle.PlayerMaxHp, battle.PlayerHp + faithRegen * deltaSec);
 
-        battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
-        battle.PlayerHp = Math.Max(0, battle.PlayerHp - mitigated);
-
         battle.RoundTimer += deltaSec;
-        battle.Momentum = Math.Clamp(battle.Momentum + (playerDamage - mitigated) * 0.01, -100, 100);
-
-        if (battle.RoundTimer >= BattleRoundEngine.RoundIntervalSec)
+        if (battle.RoundTimer >= 2.0)
         {
             battle.RoundTimer = 0;
             battle.RoundNumber++;
-            var round = BattleRoundEngine.ExecuteRound(
+
+            var roundResult = BattleRoundEngine.ProcessRound(
                 battle.RoundNumber, battle.DeployedSquad, battle.EnemyUnits,
-                playerAttack, rivalAttack, playerDefense, stealth, BattleRoundEngine.RoundIntervalSec);
-            if (battle.EnemyArchetype != null)
+                sw, state, battle.Momentum);
+            battle.Momentum = roundResult.Momentum;
+            battle.PlayerHp = Math.Max(0, battle.PlayerHp - roundResult.PlayerDamage);
+            battle.RivalHp = Math.Max(0, battle.RivalHp - roundResult.RivalDamage);
+            battle.Log.AddRange(roundResult.LogEntries);
+            if (battle.Log.Count > MaxLogEntries * 2) battle.Log = battle.Log.TakeLast(MaxLogEntries).ToList();
+            battle.RecentRounds.Add(roundResult);
+            if (battle.RecentRounds.Count > 5) battle.RecentRounds.RemoveAt(0);
+
+            var tactic = BattleRoundEngine.TryEnemyTactic(battle.EnemyArchetype.Value, battle.DeployedSquad, battle.RoundNumber);
+            if (tactic != null)
             {
-                var tactic = BattleRoundEngine.TryEnemyTactic(battle.EnemyArchetype.Value, battle.DeployedSquad, battle.RoundNumber);
-                if (tactic != null) round.EnemyAction = tactic;
-                var (reinforced, action) = BattleRoundEngine.TryEnemyReinforce(battle.EnemyUnits, battle.EnemyArchetype.Value, scale, battle.RoundNumber);
-                if (reinforced) { round.EnemyReinforced = true; round.EnemyAction = action; }
+                battle.Log.AddRange(tactic.LogEntries);
+                if (battle.Log.Count > MaxLogEntries * 2) battle.Log = battle.Log.TakeLast(MaxLogEntries).ToList();
             }
-            battle.RecentRounds.Add(round);
-            if (battle.RecentRounds.Count > 6) battle.RecentRounds.RemoveAt(0);
-            AppendLog(battle, round.Summary);
         }
 
         if (battle.RivalHp <= 0)
@@ -301,17 +312,6 @@ public static class BattleEngine
             AppendLog(battle, $"Defeat! Your agents were repelled in {continentId}. Suspicion rises.");
         }
     }
-
-    public static int MaxAgentsForType(ShadowWarState sw, GameState state, AgentType type) =>
-        type switch
-        {
-            AgentType.Initiate => (int)sw.AvailableAgents,
-            AgentType.Zealot => state.Occult.Minions.Count(m => m.Role == PromotedRole.Zealot),
-            AgentType.Infiltrator => state.Occult.Minions.Count(m => m.Role == PromotedRole.Infiltrator),
-            AgentType.Scholar => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
-            AgentType.Mage => state.Occult.Minions.Count(m => m.Role == PromotedRole.Scholar),
-            _ => 0
-        };
 
     private static void ApplyVictoryReward(GameState state, string continentId)
     {
