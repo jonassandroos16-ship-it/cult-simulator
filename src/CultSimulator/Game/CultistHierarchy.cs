@@ -12,8 +12,9 @@ public static class CultistHierarchy
             cap += activeCoven.Buildings.GetValueOrDefault(BuildingType.Undercroft) * (int)GameBalance.UndercroftAcolyteBonus;
         if (o.UnlockedTechs.Contains(TechId.AutophagousCult))
             cap += 50;
-        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") cap += 50; }
-        foreach (var artifactId in o.OwnedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") cap += 50; }
+        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && (def.Id == "flesh_golem" || def.Id == "flesh_heart")) cap += def.Id == "flesh_heart" ? 100 : 50; }
+        foreach (var artifactId in o.OwnedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && (def.Id == "flesh_golem" || def.Id == "flesh_heart")) cap += def.Id == "flesh_heart" ? 100 : 50; }
+        cap += TechTree.FleshBindingCapBonus(o);
         foreach (var m in o.Minions) if (m.Trait?.Id == "fleshspeaker") cap += 50;
         foreach (var c in o.HighCouncil) if (c.Trait?.Id == "fleshspeaker") cap += 50;
         return cap;
@@ -117,14 +118,15 @@ public static class CultistHierarchy
         int zealotCount = o.Minions.Count(m => m.Role == PromotedRole.Zealot);
         mult += zealotCount * OccultBalance.ZealotAgentProdBonusPerSec;
         if (o.HighCouncil.Any(c => c.Role == CouncilRole.Archon)) mult *= 1.5;
+        mult *= TechTree.AgentStrengthBonus(o);
         return mult;
     }
 
-    public static double SuspicionMult(OccultState o)
+    public static double InquisitorFaithMult(OccultState o)
     {
         double mult = 1.0;
-        foreach (var m in o.Minions) mult *= m.Trait?.SuspicionMult ?? 1.0;
-        if (o.HighCouncil.Any(c => c.Role == CouncilRole.Inquisitor)) mult *= 0.8;
+        foreach (var m in o.Minions) mult *= m.Trait?.FaithMult ?? 1.0;
+        if (o.HighCouncil.Any(c => c.Role == CouncilRole.Inquisitor)) mult *= 1.2;
         return mult;
     }
 
