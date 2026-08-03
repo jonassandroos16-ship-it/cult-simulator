@@ -10,6 +10,7 @@ public static class LocalCultBattleEngine
     public static LocalCultBattleState CreateBattle(LocalCultDef def)
     {
         double rivalHp = 40 + def.FollowersRequired * 0.3;
+        if (def.IsBoss) rivalHp *= 2.0;
         return new LocalCultBattleState
         {
             CultId = def.Id,
@@ -138,6 +139,7 @@ public static class LocalCultBattleEngine
         if (localDef != null)
         {
             double localScale = 0.5 + localDef.FollowersRequired / 40.0;
+            if (localDef.IsBoss) localScale *= 1.5;
             battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(RivalCultArchetype.TheCrimsonConclave, localScale, battle.RivalMaxHp / 10);
             battle.EnemyArchetype = RivalCultArchetype.TheCrimsonConclave;
         }
@@ -156,6 +158,7 @@ public static class LocalCultBattleEngine
             var sw = ShadowWarEngine.EnsureInitialized(state);
             var def = LocalCultData.Find(battle.CultId);
             double rivalAttack = def != null ? 2.0 + def.FollowersRequired * 0.01 : 3.0;
+            if (def != null && def.IsBoss) rivalAttack *= 1.5;
             double playerAttack = BattleCommon.CalculateAttack(battle.DeployedSquad, sw, state);
             double playerDefense = BattleCommon.CalculateDefense(battle.DeployedSquad);
             double stealth = BattleCommon.CalculateStealth(battle.DeployedSquad);
@@ -228,8 +231,11 @@ public static class LocalCultBattleEngine
     {
         var def = LocalCultData.Find(battle.CultId);
         if (def == null) return;
-        var instance = state.ActiveLocalCults.FirstOrDefault(i => i.CultId == battle.CultId);
-        if (instance != null) state.ActiveLocalCults.Remove(instance);
+        double faithBonus = def.RewardAmount;
+        state.ActiveCoven.Faith += faithBonus;
+        state.Occult.LifetimeFaith += faithBonus;
+        battle.LastFaithReward = faithBonus;
+        LocalCultEngine.OnVictory(state, battle.CultId);
     }
 
     public static void CleanupVictories(GameState state)

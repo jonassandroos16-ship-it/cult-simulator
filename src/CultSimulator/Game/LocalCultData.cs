@@ -4,8 +4,7 @@ namespace CultSimulator.Game;
 
 /// <summary>
 /// Data-driven local cult definitions — 3 per parent coven, themed to
-/// nearby real cities/locations. These are easier rivals that spawn
-/// periodically on the local map for quick conversion opportunities.
+/// nearby real cities/locations. The third cult in each coven is a boss.
 /// </summary>
 public static class LocalCultData
 {
@@ -21,7 +20,7 @@ public static class LocalCultData
                 55.60, 13.00, 12, 25),
             new LocalCultDef("lund", "skanor", "Lund Cathedral Cult",
                 "Renegade scholars who stole forbidden manuscripts from the cathedral's crypt.",
-                55.70, 13.19, 10, 20),
+                55.70, 13.19, 10, 20, IsBoss: true),
 
             // ── Uppsala Gothi (Sweden) ── Viking
             new LocalCultDef("gavle", "uppsala_gothi", "Gävle River-Readers",
@@ -32,7 +31,7 @@ public static class LocalCultData
                 59.61, 16.55, 20, 40),
             new LocalCultDef("orebro", "uppsala_gothi", "Örebro Iron-Cult",
                 "Smith-cultists who forge runic blades and believe iron holds the memory of blood.",
-                59.27, 15.21, 22, 45),
+                59.27, 15.21, 22, 45, IsBoss: true),
 
             // ── Hedeby Vikings (Denmark) ── Viking
             new LocalCultDef("schleswig", "hedeby_vikings", "Schleswig Traders",
@@ -43,7 +42,7 @@ public static class LocalCultData
                 55.33, 8.76, 40, 80),
             new LocalCultDef("aarhus", "hedeby_vikings", "Aarhus Harbor-Witches",
                 "Port-witches who curse ships that refuse to pay tribute and bless those that do.",
-                56.16, 10.21, 45, 90),
+                56.16, 10.21, 45, 90, IsBoss: true),
 
             // ── Trossky Berserkers (Norway) ── Viking
             new LocalCultDef("larvik", "trossky_berserkers", "Larvik Bear-Channelers",
@@ -54,7 +53,7 @@ public static class LocalCultData
                 59.55, 9.27, 60, 120),
             new LocalCultDef("skien", "trossky_berserkers", "Skien Wolf-Brothers",
                 "Wolf-cultists who run with packs in the deep forests and return changed.",
-                59.21, 9.61, 65, 130),
+                59.21, 9.61, 65, 130, IsBoss: true),
 
             // ── Jomsborg Elite (Poland) ── Viking
             new LocalCultDef("kamien", "jomsborg_elite", "Kamień Coastal-Guardians",
@@ -65,7 +64,7 @@ public static class LocalCultData
                 53.43, 14.55, 90, 180),
             new LocalCultDef("kolobrzeg", "jomsborg_elite", "Kołobrzeg Salt-Sorcerers",
                 "Salt-pan workers who crystallize magic into preserving jars of power.",
-                54.18, 15.58, 100, 200),
+                54.18, 15.58, 100, 200, IsBoss: true),
 
             // ── Salem Remnant (USA, Massachusetts) ── Modern Occult
             new LocalCultDef("beverly", "salem_remnant", "Beverly Suburb-Coven",
@@ -76,7 +75,7 @@ public static class LocalCultData
                 42.50, -70.85, 130, 260),
             new LocalCultDef("peabody", "salem_remnant", "Peabody Mall-Witches",
                 "Retail-coven members who enchant products and curse competitors' inventory.",
-                42.53, -70.93, 140, 280),
+                42.53, -70.93, 140, 280, IsBoss: true),
 
             // ── Voodoo Quarter (USA, New Orleans) ── Modern Occult
             new LocalCultDef("metairie", "voodoo_quarter", "Metairie Cemetery-Keepers",
@@ -87,7 +86,7 @@ public static class LocalCultData
                 29.92, -90.05, 170, 340),
             new LocalCultDef("gentilly", "voodoo_quarter", "Gentilly Swamp-Walkers",
                 "Swamp-edge walkers who navigate the bayou's spirit-paths at midnight.",
-                30.03, -90.08, 180, 360),
+                30.03, -90.08, 180, 360, IsBoss: true),
 
             // ── Silicon Circle (USA, California) ── Modern Occult
             new LocalCultDef("mountainview", "silicon_circle", "Mountain View Data-Coven",
@@ -98,7 +97,7 @@ public static class LocalCultData
                 37.45, -122.18, 240, 480),
             new LocalCultDef("stanford", "silicon_circle", "Stanford Crypto-Cult",
                 "Academic occultists who publish papers on consciousness and practice the real thing in secret.",
-                37.43, -122.17, 260, 520),
+                37.43, -122.17, 260, 520, IsBoss: true),
 
             // ── Hudson Witches (USA, New York) ── Modern Occult
             new LocalCultDef("kingston", "hudson_witches", "Kingston Stone-Circle",
@@ -109,7 +108,7 @@ public static class LocalCultData
                 41.93, -73.91, 340, 680),
             new LocalCultDef("newburgh", "hudson_witches", "Newburgh Urban-Mystics",
                 "Urban mystics who find power in abandoned buildings and forgotten infrastructure.",
-                41.50, -74.01, 360, 720),
+                41.50, -74.01, 360, 720, IsBoss: true),
 
             // ── Montréal Night Coven (Canada) ── Modern Occult
             new LocalCultDef("laval", "montreal_night", "Laval Subterranean-Cult",
@@ -120,7 +119,7 @@ public static class LocalCultData
                 45.53, -73.53, 440, 880),
             new LocalCultDef("lachine", "montreal_night", "Lachine Canal-Spirits",
                 "Canal-side spirit-talkers who read the future in the frozen water's cracks.",
-                45.43, -73.68, 460, 920),
+                45.43, -73.68, 460, 920, IsBoss: true),
 
             // ── La Recta Provincia (Chile, Chiloé) ── Jungle
             new LocalCultDef("ancud", "la_recta_provincia", "Ancud Tide-Callers",
@@ -131,7 +130,7 @@ public static class LocalCultData
                 -42.48, -73.76, 540, 1080),
             new LocalCultDef("quellon", "la_recta_provincia", "Quellón Deep Ones",
                 "Deep-water sorcerers at the island's southern tip who commune with things beneath the waves.",
-                -43.12, -73.61, 560, 1120),
+                -43.12, -73.61, 560, 1120, IsBoss: true),
 
             // ── Amazon Curanderos (Peru) ── Jungle
             new LocalCultDef("pebas", "amazon_curanderos", "Pebas River-Spirits",
@@ -142,7 +141,7 @@ public static class LocalCultData
                 -4.50, -73.59, 720, 1440),
             new LocalCultDef("contamana", "amazon_curanderos", "Contamana Plant-Speakers",
                 "Deep-jungle herbalists who speak the language of every plant and tree in their territory.",
-                -5.94, -75.28, 760, 1520),
+                -5.94, -75.28, 760, 1520, IsBoss: true),
 
             // ── Andean Pachakuna (Peru, Cusco) ── Jungle
             new LocalCultDef("ollantaytambo", "andean_pacha", "Ollantaytambo Stone-Readers",
@@ -153,7 +152,7 @@ public static class LocalCultData
                 -13.42, -71.87, 950, 1900),
             new LocalCultDef("urubamba", "andean_pacha", "Urubamba River-Spirits",
                 "River-spirits who guard the sacred valley and test those who would pass through.",
-                -13.31, -72.12, 1000, 2000),
+                -13.31, -72.12, 1000, 2000, IsBoss: true),
 
             // ── Pantanal Feiticeira (Brazil) ── Jungle
             new LocalCultDef("corumba", "pantanal_feiticeira", "Corumbá Swamp-Witches",
@@ -164,7 +163,7 @@ public static class LocalCultData
                 -20.47, -55.79, 1300, 2600),
             new LocalCultDef("miranda", "pantanal_feiticeira", "Miranda Spirit-Hunters",
                 "Wetland hunters who track spirits through the reeds and bind them in bone traps.",
-                -20.14, -56.39, 1400, 2800),
+                -20.14, -56.39, 1400, 2800, IsBoss: true),
 
             // ── Guarani Shadow Council (Paraguay) ── Jungle
             new LocalCultDef("encarnacion", "guarani_shadows", "Encarnación River-Mystics",
@@ -175,7 +174,7 @@ public static class LocalCultData
                 -25.75, -56.47, 1800, 3600),
             new LocalCultDef("ciudad_del_este", "guarani_shadows", "Ciudad del Este Shadow-Traders",
                 "Border-market occultists who trade in cursed artifacts and smuggled spirits.",
-                -25.51, -54.61, 1900, 3800),
+                -25.51, -54.61, 1900, 3800, IsBoss: true),
 
             // ── Kush Sorcerers (Sudan, Meroë) ── Savanna
             new LocalCultDef("shendi", "kush_sorcerers", "Shendi River-Priests",
@@ -186,7 +185,7 @@ public static class LocalCultData
                 17.99, 33.99, 2600, 5200),
             new LocalCultDef("atbara", "kush_sorcerers", "Atbara Sand-Mages",
                 "Confluence-city mages who read the meeting of waters and the meeting of worlds.",
-                17.70, 34.97, 2800, 5600),
+                17.70, 34.97, 2800, 5600, IsBoss: true),
 
             // ── Ifá Oracles (Nigeria, Ile-Ife) ── Savanna
             new LocalCultDef("ibadan", "ifa_oracles", "Ibadan Divination-Circle",
@@ -197,7 +196,7 @@ public static class LocalCultData
                 7.54, 4.57, 3800, 7600),
             new LocalCultDef("ife_odai", "ifa_oracles", "Modakeke Ancestor-Speakers",
                 "Ancestral speakers who commune with the first kings of Ife through sacred groves.",
-                7.40, 4.52, 4000, 8000),
+                7.40, 4.52, 4000, 8000, IsBoss: true),
 
             // ── Dogon Star Priests (Mali, Bandiagara) ── Savanna
             new LocalCultDef("bandiagara", "dogon_star_priests", "Bandiagara Cliff-Walkers",
@@ -208,7 +207,7 @@ public static class LocalCultData
                 14.45, -3.30, 6000, 12000),
             new LocalCultDef("dourou", "dogon_star_priests", "Dourou Star-Readers",
                 "Remote-village astronomers who track Sirius B with naked-eye precision.",
-                14.70, -3.90, 6500, 13000),
+                14.70, -3.90, 6500, 13000, IsBoss: true),
 
             // ── Zulu Sangoma (South Africa) ── Savanna
             new LocalCultDef("durban", "zulu_sangoma", "Durban Urban-Sangoma",
@@ -219,7 +218,7 @@ public static class LocalCultData
                 -29.62, 30.40, 8500, 17000),
             new LocalCultDef("richards_bay", "zulu_sangoma", "Richards Bay Sea-Sangoma",
                 "Coastal sangoma who commands the Indian Ocean's spirits and the creatures within.",
-                -28.80, 32.10, 9000, 18000),
+                -28.80, 32.10, 9000, 18000, IsBoss: true),
 
             // ── Axum Guardians (Ethiopia) ── Savanna
             new LocalCultDef("adwa", "axum_guardians", "Adwa Mountain-Priests",
@@ -230,7 +229,7 @@ public static class LocalCultData
                 13.49, 39.47, 13000, 26000),
             new LocalCultDef("gondar", "axum_guardians", "Gondar Castle-Spirits",
                 "Castle-city spirits who guard the old imperial capital's occult secrets.",
-                12.60, 37.47, 14000, 28000),
+                12.60, 37.47, 14000, 28000, IsBoss: true),
 
             // ── Babylon Mages (Iraq) ── Desert
             new LocalCultDef("hillah", "babylon_mages", "Hillah Ruin-Readers",
@@ -241,7 +240,7 @@ public static class LocalCultData
                 32.61, 44.02, 19000, 38000),
             new LocalCultDef("najaf", "babylon_mages", "Najaf Shadow-Scholars",
                 "Cemetery-city scholars who study the boundary between death and knowledge.",
-                31.99, 44.33, 20000, 40000),
+                31.99, 44.33, 20000, 40000, IsBoss: true),
 
             // ── Djinn Binders (Saudi Arabia) ── Desert
             new LocalCultDef("najran", "djinn_binders", "Najran Brass-Smiths",
@@ -252,7 +251,7 @@ public static class LocalCultData
                 18.22, 42.51, 28000, 56000),
             new LocalCultDef("jazan", "djinn_binders", "Jazan Sea-Djinn",
                 "Coastal sorcerers who bargain with the djinn that dwell in the Red Sea's depths.",
-                16.89, 42.55, 30000, 60000),
+                16.89, 42.55, 30000, 60000, IsBoss: true),
 
             // ── Hashashin Shadow (Iran) ── Desert
             new LocalCultDef("qazvin", "hashashin_shadow", "Qazvin Shadow-Walkers",
@@ -263,7 +262,7 @@ public static class LocalCultData
                 37.28, 49.58, 42000, 84000),
             new LocalCultDef("tehran_old", "hashashin_shadow", "Old Tehran Hidden-Blade",
                 "Urban-cult descendants who maintain the old ways in the capital's ancient quarters.",
-                35.70, 51.42, 44000, 88000),
+                35.70, 51.42, 44000, 88000, IsBoss: true),
 
             // ── Sumerian Deep Ones (Iraq, Ur) ── Desert
             new LocalCultDef("nasiriyah", "sumerian_deep", "Nasiriyah Marsh-Spirits",
@@ -274,7 +273,7 @@ public static class LocalCultData
                 30.51, 47.83, 65000, 130000),
             new LocalCultDef("ubaid", "sumerian_deep", "Ubaid Mound-Priests",
                 "Mound-priests who guard the oldest settlement in Mesopotamia and what sleeps beneath it.",
-                30.96, 46.10, 70000, 140000),
+                30.96, 46.10, 70000, 140000, IsBoss: true),
 
             // ── Qabbalah Masters (Israel, Safed) ── Desert
             new LocalCultDef("tiberias", "qabbalah_masters", "Tiberias Lake-Mystics",
@@ -285,7 +284,7 @@ public static class LocalCultData
                 33.01, 35.50, 95000, 190000),
             new LocalCultDef("zefat_old", "qabbalah_masters", "Old Safed Letter-Weavers",
                 "Alley-way weavers who reshape reality through the permutation of sacred letters.",
-                32.96, 35.50, 100000, 200000),
+                32.96, 35.50, 100000, 200000, IsBoss: true),
 
             // ── Iga Shinobi (Japan) ── Ninja/Samurai
             new LocalCultDef("nabari", "iga_shinobi", "Nabari Valley-Shadows",
@@ -296,7 +295,7 @@ public static class LocalCultData
                 34.77, 136.19, 140000, 280000),
             new LocalCultDef("yamato", "iga_shinobi", "Yamato Plain-Walkers",
                 "Plain-walkers who cross open land without being seen, a feat they attribute to shadow-jutsu.",
-                34.65, 135.77, 150000, 300000),
+                34.65, 135.77, 150000, 300000, IsBoss: true),
 
             // ── Koga Nightblades (Japan) ── Ninja/Samurai
             new LocalCultDef("otsu", "koga_nightblades", "Ōtsu Lake-Blades",
@@ -307,7 +306,7 @@ public static class LocalCultData
                 35.28, 136.25, 220000, 440000),
             new LocalCultDef("koka_old", "koga_nightblades", "Old Kōka Illusionists",
                 "Village illusionists who can make an entire building appear empty to the untrained eye.",
-                34.97, 136.17, 240000, 480000),
+                34.97, 136.17, 240000, 480000, IsBoss: true),
 
             // ── Takeda Ghost Ronin (Japan) ── Ninja/Samurai
             new LocalCultDef("kofu", "takeda_ronin", "Kōfu Blade-Spirits",
@@ -318,7 +317,7 @@ public static class LocalCultData
                 35.70, 138.73, 340000, 680000),
             new LocalCultDef("hokuto", "takeda_ronin", "Hokuto Ghost-Duelists",
                 "Northern-duelists who fight spirit-battles that leave no visible wounds but break the soul.",
-                35.71, 138.59, 360000, 720000),
+                35.71, 138.59, 360000, 720000, IsBoss: true),
 
             // ── Wu Dang Immortals (China) ── Ninja/Samurai
             new LocalCultDef("shiyan", "wu_dang_immortals", "Shiyan River-Immortals",
@@ -329,7 +328,7 @@ public static class LocalCultData
                 32.54, 111.51, 520000, 1040000),
             new LocalCultDef("fangxian", "wu_dang_immortals", "Fangxian Mountain-Alchemists",
                 "Mountain-alchemists who refine the elixir of immortality in caves above the clouds.",
-                32.40, 111.00, 560000, 1120000),
+                32.40, 111.00, 560000, 1120000, IsBoss: true),
 
             // ── Shadow Shogun (Japan, Edo) ── Ninja/Samurai
             new LocalCultDef("yokohama", "shadow_shogun", "Yokohama Port-Shadows",
@@ -340,7 +339,7 @@ public static class LocalCultData
                 35.52, 139.73, 750000, 1500000),
             new LocalCultDef("chiba", "shadow_shogun", "Chiba Shadow-Guard",
                 "Eastern-guard shinobi who protect the approaches to the Shogun's seat of power.",
-                35.61, 140.12, 800000, 1600000),
+                35.61, 140.12, 800000, 1600000, IsBoss: true),
 
             // ── Maori Tohunga (New Zealand) ── Ocean
             new LocalCultDef("tauranga", "maori_tohunga", "Tauranga Coastal-Spirits",
@@ -351,7 +350,7 @@ public static class LocalCultData
                 -37.96, 177.00, 1100000, 2200000),
             new LocalCultDef("rotorua_old", "maori_tohunga", "Old Rotorua Geothermal-Cult",
                 "Geothermal-cultists who read the future in the eruption of geysers and the color of boiling mud.",
-                -38.14, 176.25, 1200000, 2400000),
+                -38.14, 176.25, 1200000, 2400000, IsBoss: true),
 
             // ── Dreamtime Elders (Australia, Uluru) ── Ocean
             new LocalCultDef("alice_springs", "dreamtime_elders", "Alice Springs Desert-Walkers",
@@ -362,7 +361,7 @@ public static class LocalCultData
                 -24.25, 131.55, 1600000, 3200000),
             new LocalCultDef("mount_conner", "dreamtime_elders", "Mount Conner Dream-Guides",
                 "Mesa-guides who lead initiates through the Dreamtime and bring them back changed.",
-                -25.32, 132.10, 1700000, 3400000),
+                -25.32, 132.10, 1700000, 3400000, IsBoss: true),
 
             // ── Polynesian Navigators (Tahiti) ── Ocean
             new LocalCultDef("moorea", "polynesian_navigators", "Moorea Lagoon-Readers",
@@ -373,7 +372,7 @@ public static class LocalCultData
                 -16.74, -151.00, 2400000, 4800000),
             new LocalCultDef("raiatea", "polynesian_navigators", "Raiatea Star-Pathfinders",
                 "Sacred-island pathfinders who maintain the ancient star-paths across the Pacific.",
-                -16.83, -151.47, 2600000, 5200000),
+                -16.83, -151.47, 2600000, 5200000, IsBoss: true),
 
             // ── Papuan Spirit Callers (Papua New Guinea) ── Ocean
             new LocalCultDef("mt_hagen", "papuan_spirits", "Mount Hagen Mask-Cult",
@@ -384,7 +383,7 @@ public static class LocalCultData
                 -6.08, 145.40, 3800000, 7600000),
             new LocalCultDef("wabag", "papuan_spirits", "Wabag Highland-Channelers",
                 "Remote-highland channelers who open doors to the spirit world through sacred caves.",
-                -5.48, 143.70, 4000000, 8000000),
+                -5.48, 143.70, 4000000, 8000000, IsBoss: true),
 
             // ── Pacific Abyss (Mariana Trench) ── Ocean
             new LocalCultDef("guam", "pacific_abyss", "Guam Trench-Watchers",
@@ -395,7 +394,7 @@ public static class LocalCultData
                 15.18, 145.75, 6000000, 12000000),
             new LocalCultDef("palau", "pacific_abyss", "Palau Abyss-Speakers",
                 "Island-speakers who maintain dialogue with the vast intelligence in the trench.",
-                7.50, 134.62, 6500000, 13000000),
+                7.50, 134.62, 6500000, 13000000, IsBoss: true),
         };
 
     public static IReadOnlyList<LocalCultDef> ForCoven(string parentCovenId) =>
