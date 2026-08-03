@@ -24,7 +24,7 @@ public static class ShadowWarEngine
             int guilds = coven.Buildings.GetValueOrDefault(BuildingType.ShadowGuild);
             buildingMult += guilds * GameBalance.ShadowGuildAgentSpeedBonus;
         }
-        return baseRate * sw.PrestigeMultiplier * zealotMult * buildingMult;
+        return baseRate * sw.PrestigeMultiplier * zealotMult * buildingMult * GrandSacrifice.GlobalProductionMult(state);
     }
 
     public static int AgentPoolCap(GameState state)

@@ -22,24 +22,36 @@ public static class GrandSacrifice
         bool keepHighPriest = TechTree.HasTech(state.Occult, TechId.AstralAnchor);
         bool keepAstralAnchor = keepHighPriest;
 
-        foreach (var coven in state.Covens)
+        var homeCoven = state.HomeCoven;
+        double homeRetainedFaith = homeCoven.Faith * retainedFaithPercent;
+        var oldHomeOccult = homeCoven.Occult;
+
+        state.Covens.Clear();
+        state.Covens.Add(new CovenState
         {
-            if (!coven.TakenOver) continue;
-            double retainedFaith = coven.Faith * retainedFaithPercent;
-            var oldOccult = coven.Occult;
-            coven.Occult = new OccultState
+            Id = "skanor",
+            TakenOver = true,
+            Converted = true,
+            BaseMultiplier = 1.0,
+            Faith = homeRetainedFaith,
+            Occult = new OccultState
             {
-                HighCouncil = keepHighPriest ? oldOccult.HighCouncil.Where(c => c.Role == CouncilRole.HighPriest).ToList() : new(),
-                UnlockedTechs = keepAstralAnchor ? oldOccult.UnlockedTechs.Where(t => t == TechId.AstralAnchor).ToList() : new()
-            };
-            coven.Faith = retainedFaith;
-            coven.Followers = 0;
-            coven.Gold = 0;
-            coven.Buildings = new Dictionary<BuildingType, int>();
-            coven.Upgrades = new List<UpgradeId>();
-        }
+                HighCouncil = keepHighPriest ? oldHomeOccult.HighCouncil.Where(c => c.Role == CouncilRole.HighPriest).ToList() : new(),
+                UnlockedTechs = keepAstralAnchor ? oldHomeOccult.UnlockedTechs.Where(t => t == TechId.AstralAnchor).ToList() : new()
+            }
+        });
 
         state.ActiveCovenId = "skanor";
+        state.RevealedFootholds.Clear();
+        state.PendingContinentStory = null;
+        state.Conversion = null;
+        state.ActiveLocalCults.Clear();
+        state.LocalCultBattles?.Clear();
+
+        state.ShadowWar = ShadowWarEngine.CreateInitialState();
+        state.RivalCults = RivalCultEngine.CreateInitialState();
+        state.BattleSystem = BattleEngine.CreateInitialState();
+
         state.EldritchFavor += favor;
         state.GrandSacrificeCount++;
         return favor;
