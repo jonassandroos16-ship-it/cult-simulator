@@ -22,8 +22,12 @@
         @if (Game.State.EldritchFavor > 0) { <div class="resource-stat flex items-baseline gap-1.5"><span class="resource-icon text-xl">🌟</span><span class="resource-value font-display text-xl font-semibold text-amber-200">@NumberFormat.Fmt(Game.State.EldritchFavor)</span><span class="resource-label text-[0.7rem] text-amber-400 tracking-[0.15em] uppercase">Favor</span></div> }
     </div>
     <div class="income-display flex gap-6 mt-2 text-xs items-center flex-wrap">
-        <span class="income-faith text-emerald-400">+@NumberFormat.Fmt(totalIncome.faith)/s ✨</span>
-        <span class="income-gold text-amber-500">+@NumberFormat.Fmt(totalIncome.gold)/s 💰</span>
+        <span class="income-faith text-emerald-400">+@NumberFormat.Fmt(covenIncome.faith)/s ✨</span>
+        <span class="income-gold text-amber-500">+@NumberFormat.Fmt(covenIncome.gold)/s 💰</span>
+        @if (convertedCovenCount > 1)
+        {
+            <span class="text-slate-500 text-[0.7rem]">all covens: +@NumberFormat.Fmt(totalIncome.faith)/s ✨ · +@NumberFormat.Fmt(totalIncome.gold)/s 💰</span>
+        }
         @if (activeCoven.BaseMultiplier > 1.0)
         {
             <span class="coven-multiplier-badge px-2.5 py-1 rounded-full text-[0.7rem] font-display tracking-[0.1em] uppercase" style="background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.3); color: var(--gold-pale);">×@activeCoven.BaseMultiplier.ToString("F2") Coven Faith Bonus</span>
@@ -34,7 +38,9 @@
 @code {
     private CovenState activeCoven => Game.State.ActiveCoven;
     private int totalFollowers => CovenProgress.TotalFollowers(Game.State);
+    private (double faith, double gold) covenIncome => GameEngine.TickIncome(activeCoven, Game.State);
     private (double faith, double gold) totalIncome => GameEngine.TotalIncomePerSec(Game.State);
+    private int convertedCovenCount => Game.State.Covens.Count(c => c.Converted);
     private RankDef currentRank => GameEngine.RankFor(totalFollowers);
     private RankDef? nextRank => GameEngine.NextRank(totalFollowers);
     private string activeCovenName { get { var loc = Locations.Find(Game.State.ActiveCovenId); return loc?.Name ?? Game.State.ActiveCovenId; } }
