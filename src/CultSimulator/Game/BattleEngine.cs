@@ -253,29 +253,29 @@ public static class BattleEngine
         double faithRegen = BattleCommon.CalculateFaithRegen(battle.DeployedSquad);
         battle.PlayerHp = Math.Min(battle.PlayerMaxHp, battle.PlayerHp + faithRegen * deltaSec);
 
+        battle.RivalHp = Math.Max(0, battle.RivalHp - playerDamage);
+        battle.PlayerHp = Math.Max(0, battle.PlayerHp - mitigated);
+
         battle.RoundTimer += deltaSec;
-        if (battle.RoundTimer >= 2.0)
+        battle.Momentum = Math.Clamp(battle.Momentum + (playerDamage - mitigated) * 0.01, -100, 100);
+
+        if (battle.RoundTimer >= BattleRoundEngine.RoundIntervalSec)
         {
             battle.RoundTimer = 0;
             battle.RoundNumber++;
-
-            var roundResult = BattleRoundEngine.ProcessRound(
+            var round = BattleRoundEngine.ExecuteRound(
                 battle.RoundNumber, battle.DeployedSquad, battle.EnemyUnits,
-                sw, state, battle.Momentum);
-            battle.Momentum = roundResult.Momentum;
-            battle.PlayerHp = Math.Max(0, battle.PlayerHp - roundResult.PlayerDamage);
-            battle.RivalHp = Math.Max(0, battle.RivalHp - roundResult.RivalDamage);
-            battle.Log.AddRange(roundResult.LogEntries);
-            if (battle.Log.Count > MaxLogEntries * 2) battle.Log = battle.Log.TakeLast(MaxLogEntries).ToList();
-            battle.RecentRounds.Add(roundResult);
-            if (battle.RecentRounds.Count > 5) battle.RecentRounds.RemoveAt(0);
-
-            var tactic = BattleRoundEngine.TryEnemyTactic(battle.EnemyArchetype.Value, battle.DeployedSquad, battle.RoundNumber);
-            if (tactic != null)
+                playerAttack, rivalAttack, playerDefense, stealth, BattleRoundEngine.RoundIntervalSec);
+            if (battle.EnemyArchetype != null)
             {
-                battle.Log.AddRange(tactic.LogEntries);
-                if (battle.Log.Count > MaxLogEntries * 2) battle.Log = battle.Log.TakeLast(MaxLogEntries).ToList();
+                var tactic = BattleRoundEngine.TryEnemyTactic(battle.EnemyArchetype.Value, battle.DeployedSquad, battle.RoundNumber);
+                if (tactic != null) round.EnemyAction = tactic;
+                var (reinforced, action) = BattleRoundEngine.TryEnemyReinforce(battle.EnemyUnits, battle.EnemyArchetype.Value, scale, battle.RoundNumber);
+                if (reinforced) { round.EnemyReinforced = true; round.EnemyAction = action; }
             }
+            battle.RecentRounds.Add(round);
+            if (battle.RecentRounds.Count > 6) battle.RecentRounds.RemoveAt(0);
+            AppendLog(battle, round.Summary);
         }
 
         if (battle.RivalHp <= 0)
