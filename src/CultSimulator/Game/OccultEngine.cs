@@ -7,7 +7,8 @@ public static class OccultEngine
         var o = state.Occult;
         double basePower = GrandSacrifice.ClickPowerBase(state) + o.SermonPowerLevel;
         double mult = CultistHierarchy.TapPowerMult(o) * Grimoire.TapPowerBonus(o) * o.ElixirTapMult * GrandSacrifice.GlobalProductionMult(state);
-        if (o.IsFrenzyActive) mult *= OccultBalance.FrenzyMultiplier;
+        mult *= TechTree.AscensionProtocolMult(o);
+        if (o.IsFrenzyActive) mult *= TechTree.FrenzyMultiplier(o);
         if (o.IsWhisperChoirActive) mult *= 3.0;
         return basePower * mult;
     }
@@ -44,7 +45,7 @@ public static class OccultEngine
     private static double InitiateFaithPerSec(OccultState o, double globalMult)
     {
         double baseRate = o.Initiates * 0.1;
-        double mult = globalMult * Grimoire.GlobalProductionMult(o);
+        double mult = globalMult * Grimoire.GlobalProductionMult(o) * TechTree.AcolyteFaithMult(o) * TechTree.MarrowTransfusionMult(o);
         if (TechTree.HasTech(o, TechId.SanguineAutomata)) baseRate += o.Initiates * 0.05;
         return baseRate * mult;
     }
@@ -54,6 +55,8 @@ public static class OccultEngine
         var o = state.Occult;
         double total = InitiateFaithPerSec(state);
         total *= WorldMapSystem.GreatSealMultiplier(o);
+        total *= TechTree.CollectiveTranceMult(o);
+        total *= TechTree.AscensionProtocolMult(o);
         return total;
     }
 
@@ -65,6 +68,7 @@ public static class OccultEngine
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Infiltrator) * OccultBalance.InfiltratorFaithPerSec;
         baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult;
         baseFaith *= GrandSacrifice.GlobalProductionMult(state);
+        baseFaith *= TechTree.CollectiveTranceMult(o);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
         if (LocalCultEngine.AllOnCooldown(state, state.ActiveCovenId)) baseFaith *= GameBalance.AllCultsCooldownFaithMult;
@@ -78,7 +82,6 @@ public static class OccultEngine
         state.ActiveCoven.Faith += faith; o.LifetimeFaith += faith;
         double mapFaith = TotalMapFaithPerSec(state) * deltaSec;
         state.ActiveCoven.Faith += mapFaith; o.LifetimeFaith += mapFaith;
-        WorldMapSystem.TickSuspicion(o, deltaSec);
         WorldMapSystem.TickMaterials(o, deltaSec);
         Cauldron.TickElixir(o, deltaSec);
         if (o.FrenzyTimer > 0) o.FrenzyTimer = Math.Max(0, o.FrenzyTimer - deltaSec);
@@ -87,37 +90,34 @@ public static class OccultEngine
         if (o.WhisperChoirTimer > 0) o.WhisperChoirTimer = Math.Max(0, o.WhisperChoirTimer - deltaSec);
         if (o.CovenBlessingTimer > 0) o.CovenBlessingTimer = Math.Max(0, o.CovenBlessingTimer - deltaSec);
         if (TechTree.HasTech(o, TechId.AutophagousCult)) { int cap = CultistHierarchy.InitiateCap(o, state.ActiveCoven); if (o.Initiates > cap) { int excess = o.Initiates - cap; o.Initiates = cap; state.ActiveCoven.Faith += excess * OccultBalance.SacrificeSermonMult * 0.5; } }
-        if (WorldMapSystem.IsRaidTriggered(o) && !TechTree.HasTech(o, TechId.InquisitorsBlindfold)) WorldMapSystem.ApplyRaid(o);
     }
 
     public static bool CanActivateFrenzy(OccultState o) => TechTree.HasTech(o, TechId.ExsanguinationEngine) && o.Minions.Count > 0 && !o.IsFrenzyActive;
-    public static bool ActivateFrenzy(OccultState o) { if (!CanActivateFrenzy(o)) return false; o.Minions.RemoveAt(0); o.FrenzyTimer = OccultBalance.FrenzyDurationSec; return true; }
+    public static bool ActivateFrenzy(OccultState o) { if (!CanActivateFrenzy(o)) return false; o.Minions.RemoveAt(0); o.FrenzyTimer = TechTree.FrenzyDuration(o); return true; }
     public static bool CanActivateMassHysteria(OccultState o) => TechTree.HasTech(o, TechId.MassHysteria) && !o.IsMassHysteriaActive;
     public static bool ActivateMassHysteria(OccultState o) { if (!CanActivateMassHysteria(o)) return false; o.MassHysteriaTimer = OccultBalance.MassHysteriaDurationSec; return true; }
 
-    public static bool CanSacrificeInitiate(GameState state) => state.Occult.Initiates > 0 && state.Occult.Suspicion > 0;
+    public static bool CanSacrificeInitiate(GameState state) => state.Occult.Initiates > 0;
     public static bool CanSacrificeAcolyte(GameState state) => CanSacrificeInitiate(state);
     public static bool SacrificeInitiate(GameState state)
     {
         if (!CanSacrificeInitiate(state)) return false;
         var o = state.Occult;
         o.Initiates--;
-        o.Suspicion = Math.Max(0, o.Suspicion - OccultBalance.InitiateSacrificeSuspicionReduction);
-        double faith = OccultBalance.SacrificeFaithBase * 5;
+        double faith = OccultBalance.SacrificeFaithBase * 5 * TechTree.SacrificeBonus(o);
         state.ActiveCoven.Faith += faith;
         o.LifetimeFaith += faith;
         return true;
     }
     public static bool SacrificeAcolyte(GameState state) => SacrificeInitiate(state);
 
-    public static bool CanActivateBloodOffering(GameState state) => state.Occult.Initiates >= 5 && state.Occult.Suspicion > 0;
+    public static bool CanActivateBloodOffering(GameState state) => state.Occult.Initiates >= 5;
     public static bool ActivateBloodOffering(GameState state)
     {
         if (!CanActivateBloodOffering(state)) return false;
         var o = state.Occult;
         o.Initiates -= 5;
-        o.Suspicion = 0;
-        double faith = OccultBalance.SacrificeFaithBase * 50;
+        double faith = OccultBalance.SacrificeFaithBase * 50 * TechTree.SacrificeBonus(o);
         state.ActiveCoven.Faith += faith;
         o.LifetimeFaith += faith;
         return true;
@@ -135,9 +135,10 @@ public static class OccultEngine
     public static double TotalFaithPerSecForCoven(GameState state, CovenState coven)
     {
         var o = coven.Occult;
-        double total = o.Initiates * 0.1 * GrandSacrifice.GlobalProductionMult(state) * Grimoire.GlobalProductionMult(o);
+        double total = o.Initiates * 0.1 * GrandSacrifice.GlobalProductionMult(state) * Grimoire.GlobalProductionMult(o) * TechTree.AcolyteFaithMult(o) * TechTree.MarrowTransfusionMult(o);
         if (TechTree.HasTech(o, TechId.SanguineAutomata)) total += o.Initiates * 0.05;
         total *= WorldMapSystem.GreatSealMultiplier(o);
+        total *= TechTree.CollectiveTranceMult(o);
         return total;
     }
 
@@ -148,10 +149,10 @@ public static class OccultEngine
         baseFaith += o.Minions.Count(m => m.Role == PromotedRole.Infiltrator) * OccultBalance.InfiltratorFaithPerSec;
         baseFaith *= CultistHierarchy.FaithMult(o) * Grimoire.FaithBonus(o) * o.ElixirFaithMult;
         baseFaith *= GrandSacrifice.GlobalProductionMult(state);
+        baseFaith *= TechTree.CollectiveTranceMult(o);
         if (o.IsMassHysteriaActive) baseFaith *= 2.0;
         if (o.IsCovenBlessingActive) baseFaith *= 2.0;
         if (LocalCultEngine.AllOnCooldown(state, state.ActiveCovenId)) baseFaith *= GameBalance.AllCultsCooldownFaithMult;
         return baseFaith;
     }
-
 }
