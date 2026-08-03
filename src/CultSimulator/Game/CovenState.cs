@@ -38,7 +38,7 @@ public class CovenState
 
     /// <summary>
     /// Per-coven occult state. Each coven has its own acolytes, disciples,
-    /// tech tree, map nodes, suspicion, materials, and ley lines — so every
+    /// tech tree, map nodes, materials, and ley lines — so every
     /// coven is its own mini-game that must be managed independently.
     /// </summary>
     public OccultState Occult { get; set; } = new();

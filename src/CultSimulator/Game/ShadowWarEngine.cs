@@ -42,8 +42,8 @@ public static class ShadowWarEngine
     public static double AgentStrength(ShadowWarState sw, GameState state)
     {
         double strength = BaseAgentStrength;
-        if (state.Occult.UnlockedTechs.Contains(TechId.ShadowTactics))
-            strength *= 1.25;
+        if (state.Occult.UnlockedTechs.Contains(TechId.ZealotConditioning))
+            strength *= 1.0 + OccultBalance.ZealotConditioningStrengthBonus;
         return strength;
     }
 

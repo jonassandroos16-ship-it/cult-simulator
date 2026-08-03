@@ -40,8 +40,18 @@ public static class Grimoire
         double bonus = 1.0;
         var counts = SocketedSuitCounts(o);
         double setMult = TechTree.SetBonusMult(o);
-        if (counts.GetValueOrDefault(ArtifactSuit.Blood) >= 3) bonus += OccultBalance.Blood3TapBonus * setMult;
-        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "blood_chalice") bonus += 0.15; }
+        double convergence = TechTree.CosmicConvergenceMult(o);
+        if (counts.GetValueOrDefault(ArtifactSuit.Blood) >= 3) bonus += OccultBalance.Blood3TapBonus * setMult * convergence;
+        foreach (var artifactId in o.SocketedArtifacts)
+        {
+            var def = OccultData.Artifact(artifactId);
+            if (def == null) continue;
+            if (def.Id == "blood_chalice") bonus += 0.15 * convergence;
+            if (def.Id == "blood_altar") bonus += 0.10 * convergence;
+            if (def.Id == "void_cloak") bonus += 0.10 * convergence;
+            if (def.Id == "flesh_muscle") bonus += 0.20 * convergence;
+        }
+        bonus *= TechTree.ElderSignTapBonus(o);
         return bonus;
     }
 
@@ -51,28 +61,37 @@ public static class Grimoire
     public static double FaithBonus(OccultState o)
     {
         double bonus = 1.0;
-        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "void_orb") bonus += 0.10; }
-        return bonus;
-    }
-
-    public static double SuspicionReductionBonus(OccultState o)
-    {
-        double bonus = 1.0;
-        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "void_cloak") bonus -= 0.10; }
+        double convergence = TechTree.CosmicConvergenceMult(o);
+        foreach (var artifactId in o.SocketedArtifacts)
+        {
+            var def = OccultData.Artifact(artifactId);
+            if (def == null) continue;
+            if (def.Id == "void_orb") bonus += 0.10 * convergence;
+            if (def.Id == "void_crown") bonus += 0.15 * convergence;
+            if (def.Id == "mind_spiral") bonus += 0.20 * convergence;
+        }
+        bonus += TechTree.VoidTwinFaithBonus(o);
         return bonus;
     }
 
     public static double GlobalProductionMult(OccultState o)
     {
         double mult = 1.0;
-        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null) { if (def.Id == "flesh_graft") mult += 0.15; if (def.Id == "flesh_seed") mult += 0.05; } }
+        double convergence = TechTree.CosmicConvergenceMult(o);
+        foreach (var artifactId in o.SocketedArtifacts)
+        {
+            var def = OccultData.Artifact(artifactId);
+            if (def == null) continue;
+            if (def.Id == "flesh_graft") mult += 0.15 * convergence;
+            if (def.Id == "flesh_seed") mult += 0.05 * convergence;
+        }
         return mult;
     }
 
     public static int AcolyteCapBonus(OccultState o)
     {
         int bonus = 0;
-        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && def.Id == "flesh_golem") bonus += 50; }
+        foreach (var artifactId in o.SocketedArtifacts) { var def = OccultData.Artifact(artifactId); if (def != null && (def.Id == "flesh_golem" || def.Id == "flesh_heart")) bonus += def.Id == "flesh_heart" ? 100 : 50; }
         return bonus;
     }
 }

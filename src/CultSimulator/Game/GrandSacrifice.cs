@@ -18,9 +18,10 @@ public static class GrandSacrifice
         double favor = CalculateFavor(state);
         if (favor < 1) return 0;
 
-        double retainedFaithPercent = TechTree.FaithRetentionPercent(state.Occult);
+        double retainedFaithPercent = TechTree.FaithRetentionPercentDeep(state.Occult);
         bool keepHighPriest = TechTree.HasTech(state.Occult, TechId.AstralAnchor);
         bool keepAstralAnchor = keepHighPriest;
+        bool keepAllTechs = TechTree.KeepAllTechs(state.Occult);
 
         var homeCoven = state.HomeCoven;
         double homeRetainedFaith = homeCoven.Faith * retainedFaithPercent;
@@ -37,7 +38,7 @@ public static class GrandSacrifice
             Occult = new OccultState
             {
                 HighCouncil = keepHighPriest ? oldHomeOccult.HighCouncil.Where(c => c.Role == CouncilRole.HighPriest).ToList() : new(),
-                UnlockedTechs = keepAstralAnchor ? oldHomeOccult.UnlockedTechs.Where(t => t == TechId.AstralAnchor).ToList() : new()
+                UnlockedTechs = keepAllTechs ? oldHomeOccult.UnlockedTechs.ToList() : (keepAstralAnchor ? oldHomeOccult.UnlockedTechs.Where(t => t == TechId.AstralAnchor).ToList() : new())
             }
         });
 

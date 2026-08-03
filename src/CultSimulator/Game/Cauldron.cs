@@ -46,16 +46,16 @@ public static class Cauldron
 
     private static void ApplyElixir(OccultState o, CauldronRecipeId id)
     {
-        o.ElixirTimer = OccultBalance.ElixirDurationSec;
+        o.ElixirTimer = OccultBalance.ElixirDurationSec * TechTree.AstralDistillationMult(o);
         switch (id)
         {
             case CauldronRecipeId.CrimsonElixir: o.ElixirTapMult = 2.0; break;
             case CauldronRecipeId.VoidTincture: o.ElixirFaithMult = 1.5; break;
-            case CauldronRecipeId.MindPhiltre: o.ElixirSuspicionMult = 0.5; break;
+            case CauldronRecipeId.MindPhiltre: o.ElixirPreachMult = 2.0; break;
             case CauldronRecipeId.FleshBrew: o.Initiates += 100; break;
             case CauldronRecipeId.WarElixir:
                 o.ElixirWarStrengthMult = 1.5;
-                o.ElixirTimer = OccultBalance.WarElixirDurationSec;
+                o.ElixirTimer = OccultBalance.WarElixirDurationSec * TechTree.AstralDistillationMult(o);
                 break;
         }
     }
@@ -69,7 +69,7 @@ public static class Cauldron
             o.ElixirTimer = 0;
             o.ElixirTapMult = 1.0;
             o.ElixirFaithMult = 1.0;
-            o.ElixirSuspicionMult = 1.0;
+            o.ElixirPreachMult = 1.0;
             o.ElixirWarStrengthMult = 1.0;
         }
     }
