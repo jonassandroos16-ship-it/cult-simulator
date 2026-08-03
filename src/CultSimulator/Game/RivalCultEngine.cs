@@ -32,7 +32,6 @@ public static class RivalCultEngine
                 Id = def.Id,
                 Status = RivalCultStatus.Dormant,
                 Power = 0,
-                TerritoryControl = 0,
                 NextActionAt = 0
             });
         }
@@ -76,7 +75,6 @@ public static class RivalCultEngine
     public static void Tick(GameState state, WorldLocationService locations, double deltaSec)
     {
         var rs = EnsureInitialized(state);
-        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
         foreach (var def in RivalCultData.Rivals)
         {
@@ -94,90 +92,14 @@ public static class RivalCultEngine
             {
                 rival.Status = RivalCultStatus.Dormant;
                 rival.Power = 0;
-                rival.ControlledInstitutions.Clear();
-                rival.TerritoryControl = 0;
             }
 
             if (rival.Status == RivalCultStatus.Dormant) continue;
 
-            rival.Power += def.GrowthRate * deltaSec * (1.0 + rival.TerritoryControl * 0.5);
-
-            if (now >= rival.NextActionAt)
-            {
-                TakeAction(state, rival, def, now);
-                rival.NextActionAt = now + (long)(Random.Shared.Next(20, 45) * 1000);
-            }
+            rival.Power += def.GrowthRate * deltaSec;
         }
 
         TickRivalBattles(state, locations, deltaSec);
-    }
-
-    private static void TakeAction(GameState state, RivalCultState rival, RivalCultDef def, long now)
-    {
-        var sw = state.ShadowWarOrInit;
-
-        var targetInst = FindTargetInstitution(sw, def, rival);
-        if (targetInst != null)
-        {
-            AttackInstitution(sw, rival, def, targetInst);
-            return;
-        }
-
-        rival.TerritoryControl = Math.Min(1.0, rival.TerritoryControl + 0.05);
-        rival.Status = rival.TerritoryControl > 0.5 ? RivalCultStatus.Expanding : RivalCultStatus.Active;
-    }
-
-    private static InstitutionState? FindTargetInstitution(ShadowWarState sw, RivalCultDef def, RivalCultState rival)
-    {
-        var territoryInsts = ShadowWarData.InstitutionsForTerritory(def.PreferredTerritoryId);
-
-        var playerControlled = territoryInsts
-            .FirstOrDefault(i => sw.GetInstitution(i.Id)?.Status == InstitutionStatus.Controlled);
-        if (playerControlled != null && Random.Shared.NextDouble() < def.Aggression)
-        {
-            rival.Status = RivalCultStatus.AtWar;
-            return sw.GetInstitution(playerControlled.Id);
-        }
-
-        var unlocked = territoryInsts
-            .Where(i => sw.GetInstitution(i.Id)?.Status == InstitutionStatus.Unlocked)
-            .ToList();
-        if (unlocked.Count > 0)
-            return sw.GetInstitution(unlocked[Random.Shared.Next(unlocked.Count)].Id);
-
-        return null;
-    }
-
-    private static void AttackInstitution(ShadowWarState sw, RivalCultState rival, RivalCultDef def, InstitutionState inst)
-    {
-        if (inst.Status == InstitutionStatus.Controlled)
-        {
-            double damage = rival.Power * 0.1 * def.AgentStrength;
-            inst.InvestigationDefense = Math.Max(0, inst.InvestigationDefense - damage);
-            if (inst.InvestigationDefense <= 0 && inst.Status == InstitutionStatus.Controlled)
-            {
-                inst.Status = InstitutionStatus.Investigated;
-                inst.InvestigationDefense = 30;
-                rival.ControlledInstitutions.Add(inst.Id);
-            }
-            rival.Power -= 5;
-        }
-        else if (inst.Status == InstitutionStatus.Unlocked)
-        {
-            if (Random.Shared.NextDouble() < 0.3 * def.AgentStrength)
-            {
-                inst.Status = InstitutionStatus.Alerted;
-                inst.CooldownUntil = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() + 20_000;
-                rival.ControlledInstitutions.Add(inst.Id);
-                rival.TerritoryControl = Math.Min(1.0, rival.TerritoryControl + 0.1);
-            }
-        }
-    }
-
-    public static int TotalRivalControlled(GameState state)
-    {
-        var rs = EnsureInitialized(state);
-        return rs.Rivals.Where(r => r.Status != RivalCultStatus.Dormant && !r.Defeated).Sum(r => r.ControlledInstitutions.Count);
     }
 
     public static IReadOnlyList<(RivalCultDef def, RivalCultState state)> ActiveRivals(GameState state)
@@ -257,7 +179,6 @@ public static class RivalCultEngine
 
     public static (bool success, string message) WithdrawRivalBattleAgents(GameState state, string rivalId)
     {
-        var sw = ShadowWarEngine.EnsureInitialized(state);
         var rs = EnsureInitialized(state);
         var battle = rs.GetRivalBattle(rivalId);
         if (battle == null) return (false, "No battle found.");
@@ -375,19 +296,9 @@ public static class RivalCultEngine
                 battle.LastFaithReward = faithReward;
                 battle.VictoryAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-                var controlledInsts = rival.ControlledInstitutions.ToList();
                 rival.Defeated = true;
                 rival.Status = RivalCultStatus.Dormant;
                 rival.Power = 0;
-                rival.ControlledInstitutions.Clear();
-                rival.TerritoryControl = 0;
-
-                foreach (var instId in controlledInsts)
-                {
-                    var inst = sw.GetInstitution(instId);
-                    if (inst != null && inst.Status == InstitutionStatus.Alerted)
-                        inst.Status = InstitutionStatus.Unlocked;
-                }
 
                 state.ActiveCoven.Faith += faithReward;
                 state.Occult.LifetimeFaith += faithReward;
@@ -407,7 +318,7 @@ public static class RivalCultEngine
                 battle.RoundNumber = 0;
                 battle.Momentum = 0;
                 state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 20);
-                AppendLog(battle, $"DEFEAT! Your assault force was annihilated. Suspicion rises. Regroup and try again.");
+                AppendLog(battle, "DEFEAT! Your assault force was annihilated. Suspicion rises. Regroup and try again.");
             }
         }
 

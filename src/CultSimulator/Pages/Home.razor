@@ -91,7 +91,7 @@ else
         else if (activeTab == "battle") await Audio.SetGameStateAsync(AudioGameState.Combat, continent);
         else await Audio.SetGameStateAsync(AudioGameState.Gameplay, continent);
     }
-    private void SwitchToBattleMap() { mapInitialMode = "shadowwar"; activeTab = "map"; }
+    private void SwitchToBattleMap() { mapInitialMode = "local"; activeTab = "map"; }
     private void StoryDismissed() { }
     private async Task OnPreach() => await InvokeAsync(StateHasChanged);
     private async Task OnRecruit() => await InvokeAsync(StateHasChanged);
