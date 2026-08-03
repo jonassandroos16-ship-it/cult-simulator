@@ -32,7 +32,7 @@
         </button>
     </div>
     <p class="text-sm text-violet-300 mb-4 leading-6">
-        Rival cults threaten your hold on the world. When you control <strong class="text-amber-200">2 or more covens in the same continent</strong>, a rival will emerge. Recruit agents below, deploy them to a Battle Theatre, then launch your attack. <strong class="text-rose-300">Agents used in battle are lost forever</strong> — win for a Faith bonus, or lose and your Suspicion rises. Choose your battles wisely.
+        Rival cults emerge as continent bosses when you fully convert a continent. Recruit agents below, deploy them to a Battle Theatre, then launch your attack. <strong class="text-rose-300">Agents used in battle are lost forever</strong> — win for a Faith bonus, or lose and your Suspicion rises. Choose your battles wisely.
     </p>
 
     <div class="grid grid-cols-3 gap-3">
@@ -71,9 +71,9 @@
             }
         </div>
         <div class="p-3 rounded-[14px] text-center" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <div class="text-[0.65rem] text-amber-400 uppercase tracking-wider mb-1">Controlled</div>
-            <div class="font-display text-lg text-amber-100">@sw.TotalControlled</div>
-            <div class="text-[10px] text-slate-500 mt-0.5">Institutions seized</div>
+            <div class="text-[0.65rem] text-amber-400 uppercase tracking-wider mb-1">Bosses</div>
+            <div class="font-display text-lg text-amber-100">@Game.State.RivalCultsOrInit.Rivals.Count(r => r.Defeated) / @RivalCultData.Rivals.Length</div>
+            <div class="text-[10px] text-slate-500 mt-0.5">Continents conquered</div>
         </div>
     </div>
 
@@ -85,7 +85,6 @@
         </div>
     }
 
-    <!-- Agent production tip -->
     <div class="mt-3 p-2.5 rounded-[12px] text-xs leading-5" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
         <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider mb-1">How to Get More Agents</div>
         <div class="text-slate-400 space-y-0.5">
@@ -95,12 +94,9 @@
         </div>
     </div>
 
-    <!-- Strength tip -->
     <div class="mt-2 p-2.5 rounded-[12px] text-xs leading-5" style="background: rgba(15,10,36,0.4); border: 1px solid var(--panel-border);">
         <div class="text-[0.65rem] text-violet-400 uppercase tracking-wider mb-1">How to Increase Strength</div>
         <div class="text-slate-400 space-y-0.5">
-            <div><strong class="text-amber-200">⚔️ Military Institutions</strong> — Control Military-type institutions in the Shadow War to add their power to your base Strength.</div>
-            <div><strong class="text-amber-200">🕵️ Intelligence Institutions</strong> — Control Intelligence-type institutions for an additional Strength bonus.</div>
             <div><strong class="text-amber-200">📖 Shadow Tactics</strong> — Research this tech in the Grimoire to multiply all Strength by ×1.25.</div>
             <div><strong class="text-amber-200">⚗️ War Elixir</strong> — Brew a War Elixir in the Cauldron for a temporary ×1.5 Strength boost during battle.</div>
             <div class="text-slate-500 text-[0.65rem] mt-1">Strength multiplies every agent's attack damage in all battles — the higher it is, the faster enemies fall.</div>
@@ -121,7 +117,7 @@
 
 <div class="panel glass-panel rounded-[20px] p-5 mb-4">
     <h2 class="panel-title mb-3">Shadow Constructions</h2>
-    <p class="text-xs text-slate-400 mb-4 leading-relaxed">These constructions enhance the global Shadow War effort. All covens contribute — building these in any coven boosts agent generation and capacity across your entire cult.</p>
+    <p class="text-xs text-slate-400 mb-4 leading-relaxed">These constructions enhance the global agent pool. All covens contribute — building these in any coven boosts agent generation and capacity across your entire cult.</p>
     <div class="building-list flex flex-col gap-2.5">
         @foreach (var def in GameData.Buildings.Where(b => GameData.ShadowWarBuildings.Contains(b.Type)))
         {
@@ -150,7 +146,6 @@
     </div>
 </div>
 
-<!-- Step 1: Recruit Agents -->
 <div class="panel glass-panel rounded-[20px] p-5 mb-4" id="recruit-section">
     <div class="flex items-center gap-2 mb-1">
         <span class="deploy-step-badge">Step 1</span>
@@ -216,7 +211,6 @@
     }
 </div>
 
-<!-- Step 2: Battle Theatres -->
 <div class="panel glass-panel rounded-[20px] p-5">
     <div class="flex items-center gap-2 mb-1">
         <span class="deploy-step-badge">Step 2</span>
@@ -286,7 +280,6 @@
                             <EnemyReconCard Recon="theaterRecon" />
                         }
 
-                        <!-- Battle info summary -->
                         <div class="battle-info-summary mb-3">
                             <div class="battle-info-row">
                                 <span class="battle-info-label">Pool Agents</span>
@@ -401,7 +394,6 @@
     </div>
 </div>
 
-<!-- Step 3: Rival Cult Bosses -->
 @{
     var rivalSystem = Game.State.RivalCultsOrInit;
     var activeRivals = rivalSystem.Rivals.Where(r => r.Status != RivalCultStatus.Dormant && !r.Defeated).ToList();
@@ -438,7 +430,6 @@
                         <EnemyReconCard Recon="rivalRecon" />
                     }
 
-                    <!-- Battle info summary -->
                     <div class="battle-info-summary mb-3">
                         <div class="battle-info-row">
                             <span class="battle-info-label">Pool Agents</span>
