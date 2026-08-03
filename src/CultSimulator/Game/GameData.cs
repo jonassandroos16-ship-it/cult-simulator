@@ -17,10 +17,21 @@ public static class GameData
         new BuildingDef(BuildingType.Safehouse, "Safehouse", "🏚️", 4000, ResourceKind.Gold, 1.27, "+10 agent cap per level"));
 
     public static readonly ImmutableArray<UpgradeDef> Upgrades = ImmutableArray.Create(
+        // ── Sacred Rites (8 non-bank) ──
         new UpgradeDef(UpgradeId.Hymnal, "Sacred Hymnal", "📜", 120, 0, 0, "Preaching yields 2× Faith", 0),
         new UpgradeDef(UpgradeId.Relics, "Golden Relics", "🏺", 0, 250, 0, "Followers give 2× Gold", 15),
         new UpgradeDef(UpgradeId.Visions, "Prophetic Visions", "🔮", 600, 0, 0, "Followers give 2× Faith", 40),
         new UpgradeDef(UpgradeId.Ascendance, "Rite of Ascendance", "🌟", 1500, 1000, 0, "All production ×1.5", 120),
+        // New Sacred Rites (8 more — doubled)
+        new UpgradeDef(UpgradeId.SacredFlame, "Eternal Sacred Flame", "🔥", 300, 0, 0, "Shrines produce +50% Faith", 5),
+        new UpgradeDef(UpgradeId.TitheSystem, "Tithe System", "💰", 0, 600, 0, "Cathedrals produce +50% Gold", 25),
+        new UpgradeDef(UpgradeId.PilgrimNetwork, "Pilgrim Network", "🛤️", 2000, 500, 2, "Recruit cost -20%", 50),
+        new UpgradeDef(UpgradeId.DivineMandate, "Divine Mandate", "👑", 5000, 3000, 5, "All Faith generation +25%", 80),
+        new UpgradeDef(UpgradeId.GoldenIdol, "Golden Idol", "🗿", 0, 5000, 5, "All Gold generation +25%", 60),
+        new UpgradeDef(UpgradeId.SoulHarvest, "Soul Harvest", "🕯️", 8000, 0, 10, "Followers give +50% Faith and Gold", 100),
+        new UpgradeDef(UpgradeId.EternalFlame, "Eternal Flame", "🔥", 20000, 10000, 20, "All production ×1.5", 150),
+        new UpgradeDef(UpgradeId.Apotheosis, "Apotheosis", "☀️", 50000, 30000, 50, "All production ×2", 200),
+        // ── Bank Rites (4) ──
         new UpgradeDef(UpgradeId.BankVault, "Iron Vault", "🔒", 500, 2000, 5, "Bank idle cap ×1.5", 10),
         new UpgradeDef(UpgradeId.OffshoreAccounts, "Shadow Ledger", "📓", 2000, 6000, 15, "Bank idle cap ×1.5", 30),
         new UpgradeDef(UpgradeId.DarkLedger, "Blood Pact", "🩸", 5000, 20000, 40, "Bank idle cap ×2", 60),
@@ -299,151 +310,106 @@ public static readonly Dictionary<string, Dictionary<BuildingType, string>> Cove
         },
         ["iga_shinobi"] = new()
         {
-            { BuildingType.Shrine, "Shadow Altar" },
-            { BuildingType.Cathedral, "Hidden Dojo" },
-            { BuildingType.Monolith, "Shuriken Stone" },
+            { BuildingType.Shrine, "Shinobi Altar" },
+            { BuildingType.Cathedral, "Ninja Dojo" },
+            { BuildingType.Monolith, "Shadow Stone" },
             { BuildingType.Treasury, "Shinobi Coffer" },
-            { BuildingType.Observatory, "Mist Watch" },
-            { BuildingType.Reliquary, "Ninjutsu Reliquary" },
+            { BuildingType.Observatory, "Hidden Watch" },
+            { BuildingType.Reliquary, "Shuriken Reliquary" },
             { BuildingType.Undercroft, "Shadow Vault" },
         },
         ["koga_nightblades"] = new()
         {
-            { BuildingType.Shrine, "Illusion Altar" },
-            { BuildingType.Cathedral, "Poison Dojo" },
-            { BuildingType.Monolith, "Genjutsu Stone" },
+            { BuildingType.Shrine, "Nightblade Altar" },
+            { BuildingType.Cathedral, "Night Hall" },
+            { BuildingType.Monolith, "Night Stone" },
             { BuildingType.Treasury, "Night Coffer" },
             { BuildingType.Observatory, "Night Watch" },
-            { BuildingType.Reliquary, "Venom Reliquary" },
-            { BuildingType.Undercroft, "Poison Vault" },
+            { BuildingType.Reliquary, "Night Reliquary" },
+            { BuildingType.Undercroft, "Night Vault" },
         },
         ["takeda_ronin"] = new()
         {
-            { BuildingType.Shrine, "Blade Altar" },
-            { BuildingType.Cathedral, "Ghost Dojo" },
-            { BuildingType.Monolith, "Katana Stone" },
+            { BuildingType.Shrine, "Ronin Altar" },
+            { BuildingType.Cathedral, "Ronin Hall" },
+            { BuildingType.Monolith, "Ronin Stone" },
             { BuildingType.Treasury, "Ronin Coffer" },
-            { BuildingType.Observatory, "Battlefield Watch" },
-            { BuildingType.Reliquary, "Spirit Blade Reliquary" },
-            { BuildingType.Undercroft, "Warrior Vault" },
+            { BuildingType.Observatory, "Ronin Watch" },
+            { BuildingType.Reliquary, "Ronin Reliquary" },
+            { BuildingType.Undercroft, "Ronin Vault" },
         },
         ["wu_dang_immortals"] = new()
         {
-            { BuildingType.Shrine, "Chi Altar" },
-            { BuildingType.Cathedral, "Mountain Temple" },
-            { BuildingType.Monolith, "Immortal Stone" },
-            { BuildingType.Treasury, "Elixir Coffer" },
-            { BuildingType.Observatory, "Peak Watch" },
-            { BuildingType.Reliquary, "Alchemy Reliquary" },
-            { BuildingType.Undercroft, "Cave Vault" },
+            { BuildingType.Shrine, "Taoist Altar" },
+            { BuildingType.Cathedral, "Immortal Temple" },
+            { BuildingType.Monolith, "Tao Stone" },
+            { BuildingType.Treasury, "Immortal Coffer" },
+            { BuildingType.Observatory, "Celestial Watch" },
+            { BuildingType.Reliquary, "Immortal Reliquary" },
+            { BuildingType.Undercroft, "Immortal Vault" },
         },
         ["shadow_shogun"] = new()
         {
-            { BuildingType.Shrine, "Throne Altar" },
-            { BuildingType.Cathedral, "Edo Castle" },
+            { BuildingType.Shrine, "Shogun Altar" },
+            { BuildingType.Cathedral, "Shogun Palace" },
             { BuildingType.Monolith, "Shogun Stone" },
-            { BuildingType.Treasury, "Imperial Coffer" },
-            { BuildingType.Observatory, "Castle Watch" },
+            { BuildingType.Treasury, "Shogun Coffer" },
+            { BuildingType.Observatory, "Shogun Watch" },
             { BuildingType.Reliquary, "Shogun Reliquary" },
-            { BuildingType.Undercroft, "Castle Vault" },
+            { BuildingType.Undercroft, "Shogun Vault" },
         },
         ["maori_tohunga"] = new()
         {
-            { BuildingType.Shrine, "Moko Altar" },
-            { BuildingType.Cathedral, "Marae Temple" },
-            { BuildingType.Monolith, "Sacred Stone" },
-            { BuildingType.Treasury, "Tribal Coffer" },
-            { BuildingType.Observatory, "Coastal Watch" },
-            { BuildingType.Reliquary, "Tiki Reliquary" },
-            { BuildingType.Undercroft, "Burial Cave" },
+            { BuildingType.Shrine, "Marae Altar" },
+            { BuildingType.Cathedral, "Wharenui" },
+            { BuildingType.Monolith, "Pounamu Stone" },
+            { BuildingType.Treasury, "Iwi Coffer" },
+            { BuildingType.Observatory, "Celestial Watch" },
+            { BuildingType.Reliquary, "Tohunga Reliquary" },
+            { BuildingType.Undercroft, "Urupa Vault" },
         },
         ["dreamtime_elders"] = new()
         {
-            { BuildingType.Shrine, "Dreamtime Altar" },
+            { BuildingType.Shrine, "Dreaming Altar" },
             { BuildingType.Cathedral, "Songline Temple" },
-            { BuildingType.Monolith, "Uluru Stone" },
-            { BuildingType.Treasury, "Songline Coffer" },
-            { BuildingType.Observatory, "Desert Watch" },
+            { BuildingType.Monolith, "Rainbow Stone" },
+            { BuildingType.Treasury, "Tribal Coffer" },
+            { BuildingType.Observatory, "Sky Watch" },
             { BuildingType.Reliquary, "Ancestor Reliquary" },
-            { BuildingType.Undercroft, "Dreamtime Vault" },
+            { BuildingType.Undercroft, "Sacred Vault" },
         },
         ["polynesian_navigators"] = new()
         {
-            { BuildingType.Shrine, "Wayfinder Altar" },
-            { BuildingType.Cathedral, "Ocean Temple" },
-            { BuildingType.Monolith, "Star Path Stone" },
-            { BuildingType.Treasury, "Voyage Coffer" },
-            { BuildingType.Observatory, "Star Path Watch" },
-            { BuildingType.Reliquary, "Navigation Reliquary" },
-            { BuildingType.Undercroft, "Deep Vault" },
+            { BuildingType.Shrine, "Wayfinding Altar" },
+            { BuildingType.Cathedral, "Navigation Temple" },
+            { BuildingType.Monolith, "Star Compass Stone" },
+            { BuildingType.Treasury, "Voyaging Coffer" },
+            { BuildingType.Observatory, "Star Watch" },
+            { BuildingType.Reliquary, "Navigator Reliquary" },
+            { BuildingType.Undercroft, "Island Vault" },
         },
         ["papuan_spirits"] = new()
         {
-            { BuildingType.Shrine, "Mask Altar" },
+            { BuildingType.Shrine, "Spirit Altar" },
             { BuildingType.Cathedral, "Spirit House" },
-            { BuildingType.Monolith, "Highland Stone" },
-            { BuildingType.Treasury, "Jungle Coffer" },
-            { BuildingType.Observatory, "Ridge Watch" },
-            { BuildingType.Reliquary, "Mask Reliquary" },
-            { BuildingType.Undercroft, "Highland Vault" },
+            { BuildingType.Monolith, "Ancestor Stone" },
+            { BuildingType.Treasury, "Tribal Coffer" },
+            { BuildingType.Observatory, "Jungle Watch" },
+            { BuildingType.Reliquary, "Spirit Reliquary" },
+            { BuildingType.Undercroft, "Spirit Vault" },
         },
         ["pacific_abyss"] = new()
         {
             { BuildingType.Shrine, "Abyss Altar" },
-            { BuildingType.Cathedral, "Trench Temple" },
-            { BuildingType.Monolith, "Pressure Stone" },
-            { BuildingType.Treasury, "Deep Coffer" },
-            { BuildingType.Observatory, "Abyssal Watch" },
-            { BuildingType.Reliquary, "Deep One Reliquary" },
-            { BuildingType.Undercroft, "Mariana Vault" },
+            { BuildingType.Cathedral, "Deep Temple" },
+            { BuildingType.Monolith, "Abyss Stone" },
+            { BuildingType.Treasury, "Abyss Coffer" },
+            { BuildingType.Observatory, "Deep Watch" },
+            { BuildingType.Reliquary, "Abyss Reliquary" },
+            { BuildingType.Undercroft, "Abyss Vault" },
         },
     };
 
-
-    public static string BuildingNameFor(string covenId, BuildingType type)
-    {
-        if (CovenBuildingNames.TryGetValue(covenId, out var names) && names.TryGetValue(type, out var name))
-            return name;
-        return GameData.Buildings.First(b => b.Type == type).Name;
-    }
-
-    public static readonly ImmutableArray<RankDef> Ranks = ImmutableArray.Create(
-        new RankDef("Novice", 0, "#94a3b8", "You light your first candle in the dark. The shadows listen, curious and patient."),
-        new RankDef("Adept", 25, "#7dd3fc", "Whispers of your name travel on the wind. The faithful gather, hungry for truth."),
-        new RankDef("Mystic", 100, "#c4b5fd", "Your voice bends the veil between worlds. What was hidden now answers your call."),
-        new RankDef("Prophet", 250, "#fbbf24", "Nations tremble at your proclamations. You no longer speak for the faithful — the faithful speak for you."),
-        new RankDef("Demigod", 600, "#fb7185", "Mortality frays at the edges of your being. The line between worship and reality blurs in your presence."),
-        new RankDef("Ascended", 1500, "#f472b6", "You have crossed the threshold. Flesh, doubt, and death are memories. The world reshapes itself around your will."));
-
-    public static readonly ImmutableArray<EventDef> Events = ImmutableArray.Create(
-        new EventDef("lost_wanderer", "A Lost Wanderer",
-            "A gaunt figure stumbles into your circle, eyes wide with desperation. \"I have walked for forty days. I seek only purpose.\"",
-            new EventChoice("Welcome them into the fold", "+3 Followers, −20 Faith", s => { s.Followers += 3; s.Faith -= 20; return null; }),
-            new EventChoice("Take their meager coin", "+50 Gold", s => { s.Gold += 50; return null; })),
-        new EventDef("wealthy_patron", "A Wealthy Patron",
-            "A noble in silk robes arrives with a heavy chest. \"I am drawn to your teachings. Perhaps we can... help each other.\"",
-            new EventChoice("Accept their donation", "+120 Gold", s => { s.Gold += 120; return null; }),
-            new EventChoice("Convert them to the faith", "+5 Followers, −40 Gold", s => { s.Followers += 5; s.Gold -= 40; return null; })),
-        new EventDef("voice_of_doubt", "A Voice of Doubt",
-            "A former priest stands at the edge of your gathering, voice trembling with conviction. \"Your doctrine is hollow. I challenge you to debate.\"",
-            new EventChoice("Debate publicly", "+100 Faith if you win, −5 Followers if you lose", s =>
-            {
-                bool won = Random.Shared.NextDouble() < 0.5;
-                if (won)
-                {
-                    s.Faith += 100;
-                    return "You dismantled his arguments before the crowd. The faithful cheer, and the priest slinks away in silence. +100 Faith.";
-                }
-                s.Followers -= 5;
-                return "His words cut deep. Doubt spreads through the crowd as five followers drift away into the night. −5 Followers.";
-            }),
-            new EventChoice("Perform a miracle", "+60 Faith, −30 Gold", s => { s.Faith += 60; s.Gold -= 30; return null; })),
-        new EventDef("rival_cult", "A Rival Cult",
-            "Word reaches you of a competing order gaining followers nearby. Their leader mocks your teachings from the market square.",
-            new EventChoice("Outshine their ritual", "+150 Faith, −50 Gold", s => { s.Faith += 150; s.Gold -= 50; return null; }),
-            new EventChoice("Ignore the distraction", "+4 Followers (quiet growth)", s => { s.Followers += 4; return null; })),
-        new EventDef("blood_moon", "A Blood Moon Rises",
-            "The sky bleeds crimson. Your followers whisper that a great ritual is possible beneath the cursed moon.",
-            new EventChoice("Perform the blood ritual", "+8 Followers, −100 Faith", s => { s.Followers += 8; s.Faith -= 100; return null; }),
-            new EventChoice("Prophesy the omen", "+200 Faith", s => { s.Faith += 200; return null; })));
+    public static BuildingDef Building(BuildingType type) => Buildings.First(b => b.Type == type);
+    public static UpgradeDef Upgrade(UpgradeId id) => Upgrades.First(u => u.Id == id);
 }

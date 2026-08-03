@@ -321,7 +321,7 @@ public static class BattleEngine
             battle.Momentum = 0;
             if (rivalDef != null) { battle.EnemyUnits = EnemyCompositionBuilder.BuildComposition(rivalDef.Archetype, scale, 20); }
             ApplyDefeatPenalty(state);
-            AppendLog(battle, $"Defeat! Your agents were repelled in {continentId}. Suspicion rises.");
+            AppendLog(battle, $"Defeat! Your agents were repelled in {continentId}. You lose 100 Faith.");
         }
     }
 
@@ -334,7 +334,7 @@ public static class BattleEngine
 
     private static void ApplyDefeatPenalty(GameState state)
     {
-        state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 10);
+        state.ActiveCoven.Faith = Math.Max(0, state.ActiveCoven.Faith - 100);
     }
 
     private static void AppendLog(BattleState battle, string message) =>

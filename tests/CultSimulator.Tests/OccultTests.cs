@@ -145,42 +145,14 @@ public class OccultTests
     }
 
     [Fact]
-    public void VeilMode_GeneratesZeroSuspicion()
+    public void Conquer_SpendsFaithAndGeneratesIncome()
     {
         var state = NewState();
         state.ActiveCoven.Faith = 1000;
         WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_runestone"));
-        WorldMapSystem.SetStance(state.Occult, "skanor_runestone", NodeStance.Veil);
-        Assert.Equal(0, WorldMapSystem.TotalSuspicionPerSec(state.Occult));
-    }
-
-    [Fact]
-    public void Suspicion_ClampedAtMax()
-    {
-        var state = NewState();
-        state.Occult.Suspicion = 99;
-        state.ActiveCoven.Faith = 100000;
-        WorldMapSystem.Conquer(state, OccultData.MapNode("skanor_mound"));
-        WorldMapSystem.TickSuspicion(state.Occult, 100);
-        Assert.Equal(OccultBalance.SuspicionMax, state.Occult.Suspicion);
-    }
-
-    [Fact]
-    public void RaidTriggered_At80Percent()
-    {
-        var o = NewOccult(); o.Suspicion = 79;
-        Assert.False(WorldMapSystem.IsRaidTriggered(o));
-        o.Suspicion = 80;
-        Assert.True(WorldMapSystem.IsRaidTriggered(o));
-    }
-
-    [Fact]
-    public void ApplyRaid_ResetsSuspicionAndKillsInitiates()
-    {
-        var o = NewOccult(); o.Suspicion = 90; o.Initiates = 100;
-        WorldMapSystem.ApplyRaid(o);
-        Assert.Equal(0, o.Suspicion);
-        Assert.True(o.Initiates < 100);
+        Assert.Equal(850, state.ActiveCoven.Faith);
+        Assert.True(WorldMapSystem.IsConquered(state.Occult, "skanor_runestone"));
+        Assert.True(WorldMapSystem.TotalFaithPerSec(state.Occult) > 0);
     }
 
     [Fact]

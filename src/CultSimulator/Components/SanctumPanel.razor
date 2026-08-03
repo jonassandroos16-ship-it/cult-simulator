@@ -111,17 +111,17 @@
     <div class="flex flex-col gap-2.5">
         <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanSacrificeAcolyte(Game.State))" @onclick="() => Game.SacrificeAcolyte()">
             <div class="text-3xl flex-shrink-0">🩸</div>
-            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Acolyte Sacrifice</span><span class="text-xs text-rose-400">Sacrifice 1 Acolyte to reduce Suspicion by @OccultBalance.AcolyteSacrificeSuspicionReduction% and gain Faith</span></div>
+            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Acolyte Sacrifice</span><span class="text-xs text-rose-400">Sacrifice 1 Acolyte to gain Faith (+50%)</span></div>
         </button>
         <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateBloodOffering(Game.State))" @onclick="() => Game.ActivateBloodOffering()">
             <div class="text-3xl flex-shrink-0">💀</div>
-            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Blood Offering</span><span class="text-xs text-rose-400">Sacrifice 5 Acolytes to reset Suspicion to 0 and gain massive Faith</span></div>
+            <div class="flex-1 flex flex-col gap-0.5"><span class="font-display text-base text-amber-100 font-medium">Blood Offering</span><span class="text-xs text-rose-400">Sacrifice 5 Acolytes for a massive burst of Faith</span></div>
         </button>
         <button class="building-item flex items-center gap-3.5 p-3.5 rounded-[14px] cursor-pointer transition-all duration-200 text-left w-full disabled:opacity-45 disabled:cursor-not-allowed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border); color: inherit; font-family: inherit;" disabled="@(!OccultEngine.CanActivateDarkVigil(occult))" @onclick="() => Game.ActivateDarkVigil()">
             <div class="text-3xl flex-shrink-0">🌙</div>
             <div class="flex-1 flex flex-col gap-0.5">
                 <span class="font-display text-base text-amber-100 font-medium">Dark Vigil</span>
-                <span class="text-xs text-violet-300">Sacrifice 3 Acolytes for 45s of halved Suspicion generation</span>
+                <span class="text-xs text-violet-300">Sacrifice 3 Acolytes for 45s of +50% Acolyte Faith generation</span>
                 @if (occult.IsDarkVigilActive) { <span class="text-[0.7rem] text-amber-400">Active: @Math.Ceiling(occult.DarkVigilTimer)s remaining</span> }
             </div>
         </button>
@@ -137,7 +137,7 @@
             <div class="text-3xl flex-shrink-0">✨</div>
             <div class="flex-1 flex flex-col gap-0.5">
                 <span class="font-display text-base text-amber-100 font-medium">Coven Blessing</span>
-                <span class="text-xs text-violet-300">Sacrifice 20 Acolytes for 90s of doubled Faith generation and halved Suspicion</span>
+                <span class="text-xs text-violet-300">Sacrifice 20 Acolytes for 90s of doubled Faith generation and +50% tap power</span>
                 @if (occult.IsCovenBlessingActive) { <span class="text-[0.7rem] text-amber-400">Active: @Math.Ceiling(occult.CovenBlessingTimer)s remaining</span> }
             </div>
         </button>
@@ -177,7 +177,7 @@
         </div>
         <p class="text-violet-300 font-display tracking-[0.1em] uppercase text-xs mt-3 mb-2">High Council</p>
         <div class="flex flex-col gap-2">
-            <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">👑</span><div><span class="text-amber-200 font-medium">Inquisitor</span><span class="text-slate-400 text-xs ml-1">— Reduces global Suspicion generation by 20%.</span></div></div>
+            <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">👑</span><div><span class="text-amber-200 font-medium">Inquisitor</span><span class="text-slate-400 text-xs ml-1">— Boosts all Faith generation by 20%.</span></div></div>
             <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">👑</span><div><span class="text-amber-200 font-medium">Archon</span><span class="text-slate-400 text-xs ml-1">— Boosts agent production rate by 50%.</span></div></div>
             <div class="flex items-start gap-2"><span class="text-lg flex-shrink-0">👑</span><div><span class="text-amber-200 font-medium">High Priest</span><span class="text-slate-400 text-xs ml-1">— Boosts all Faith generation by 50%. Requires at least one Grand Sacrifice.</span></div></div>
         </div>
@@ -194,8 +194,8 @@
     private void AppointFromSelect(CouncilRole role, string? minionId) { if (!string.IsNullOrEmpty(minionId)) Game.AppointCouncil(role, minionId); }
     private static string RoleIcon(PromotedRole role) => role switch { PromotedRole.Zealot => "⚔️", PromotedRole.Scholar => "📖", PromotedRole.Infiltrator => "🕵️", PromotedRole.Mage => "🔮", _ => "🔮" };
     private static string RoleName(PromotedRole role) => role switch { PromotedRole.Zealot => "Zealot", PromotedRole.Scholar => "Scholar", PromotedRole.Infiltrator => "Infiltrator", PromotedRole.Mage => "Mage", _ => "Unknown" };
-    private static string RoleDesc(PromotedRole role) => role switch { PromotedRole.Zealot => "Fanatical warrior — boosts raid power and agent production", PromotedRole.Scholar => "Faith multiplier and Mage support in battle", PromotedRole.Infiltrator => "Stealth operative — reduces suspicion and enemy counterattacks", PromotedRole.Mage => "Devastating battle caster — requires a Scholar", _ => "" };
+    private static string RoleDesc(PromotedRole role) => role switch { PromotedRole.Zealot => "Fanatical warrior — boosts raid power and agent production", PromotedRole.Scholar => "Faith multiplier and Mage support in battle", PromotedRole.Infiltrator => "Stealth operative — reduces enemy counterattacks", PromotedRole.Mage => "Devastating battle caster — requires a Scholar", _ => "" };
     private static string CouncilRoleName(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Inquisitor", CouncilRole.Archon => "Archon", CouncilRole.HighPriest => "High Priest", _ => "Unknown" };
-    private static string CouncilRoleBenefit(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Reduces suspicion generation", CouncilRole.Archon => "Boosts agent production rate", CouncilRole.HighPriest => "Boosts all faith generation", _ => "" };
+    private static string CouncilRoleBenefit(CouncilRole role) => role switch { CouncilRole.Inquisitor => "Boosts all Faith generation", CouncilRole.Archon => "Boosts agent production rate", CouncilRole.HighPriest => "Boosts all faith generation", _ => "" };
     public void Dispose() => Game.OnChange -= StateChanged;
 }

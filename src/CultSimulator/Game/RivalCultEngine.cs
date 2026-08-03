@@ -317,8 +317,8 @@ public static class RivalCultEngine
                 battle.RecentRounds.Clear();
                 battle.RoundNumber = 0;
                 battle.Momentum = 0;
-                state.Occult.Suspicion = Math.Min(OccultBalance.SuspicionMax, state.Occult.Suspicion + 20);
-                AppendLog(battle, "DEFEAT! Your assault force was annihilated. Suspicion rises. Regroup and try again.");
+                state.ActiveCoven.Faith = Math.Max(0, state.ActiveCoven.Faith - 100);
+                AppendLog(battle, "DEFEAT! Your assault force was annihilated. You lose 100 Faith. Regroup and try again.");
             }
         }
 

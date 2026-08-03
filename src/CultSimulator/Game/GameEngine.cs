@@ -17,6 +17,10 @@ public static class GameEngine
         double mult = 1.0 + s.Followers * GameBalance.PreachFollowerScaling;
         if (s.HasUpgrade(UpgradeId.Hymnal)) mult *= 2.0;
         if (s.HasUpgrade(UpgradeId.Ascendance)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.DivineMandate)) mult *= 1.25;
+        if (s.HasUpgrade(UpgradeId.EternalFlame)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.Apotheosis)) mult *= 2.0;
+        if (s.HasUpgrade(UpgradeId.SacredFlame)) mult *= 1.0 + s.Buildings.GetValueOrDefault(BuildingType.Shrine) * 0.5;
         mult *= s.BaseMultiplier > 0 ? s.BaseMultiplier : 1.0;
         return mult;
     }
@@ -27,6 +31,8 @@ public static class GameEngine
         mult += s.Occult.SermonPowerLevel;
         mult *= GrandSacrifice.GlobalProductionMult(s);
         if (s.Occult.IsFrenzyActive) mult *= OccultBalance.FrenzyMultiplier;
+        mult *= TechTree.PreachBonusMult(s.Occult);
+        if (s.Occult.ElixirPreachMult > 1.0) mult *= s.Occult.ElixirPreachMult;
         return mult;
     }
 
@@ -36,6 +42,10 @@ public static class GameEngine
         mult += s.Buildings.GetValueOrDefault(BuildingType.Observatory) * GameBalance.ObservatoryFaithBonus;
         if (s.HasUpgrade(UpgradeId.Visions)) mult *= 2.0;
         if (s.HasUpgrade(UpgradeId.Ascendance)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.DivineMandate)) mult *= 1.25;
+        if (s.HasUpgrade(UpgradeId.SoulHarvest)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.EternalFlame)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.Apotheosis)) mult *= 2.0;
         return mult;
     }
 
@@ -45,6 +55,10 @@ public static class GameEngine
         mult += s.Buildings.GetValueOrDefault(BuildingType.Reliquary) * GameBalance.ReliquaryGoldBonus;
         if (s.HasUpgrade(UpgradeId.Relics)) mult *= 2.0;
         if (s.HasUpgrade(UpgradeId.Ascendance)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.GoldenIdol)) mult *= 1.25;
+        if (s.HasUpgrade(UpgradeId.SoulHarvest)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.EternalFlame)) mult *= 1.5;
+        if (s.HasUpgrade(UpgradeId.Apotheosis)) mult *= 2.0;
         return mult;
     }
 
@@ -53,7 +67,11 @@ public static class GameEngine
     public static bool CanAfford(CovenState s, int faithCost, int goldCost) => s.Faith >= faithCost && s.Gold >= goldCost;
     public static bool CanAffordUpgrade(CovenState s, UpgradeDef def, GameState state) => s.Faith >= def.FaithCost && s.Gold >= def.GoldCost && state.ShadowWarOrInit.AvailableAgents >= def.AgentCost;
 
-    public static int RecruitCostFor(CovenState s) => s.Followers == 0 ? GameBalance.RecruitBaseCost : (int)Math.Ceiling(GameBalance.RecruitBaseCost * Math.Pow(GameBalance.RecruitCostGrowth, s.Followers));
+    public static int RecruitCostFor(CovenState s)
+    {
+        double baseCost = s.Followers == 0 ? GameBalance.RecruitBaseCost : Math.Ceiling(GameBalance.RecruitBaseCost * Math.Pow(GameBalance.RecruitCostGrowth, s.Followers));
+        return (int)Math.Ceiling(baseCost * (1.0 - TechTree.RecruitCostReduction(s.Occult)));
+    }
     public static bool CanRecruit(CovenState s) => s.Faith >= RecruitCostFor(s);
     public static bool UpgradeUnlocked(CovenState s, UpgradeDef def) => s.Followers >= def.UnlockFollowers;
     public static bool CanBuyUpgrade(CovenState s, UpgradeDef def, GameState state) => !s.HasUpgrade(def.Id) && UpgradeUnlocked(s, def) && CanAffordUpgrade(s, def, state);
@@ -64,6 +82,8 @@ public static class GameEngine
         double gold = s.Followers * GameBalance.FollowerGoldPerSec;
         faith += s.Buildings.GetValueOrDefault(BuildingType.Shrine) * GameBalance.ShrineFaithPerSec;
         gold += s.Buildings.GetValueOrDefault(BuildingType.Cathedral) * GameBalance.CathedralGoldPerSec;
+        double followerIncomeMult = TechTree.FollowerIncomeBonus(s.Occult);
+        faith *= followerIncomeMult; gold *= followerIncomeMult;
         faith *= FaithMultiplier(s);
         gold *= GoldMultiplier(s);
         faith *= s.BaseMultiplier > 0 ? s.BaseMultiplier : 1.0;
