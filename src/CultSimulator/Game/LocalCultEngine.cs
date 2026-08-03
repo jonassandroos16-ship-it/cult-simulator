@@ -1,9 +1,13 @@
+using System.Linq;
+
 namespace CultSimulator.Game;
 
 /// <summary>
-/// Pure functions for spawning, converting, and rewarding local cults.
-/// Local cults are easier, single-step conversions that appear periodically
-/// on the local map for quick rewards.
+/// Local cults are always present on the map (3 per coven). After being
+/// defeated or converted they enter a 1-hour recharge before the reward
+/// refills. Killing has a chance to drop an artifact, converting always
+/// drops one, and boss kills drop 3. When all 3 cults for the active coven
+/// are on cooldown, a faith-generation buff applies.
 /// </summary>
 public static class LocalCultEngine
 {
@@ -12,24 +16,29 @@ public static class LocalCultEngine
     public static IReadOnlyList<LocalCultInstance> ActiveForCoven(GameState state, string covenId) =>
         state.ActiveLocalCults.Where(i => LocalCultData.Find(i.CultId)?.ParentCovenId == covenId).ToList();
 
-    public static bool CanSpawn(GameState state, string covenId)
+    public static bool AllOnCooldown(GameState state, string covenId)
     {
-        var active = ActiveForCoven(state, covenId);
-        if (active.Count >= MaxActiveLocalCults) return false;
-        var pool = LocalCultData.ForCoven(covenId);
-        var available = pool.Where(d => !active.Any(a => a.CultId == d.Id)).ToList();
-        return available.Count > 0;
+        var instances = ActiveForCoven(state, covenId);
+        if (instances.Count == 0) return false;
+        return instances.All(i => !i.IsCharged);
     }
 
-    public static void SpawnOne(GameState state, string covenId)
+    public static long EarliestReadyMs(GameState state, string covenId)
     {
-        if (!CanSpawn(state, covenId)) return;
-        var active = ActiveForCoven(state, covenId);
+        var instances = ActiveForCoven(state, covenId);
+        if (instances.Count == 0) return 0;
+        return instances.Where(i => !i.IsCharged).Select(i => i.ReadyAtMs).DefaultIfEmpty(0).Min();
+    }
+
+    public static void EnsureCultsForCoven(GameState state, string covenId)
+    {
         var pool = LocalCultData.ForCoven(covenId);
-        var available = pool.Where(d => !active.Any(a => a.CultId == d.Id)).ToList();
-        if (available.Count == 0) return;
-        var pick = available[Random.Shared.Next(available.Count)];
-        state.ActiveLocalCults.Add(new LocalCultInstance { CultId = pick.Id, SpawnedAt = DateTime.UtcNow });
+        var existing = ActiveForCoven(state, covenId);
+        foreach (var def in pool)
+        {
+            if (!existing.Any(i => i.CultId == def.Id))
+                state.ActiveLocalCults.Add(new LocalCultInstance { CultId = def.Id, SpawnedAt = DateTime.UtcNow });
+        }
     }
 
     public static bool CanConvert(GameState state, LocalCultDef def)
@@ -44,10 +53,15 @@ public static class LocalCultEngine
         if (!CanConvert(state, def)) return false;
         var instance = state.ActiveLocalCults.FirstOrDefault(i => i.CultId == cultId);
         if (instance == null) return false;
+        if (!instance.IsCharged) return false;
+
         var home = state.HomeCoven;
-        if (reward == LocalCultReward.Followers) home.Followers += def.RewardAmount;
-        else home.Gold += def.RewardAmount;
-        state.ActiveLocalCults.Remove(instance);
+        double amount = def.RewardAmount;
+        if (reward == LocalCultReward.Followers) home.Followers += (int)amount;
+        else home.Gold += amount;
+
+        DropArtifact(state, 1);
+        instance.LastDefeatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
         return true;
     }
 
@@ -63,9 +77,28 @@ public static class LocalCultEngine
         return LocalCultBattleEngine.GetOrCreateBattle(state, def);
     }
 
-    public static void Expire(GameState state, string cultId)
+    public static void OnVictory(GameState state, string cultId)
     {
+        var def = LocalCultData.Find(cultId);
+        if (def == null) return;
         var instance = state.ActiveLocalCults.FirstOrDefault(i => i.CultId == cultId);
-        if (instance != null) state.ActiveLocalCults.Remove(instance);
+        if (instance == null) return;
+
+        int dropCount = def.IsBoss ? 3 : (Random.Shared.NextDouble() < GameBalance.LocalCultKillArtifactChance ? 1 : 0);
+        if (dropCount > 0) DropArtifact(state, dropCount);
+
+        instance.LastDefeatedAt = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    }
+
+    public static void DropArtifact(GameState state, int count)
+    {
+        var artifactIds = OccultData.Artifacts.Select(a => a.Id).ToList();
+        if (artifactIds.Count == 0) return;
+        for (int i = 0; i < count; i++)
+        {
+            var pick = artifactIds[Random.Shared.Next(artifactIds.Count)];
+            if (!state.Occult.OwnedArtifacts.Contains(pick))
+                state.Occult.OwnedArtifacts.Add(pick);
+        }
     }
 }
