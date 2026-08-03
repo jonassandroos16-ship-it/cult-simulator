@@ -16,7 +16,9 @@
         <div class="ml-auto text-[0.7rem] text-violet-400 tracking-wide">
             @if (mapMode == "local")
             {
-                <span>@Game.ActiveLocalCultsForCurrentCoven.Count / @LocalCultEngine.MaxActiveLocalCults cults active</span>
+                var instances = Game.ActiveLocalCultsForCurrentCoven;
+                var charged = instances.Count(i => i.IsCharged);
+                <span>@charged / @LocalCultEngine.MaxActiveLocalCults ready</span>
             }
         </div>
     </div>
@@ -32,7 +34,16 @@
     else if (mapMode == "local")
     {
         <div class="mb-3 p-3.5 rounded-[14px] text-sm leading-relaxed" style="background: rgba(15,10,36,0.5); border: 1px solid var(--panel-border);">
-            <p class="text-violet-300">Local cults operate near your active coven — @activeCovenName. Send your battle agents to attack and defeat them. Each victory grants a Faith bonus. A new cult appears every hour, up to @LocalCultEngine.MaxActiveLocalCults at a time.</p>
+            <p class="text-violet-300">Local cults operate near your active coven — @activeCovenName. Send your battle agents to attack and defeat them. Each victory grants a Faith bonus and may drop an artifact. Defeated cults recharge over 1 hour — attack sooner for a partial reward.</p>
+            @if (LocalCultEngine.AllOnCooldown(Game.State, Game.State.ActiveCovenId))
+            {
+                var earliest = LocalCultEngine.EarliestReadyMs(Game.State, Game.State.ActiveCovenId);
+                var mins = Math.Max(0, (int)Math.Ceiling((earliest - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) / 60000.0));
+                <div class="mt-2 p-2 rounded-[10px] text-xs text-amber-200 flex items-center gap-2" style="background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2);">
+                    <span class="text-base">✨</span>
+                    <span>All local cults are recharging. Faith generation +25%. Next cult ready in ~@(mins) min.</span>
+                </div>
+            }
         </div>
         <div id="local-map-container" class="world-map-container"></div>
 
@@ -42,6 +53,11 @@
             var canBattle = Game.CanStartLocalCultBattle(cultDef.Id);
             var battle = Game.GetLocalCultBattle(cultDef.Id);
             var sw = Game.State.ShadowWarOrInit;
+            var instance = Game.ActiveLocalCultsForCurrentCoven.FirstOrDefault(i => i.CultId == cultDef.Id);
+            var isCharged = instance?.IsCharged ?? true;
+            var chargeFrac = instance?.ChargeFraction ?? 1.0;
+            var effectiveReward = (int)(cultDef.RewardAmount * chargeFrac);
+            var minsLeft = instance != null && !isCharged ? Math.Max(0, (int)Math.Ceiling((instance.ReadyAtMs - DateTimeOffset.UtcNow.ToUnixTimeMilliseconds()) / 60000.0)) : 0;
 
             <div class="coven-popup" style="display:block; max-width: 400px;">
                 <button class="coven-popup-close" @onclick="CloseLocalPopup">×</button>
@@ -60,10 +76,23 @@
 
                     @if (battle == null)
                     {
-                        <p class="text-[0.65rem] text-amber-300 mb-2">Reward: @cultDef.RewardAmount Faith bonus</p>
+                        @if (!isCharged)
+                        {
+                            <div class="mb-2 p-2.5 rounded-[10px] text-xs text-center" style="background: rgba(100,116,139,0.1); border: 1px solid rgba(100,116,139,0.2);">
+                                <div class="text-slate-400 mb-1">⏳ Recharging — ready in ~@minsLeft min</div>
+                                <div class="w-full h-1.5 rounded-full bg-slate-700/50 overflow-hidden">
+                                    <div class="h-full bg-amber-500 rounded-full transition-all duration-500" style="width: @(chargeFrac * 100).ToString("F0")%;"></div>
+                                </div>
+                                <div class="text-[0.6rem] text-slate-500 mt-1">Partial reward: @effectiveReward Faith (@(chargeFrac * 100).ToString("F0"))</div>
+                            </div>
+                        }
+                        else
+                        {
+                            <p class="text-[0.65rem] text-amber-300 mb-2">Reward: @effectiveReward Faith bonus @if(cultDef.IsBoss) { <span class="text-rose-400 font-semibold">· Boss · 3 artifacts</span> }</p>
+                        }
                         <button class="coven-action-button w-full py-2.5 rounded-full font-display text-xs font-semibold tracking-[0.2em] uppercase cursor-pointer transition-all duration-200 disabled:opacity-40 disabled:cursor-not-allowed"
                                 style="background: linear-gradient(135deg, var(--gold-warm), var(--gold-deep)); border: none; color: var(--void-deep);"
-                                disabled="@(!canBattle)"
+                                disabled="@(!canBattle || !isCharged)"
                                 @onclick="() => StartLocalCultBattle(cultDef.Id)">
                             Attack
                         </button>
@@ -115,6 +144,7 @@
                             <div class="text-3xl mb-2">🏆</div>
                             <div class="text-base text-emerald-300 font-bold mb-1">VICTORY!</div>
                             <div class="text-[0.65rem] text-amber-200">+@(cultDef.RewardAmount) Faith bonus earned</div>
+                            <div class="text-[0.6rem] text-violet-300 mt-1">Recharging for 1 hour...</div>
                             <div class="text-[0.6rem] text-slate-400 mt-1">@cultDef.Name has been defeated.</div>
                         </div>
                     }
@@ -346,26 +376,24 @@
 
         foreach (var cult in localCults)
         {
-            var isActive = activeInstances.Any(i => i.CultId == cult.Id);
-            if (isActive)
-            {
-                jsLocations.Add(new {
-                    id = cult.Id,
-                    name = cult.Name,
-                    lat = cult.Latitude,
-                    lng = cult.Longitude,
-                    flag = "🗡️",
-                    era = "Local Cult",
-                    summary = cult.Description,
-                    lore = "",
-                    location = "",
-                    country = "",
-                    takenOver = false,
-                    isNextTarget = true,
-                    isActive = false,
-                    locked = false
-                });
-            }
+            var instance = activeInstances.FirstOrDefault(i => i.CultId == cult.Id);
+            var charged = instance?.IsCharged ?? true;
+            jsLocations.Add(new {
+                id = cult.Id,
+                name = cult.Name,
+                lat = cult.Latitude,
+                lng = cult.Longitude,
+                flag = cult.IsBoss ? "💀" : "🗡️",
+                era = cult.IsBoss ? "Boss Cult" : "Local Cult",
+                summary = cult.Description,
+                lore = "",
+                location = "",
+                country = "",
+                takenOver = false,
+                isNextTarget = charged,
+                isActive = false,
+                locked = false
+            });
         }
 
         var mapOpts = new Dictionary<string, object>
