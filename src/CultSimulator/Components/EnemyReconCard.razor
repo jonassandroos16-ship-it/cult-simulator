@@ -18,11 +18,11 @@
         <div class="grid grid-cols-2 gap-2 mb-2">
             <div class="p-1.5 rounded-[8px] text-center" style="background: rgba(15,10,36,0.4);">
                 <div class="text-[0.55rem] text-slate-400 uppercase">Est. HP</div>
-                <div class="text-sm text-rose-300 font-medium">@Recon.EstimatedHp:F0</div>
+                <div class="text-sm text-rose-300 font-medium">@((int)Recon.EstimatedHp)</div>
             </div>
             <div class="p-1.5 rounded-[8px] text-center" style="background: rgba(15,10,36,0.4);">
-                <div class="text-[0.55rem] text-slate-400 uppercase">Est. Attack</div>
-                <div class="text-sm text-cyan-300 font-medium">@Recon.EstimatedAttack:F1</div>
+                <div class="text-[0.55rem] text-slate-400 uppercase">Est. DPS</div>
+                <div class="text-sm text-cyan-300 font-medium">@Recon.EstimatedAttack.ToString("F1")</div>
             </div>
         </div>
 
