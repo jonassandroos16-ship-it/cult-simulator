@@ -2,7 +2,7 @@ namespace CultSimulator.Game;
 
 public static class ShadowWarEngine
 {
-    public const double BaseAgentProduction = 0.1;
+    public const double BaseAgentProduction = 0.03;
     public const double BaseAgentStrength = 1.0;
     public const double ReconBaseTime = 10.0;
     public const double InfiltrationBaseTime = 5.0;
@@ -43,6 +43,7 @@ public static class ShadowWarEngine
             if (def != null && def.Type == InstitutionType.Government)
                 govBonus += def.RewardValue;
         }
+        double zealotMult = CultistHierarchy.AgentProductionMult(state.Occult);
         double buildingMult = 1.0;
         foreach (var coven in state.Covens)
         {
@@ -50,19 +51,17 @@ public static class ShadowWarEngine
             int guilds = coven.Buildings.GetValueOrDefault(BuildingType.ShadowGuild);
             buildingMult += guilds * GameBalance.ShadowGuildAgentSpeedBonus;
         }
-        return baseRate * govBonus * sw.PrestigeMultiplier * buildingMult;
+        return baseRate * govBonus * sw.PrestigeMultiplier * zealotMult * buildingMult;
     }
 
-    public static int AgentPoolCap(GameState state) => (int)AgentCapFor(state.ShadowWarOrInit, state);
-
-    public static double AgentCapFor(ShadowWarState sw, GameState state)
+    public static int AgentPoolCap(GameState state)
     {
-        double cap = sw.AgentCap > 0 ? sw.AgentCap : 100;
+        int cap = GameBalance.AgentPoolBaseCap;
         foreach (var coven in state.Covens)
         {
             if (!coven.TakenOver) continue;
             int safehouses = coven.Buildings.GetValueOrDefault(BuildingType.Safehouse);
-            cap += safehouses * GameBalance.SafehouseAgentCapBonus;
+            cap += (int)(safehouses * GameBalance.SafehouseAgentCapBonus);
         }
         return cap;
     }
@@ -131,8 +130,10 @@ public static class ShadowWarEngine
     public static void Tick(ShadowWarState sw, GameState state, WorldLocationService locations, double deltaSec)
     {
         double agentProd = AgentProductionPerSec(sw, state);
-        double cap = AgentCapFor(sw, state);
-        sw.TotalAgents = Math.Min(sw.TotalAgents + agentProd * deltaSec, cap);
+        int cap = AgentPoolCap(state);
+        double effectiveCap = cap - sw.DeployedAgents;
+        double potentialNew = sw.TotalAgents + agentProd * deltaSec;
+        sw.TotalAgents = Math.Min(potentialNew, effectiveCap);
 
         foreach (var inst in sw.Institutions)
         {
@@ -193,8 +194,6 @@ public static class ShadowWarEngine
             }
         }
 
-        if (sw.Heat > 0)
-            sw.Heat = Math.Max(0, sw.Heat - 0.1 * deltaSec);
     }
 
     public static (bool, string) StartRecon(ShadowWarState sw, GameState state, WorldLocationService locations, string institutionId, int agentCount)
