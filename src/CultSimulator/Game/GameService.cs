@@ -492,35 +492,7 @@ public class GameService
     public void SwitchActiveCoven(string covenId) { CovenProgress.SwitchActive(_state, covenId); NotifyChanged(); }
 
     public ShadowWarState ShadowWar => _state.ShadowWarOrInit;
-    public bool ShadowWarVictory => ShadowWar.VictoryAchieved;
-
-    public (bool success, string message) StartRecon(string institutionId, int agentCount)
-    {
-        var r = ShadowWarEngine.StartRecon(ShadowWar, _state, _locations, institutionId, agentCount);
-        NotifyChanged();
-        return r;
-    }
-
-    public (bool success, string message) SendInfiltrationWave(string institutionId, int waveSize)
-    {
-        var r = ShadowWarEngine.SendInfiltrationWave(ShadowWar, _state, _locations, institutionId, waveSize);
-        NotifyChanged();
-        return r;
-    }
-
-    public (bool success, string message) WithdrawAgents(string institutionId)
-    {
-        var r = ShadowWarEngine.WithdrawAgents(ShadowWar, institutionId);
-        NotifyChanged();
-        return r;
-    }
-
-    public (bool success, string message) AssignDefenders(string institutionId, int count)
-    {
-        var r = ShadowWarEngine.AssignDefenders(ShadowWar, institutionId, count);
-        NotifyChanged();
-        return r;
-    }
+    public bool ShadowWarVictory => false;
 
     public (bool success, string message) StartRivalBattle(string rivalId)
     {
