@@ -17,7 +17,7 @@ public static class GameBalance
     public const double ReliquaryGoldBonus = 0.06;
     public const double UndercroftAcolyteBonus = 2;
     public const double ShadowGuildAgentSpeedBonus = 0.15;
-    public const double SafehouseAgentCapBonus = 10;
+    public const double SafehouseAgentCapBonus = 5;
 
     public const double PreachFollowerScaling = 0.004;
 
@@ -42,4 +42,6 @@ public static class GameBalance
     public const int CovensPerContinent = 5;
     public const int TotalContinents = 7;
     public const int TotalCovens = 35;
+
+    public const int AgentPoolBaseCap = 10;
 }
