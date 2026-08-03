@@ -36,8 +36,10 @@ public static class GameBalance
     public const int BankBaseCost = 500;
     public const double BankCostGrowth = 1.55;
 
-    public const int LocalCultSpawnIntervalSeconds = 3600;
-    public const int LocalCultMaxActive = 3;
+    public const int LocalCultRechargeMinutes = 60;
+    public const long LocalCultRechargeMs = 60L * 60 * 1000;
+    public const double LocalCultKillArtifactChance = 0.35;
+    public const double AllCultsCooldownFaithMult = 1.25;
 
     public const int CovensPerContinent = 5;
     public const int TotalContinents = 7;
