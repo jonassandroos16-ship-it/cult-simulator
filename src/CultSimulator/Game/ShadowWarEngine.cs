@@ -131,7 +131,12 @@ public static class ShadowWarEngine
     {
         double agentProd = AgentProductionPerSec(sw, state);
         int cap = AgentPoolCap(state);
-        double effectiveCap = cap - sw.DeployedAgents;
+        // AvailableAgents = TotalAgents - DeployedAgents - SpentAgents.
+        // To make AvailableAgents max out at cap, TotalAgents must be capped at
+        // cap + DeployedAgents + SpentAgents. The old code used cap - DeployedAgents,
+        // which double-subtracted Deployed and ignored Spent — so the pool never
+        // refilled after agents were spent on battle units.
+        double effectiveCap = cap + sw.DeployedAgents + sw.SpentAgents;
         double potentialNew = sw.TotalAgents + agentProd * deltaSec;
         sw.TotalAgents = Math.Min(potentialNew, effectiveCap);
 
