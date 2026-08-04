@@ -5,7 +5,7 @@ namespace CultSimulator.Game;
 
 public static class SaveLoad
 {
-    public const int CurrentVersion = 2;
+    public const int CurrentVersion = 3;
 
     private static readonly JsonSerializerOptions Options = new()
     {
@@ -90,6 +90,12 @@ public static class SaveLoad
             state.LocalCultBattles ??= new List<LocalCultBattleState>();
             state.RivalCults ??= RivalCultEngine.CreateInitialState();
             state.RivalCults.RivalBattles ??= new List<RivalBattleState>();
+        }
+
+        if (state.SaveVersion < 3)
+        {
+            if (state.TotalLifetimeFaith == 0)
+                state.TotalLifetimeFaith = state.Covens.Where(c => c.TakenOver).Sum(c => c.Occult.LifetimeFaith);
         }
 
         state.SaveVersion = CurrentVersion;
