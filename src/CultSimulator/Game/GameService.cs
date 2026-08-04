@@ -193,6 +193,12 @@ public class GameService
         NotifyChanged();
         return r;
     }
+    public (bool success, string message) ReinforceTheaterAgents(string continentId, AgentType type, int count)
+    {
+        var r = BattleEngine.ReinforceAgents(_state, continentId, type, count);
+        NotifyChanged();
+        return r;
+    }
     public bool IsBattleTheaterActive(string continentId) => BattleEngine.IsTheaterActive(_state, _locations, continentId);
     public bool HasCovenInContinent(string continentId) => BattleEngine.HasCovenInContinent(_state, _locations, continentId);
     public BattleState? GetBattle(string continentId) => BattleEngine.GetOrCreateBattle(_state, _locations, continentId);
