@@ -302,6 +302,7 @@ public static class RivalCultEngine
 
                 state.ActiveCoven.Faith += faithReward;
                 state.Occult.LifetimeFaith += faithReward;
+                state.TotalLifetimeFaith += faithReward;
                 battle.EnemyUnits.Clear();
                 battle.RecentRounds.Clear();
                 battle.RoundNumber = 0;

@@ -23,6 +23,7 @@ public static class OccultEngine
         double faith = power;
         state.ActiveCoven.Faith += faith;
         o.LifetimeFaith += faith;
+        state.TotalLifetimeFaith += faith;
         return faith;
     }
 
@@ -79,9 +80,9 @@ public static class OccultEngine
     {
         var o = state.Occult;
         double faith = TotalFaithPerSec(state) * deltaSec;
-        state.ActiveCoven.Faith += faith; o.LifetimeFaith += faith;
+        state.ActiveCoven.Faith += faith; o.LifetimeFaith += faith; state.TotalLifetimeFaith += faith;
         double mapFaith = TotalMapFaithPerSec(state) * deltaSec;
-        state.ActiveCoven.Faith += mapFaith; o.LifetimeFaith += mapFaith;
+        state.ActiveCoven.Faith += mapFaith; o.LifetimeFaith += mapFaith; state.TotalLifetimeFaith += mapFaith;
         WorldMapSystem.TickMaterials(o, deltaSec);
         Cauldron.TickElixir(o, deltaSec);
         if (o.FrenzyTimer > 0) o.FrenzyTimer = Math.Max(0, o.FrenzyTimer - deltaSec);
@@ -107,6 +108,7 @@ public static class OccultEngine
         double faith = OccultBalance.SacrificeFaithBase * 5 * TechTree.SacrificeBonus(o);
         state.ActiveCoven.Faith += faith;
         o.LifetimeFaith += faith;
+        state.TotalLifetimeFaith += faith;
         return true;
     }
     public static bool SacrificeAcolyte(GameState state) => SacrificeInitiate(state);
@@ -120,6 +122,7 @@ public static class OccultEngine
         double faith = OccultBalance.SacrificeFaithBase * 50 * TechTree.SacrificeBonus(o);
         state.ActiveCoven.Faith += faith;
         o.LifetimeFaith += faith;
+        state.TotalLifetimeFaith += faith;
         return true;
     }
 
