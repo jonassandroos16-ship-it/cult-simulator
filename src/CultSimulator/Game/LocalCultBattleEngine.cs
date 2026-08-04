@@ -234,6 +234,7 @@ public static class LocalCultBattleEngine
         double faithBonus = def.RewardAmount;
         state.ActiveCoven.Faith += faithBonus;
         state.Occult.LifetimeFaith += faithBonus;
+        state.TotalLifetimeFaith += faithBonus;
         battle.LastFaithReward = faithBonus;
         LocalCultEngine.OnVictory(state, battle.CultId);
     }

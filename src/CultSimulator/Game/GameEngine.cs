@@ -180,6 +180,7 @@ public static class GameEngine
             double occultFaith = occultFps * eff;
             coven.Faith += occultFaith;
             coven.Occult.LifetimeFaith += occultFaith;
+            state.TotalLifetimeFaith += occultFaith;
             totalFaith += occultFaith;
 
             if (elapsedSec > cap)
