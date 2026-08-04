@@ -27,7 +27,6 @@ public static class TechTree
     public static IEnumerable<TechDef> LockedTechs(OccultState o) => OccultData.Techs.Where(t => !IsUnlocked(o, t) && !PrerequisitesMet(o, t));
     public static bool HasTech(OccultState o, TechId id) => o.UnlockedTechs.Contains(id);
 
-    public static double SuspicionReductionMult(OccultState o) => HasTech(o, TechId.WhispersInTheDark) ? 0.85 : 1.0;
     public static double SetBonusMult(OccultState o) => HasTech(o, TechId.ResonanceMastery) ? 2.0 : 1.0;
     public static double FaithRetentionPercent(OccultState o) => HasTech(o, TechId.MemoriesOfTheDeep) ? 0.10 : 0.0;
     public static double EldritchFavorContinentMult(OccultState o) => HasTech(o, TechId.TheStarEatersFeast) ? 2.0 : 1.0;
