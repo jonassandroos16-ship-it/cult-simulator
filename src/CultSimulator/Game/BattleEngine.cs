@@ -330,6 +330,7 @@ public static class BattleEngine
         double faithBonus = state.Covens.Count(c => c.Converted) * 200.0;
         state.ActiveCoven.Faith += faithBonus;
         state.Occult.LifetimeFaith += faithBonus;
+        state.TotalLifetimeFaith += faithBonus;
     }
 
     private static void ApplyDefeatPenalty(GameState state)

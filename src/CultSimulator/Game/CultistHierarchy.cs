@@ -73,6 +73,7 @@ public static class CultistHierarchy
         double faith = OccultBalance.SacrificeFaithBase * OccultBalance.SacrificeSermonMult * (minion.Trait?.FaithMult ?? 1.0);
         state.ActiveCoven.Faith += faith;
         o.LifetimeFaith += faith;
+        state.TotalLifetimeFaith += faith;
         return faith;
     }
 
