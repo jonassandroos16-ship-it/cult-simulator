@@ -21,6 +21,7 @@
     var agentProgressText = secondsToNext >= 60 ? $"{(int)(secondsToNext / 60)}m {Math.Ceiling(secondsToNext % 60)}s" : $"{Math.Ceiling(secondsToNext)}s";
     var strengthMult = ShadowWarEngine.AgentStrength(sw, Game.State);
     if (warElixirActive) strengthMult *= Game.State.Occult.ElixirWarStrengthMult;
+    var maxForType = BuildMaxForType();
 }
 
 <div class="battle-panel-scroll">
@@ -168,7 +169,7 @@
         @foreach (var agentDef in BattleData.AgentTypes)
         {
             sw.RecruitedAgents.TryGetValue(agentDef.Type, out int owned);
-            var maxForType = BattleEngine.MaxAgentsForType(sw, Game.State, agentDef.Type);
+            var maxForThisType = maxForType.GetValueOrDefault(agentDef.Type, 0);
             var canAfford = poolAgents >= agentDef.AgentCost;
             <div class="deploy-recruit-card @(owned == 0 && !canAfford ? "opacity-50" : "")">
                 <div class="flex items-start gap-3">
@@ -186,16 +187,16 @@
                 <div class="flex items-center justify-between mt-3">
                     <div class="text-[0.6rem]">
                         <div class="text-cyan-400">Cost: @agentDef.AgentCost pool agents</div>
-                        @if (agentDef.Type != AgentType.Initiate && maxForType == 0)
+                        @if (agentDef.Type != AgentType.Initiate && maxForThisType == 0)
                         {
                             <div class="text-amber-400">Recruit @agentDef.Name in the Sanctum first</div>
                         }
                         else
                         {
-                            <div class="text-slate-400">Owned: @owned@(agentDef.Type != AgentType.Initiate ? $" / {maxForType} max" : "")</div>
+                            <div class="text-slate-400">Owned: @owned@(agentDef.Type != AgentType.Initiate ? $" / {maxForThisType} max" : "")</div>
                         }
                     </div>
-                    <button class="deploy-btn deploy-btn-recruit" disabled="@(!canAfford || (agentDef.Type != AgentType.Initiate && owned >= maxForType))" @onclick="() => OnRecruit(agentDef.Type, 1)">
+                    <button class="deploy-btn deploy-btn-recruit" disabled="@(!canAfford || (agentDef.Type != AgentType.Initiate && owned >= maxForThisType))" @onclick="() => OnRecruit(agentDef.Type, 1)">
                         Recruit
                     </button>
                 </div>
@@ -280,79 +281,16 @@
                             <EnemyReconCard Recon="theaterRecon" />
                         }
 
-                        <div class="battle-info-summary mb-3">
-                            <div class="battle-info-row">
-                                <span class="battle-info-label">Pool Agents</span>
-                                <span class="battle-info-value text-cyan-300">@poolAgents</span>
-                            </div>
-                            @if (totalRecruited > 0)
-                            {
-                                <div class="battle-info-row">
-                                    <span class="battle-info-label">Recruited Units</span>
-                                    <span class="battle-info-value text-amber-200">@totalRecruited</span>
-                                </div>
-                                <div class="battle-info-units">
-                                    @foreach (var agentDef in BattleData.AgentTypes)
-                                    {
-                                        sw.RecruitedAgents.TryGetValue(agentDef.Type, out int unitCount);
-                                        if (unitCount > 0)
-                                        {
-                                            <span class="battle-info-unit-chip"><span>@agentDef.Icon</span> @agentDef.Name: @unitCount</span>
-                                        }
-                                    }
-                                </div>
-                                <div class="battle-info-row">
-                                    <span class="battle-info-label">Deployed Strength</span>
-                                    <span class="battle-info-value text-emerald-300">@CalcDeployedStrength(battle.DeployedSquad).ToString("F1")</span>
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="battle-info-row">
-                                    <span class="battle-info-label">Recruited Units</span>
-                                    <span class="battle-info-value text-rose-300">0 — recruit first!</span>
-                                </div>
-                            }
-                        </div>
-
-                        @if (totalRecruited == 0)
-                        {
-                            <div class="flex gap-2">
-                                <button class="flex-1 p-2.5 rounded-[10px] text-xs text-amber-100 font-medium transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
-                                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                        @onclick="ScrollToRecruit">
-                                    ⬆ Recruit Agents First
-                                </button>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="grid grid-cols-3 gap-2 mb-3">
-                                @foreach (var agentDef in BattleData.AgentTypes)
-                                {
-                                    sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
-                                    <button class="battle-agent-card p-2 rounded-[8px] text-center transition-all hover:-translate-y-0.5"
-                                            style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);"
-                                            @onclick="() => OnDeploy(theater.ContinentId, agentDef.Type)">
-                                        <div class="text-lg mb-0.5">@agentDef.Icon</div>
-                                        <div class="text-[0.6rem] text-amber-200">@agentDef.Name</div>
-                                        <div class="text-[0.55rem] text-slate-400">@avail available</div>
-                                    </button>
-                                }
-                            </div>
-                            <div class="flex gap-2">
-                                <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
-                                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                        @onclick="() => OnWithdraw(theater.ContinentId)">
-                                    Withdraw
-                                </button>
-                                <button class="flex-1 p-2 rounded-[10px] text-xs text-amber-100 font-medium transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
-                                        style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                        @onclick="() => OnStartBattle(theater.ContinentId)">
-                                    Start Battle
-                                </button>
-                            </div>
-                        }
+                        <DeploySquadPanel CanDeploy="true"
+                                          DeployedSquad="battle.DeployedSquad"
+                                          OwnedCounts="@sw.RecruitedAgents"
+                                          MaxForType="@maxForType"
+                                          PoolAgents="@poolAgents"
+                                          FightLabel="Start Battle"
+                                          OnDeployAgent="args => OnDeploy(theater.ContinentId, args.Item1, args.Item2)"
+                                          OnWithdraw="() => OnWithdraw(theater.ContinentId)"
+                                          OnFight="() => OnStartBattle(theater.ContinentId)"
+                                          OnRecruitAgent="OnRecruitFromDeploy" />
                     }
                     else if (battle.Phase == BattlePhase.Fighting)
                     {
@@ -364,6 +302,9 @@
                                     PlayerMaxHp="battle.PlayerMaxHp"
                                     RivalHp="battle.RivalHp"
                                     RivalMaxHp="battle.RivalMaxHp" />
+                        <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="battle.DeployedSquad"
+                                          ShowReinforce="true" PoolAgents="@poolAgents"
+                                          OnReinforceAgent="args => OnReinforce(theater.ContinentId, args.Item1, args.Item2)" />
                     }
                     else if (battle.Phase == BattlePhase.Cooldown)
                     {
@@ -430,79 +371,16 @@
                         <EnemyReconCard Recon="rivalRecon" />
                     }
 
-                    <div class="battle-info-summary mb-3">
-                        <div class="battle-info-row">
-                            <span class="battle-info-label">Pool Agents</span>
-                            <span class="battle-info-value text-cyan-300">@poolAgents</span>
-                        </div>
-                        @if (totalRecruited > 0)
-                        {
-                            <div class="battle-info-row">
-                                <span class="battle-info-label">Recruited Units</span>
-                                <span class="battle-info-value text-amber-200">@totalRecruited</span>
-                            </div>
-                            <div class="battle-info-units">
-                                @foreach (var agentDef in BattleData.AgentTypes)
-                                {
-                                    sw.RecruitedAgents.TryGetValue(agentDef.Type, out int unitCount);
-                                    if (unitCount > 0)
-                                    {
-                                        <span class="battle-info-unit-chip"><span>@agentDef.Icon</span> @agentDef.Name: @unitCount</span>
-                                    }
-                                }
-                            </div>
-                            <div class="battle-info-row">
-                                <span class="battle-info-label">Deployed Strength</span>
-                                <span class="battle-info-value text-emerald-300">@CalcDeployedStrength(rb.DeployedSquad).ToString("F1")</span>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="battle-info-row">
-                                <span class="battle-info-label">Recruited Units</span>
-                                <span class="battle-info-value text-rose-300">0 — recruit first!</span>
-                            </div>
-                        }
-                    </div>
-
-                    @if (totalRecruited == 0)
-                    {
-                        <div class="flex gap-2">
-                            <button class="flex-1 p-2.5 rounded-[10px] text-xs text-amber-100 font-medium transition-all hover:bg-amber-500/10 hover:border-amber-500/30"
-                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                    @onclick="ScrollToRecruit">
-                                ⬆ Recruit Agents First
-                            </button>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="grid grid-cols-3 gap-2 mb-3">
-                            @foreach (var agentDef in BattleData.AgentTypes)
-                            {
-                                sw.RecruitedAgents.TryGetValue(agentDef.Type, out int avail);
-                                <button class="battle-agent-card p-2 rounded-[8px] text-center transition-all hover:-translate-y-0.5"
-                                        style="background: rgba(5,3,8,0.4); border: 1px solid var(--panel-border);"
-                                        @onclick="() => Game.DeployRivalBattleAgents(rival.Id, agentDef.Type, 1)">
-                                    <div class="text-lg mb-0.5">@agentDef.Icon</div>
-                                    <div class="text-[0.6rem] text-amber-200">@agentDef.Name</div>
-                                    <div class="text-[0.55rem] text-slate-400">@avail available</div>
-                                </button>
-                            }
-                        </div>
-                        <div class="flex gap-2">
-                            <button class="flex-1 p-2 rounded-[10px] text-xs text-slate-300 transition-all hover:bg-slate-500/10"
-                                    style="background: rgba(15,10,36,0.6); border: 1px solid var(--panel-border);"
-                                    @onclick="() => Game.WithdrawRivalBattleAgents(rival.Id)">
-                                Withdraw
-                            </button>
-                            <button class="flex-1 p-2 rounded-[10px] text-xs text-rose-100 font-medium transition-all hover:bg-rose-500/10 hover:border-rose-500/30"
-                                    style="background: rgba(127,29,29,0.4); border: 1px solid rgba(239,68,68,0.3);"
-                                    @onclick="() => Game.StartRivalBattle(rival.Id)">
-                                Fight Boss
-                            </button>
-                        </div>
-                    }
+                    <DeploySquadPanel CanDeploy="true"
+                                      DeployedSquad="rb.DeployedSquad"
+                                      OwnedCounts="@sw.RecruitedAgents"
+                                      MaxForType="@maxForType"
+                                      PoolAgents="@poolAgents"
+                                      FightLabel="Fight Boss"
+                                      OnDeployAgent="args => Game.DeployRivalBattleAgents(rival.Id, args.Item1, args.Item2)"
+                                      OnWithdraw="() => Game.WithdrawRivalBattleAgents(rival.Id)"
+                                      OnFight="() => Game.StartRivalBattle(rival.Id)"
+                                      OnRecruitAgent="OnRecruitFromDeploy" />
                 }
                 else if (rb != null && rb.Phase == RivalBattlePhase.Fighting)
                 {
@@ -514,6 +392,9 @@
                                 PlayerMaxHp="rb.PlayerMaxHp"
                                 RivalHp="rb.RivalHp"
                                 RivalMaxHp="rb.RivalMaxHp" />
+                    <DeploySquadPanel CanDeploy="false" IsFighting="true" DeployedSquad="rb.DeployedSquad"
+                                      ShowReinforce="true" PoolAgents="@poolAgents"
+                                      OnReinforceAgent="args => Game.ReinforceRivalBattleAgents(rival.Id, args.Item1, args.Item2)" />
                 }
                 else if (rb != null && rb.Phase == RivalBattlePhase.Victory)
                 {
@@ -541,18 +422,13 @@
 
     protected override void OnInitialized() => Game.OnChange += StateChanged;
 
-    private double CalcDeployedStrength(List<DeployedAgent> squad)
+    private Dictionary<AgentType, int> BuildMaxForType()
     {
-        double strength = ShadowWarEngine.AgentStrength(Game.State.ShadowWarOrInit, Game.State);
-        if (Game.State.Occult.ElixirWarStrengthMult > 1.0 && Game.State.Occult.ElixirTimer > 0)
-            strength *= Game.State.Occult.ElixirWarStrengthMult;
-        double attack = 0;
-        foreach (var slot in squad)
-        {
-            var def = BattleData.AgentDef(slot.Type);
-            if (def != null) attack += def.Attack * slot.Count * strength;
-        }
-        return attack;
+        var sw = Game.State.ShadowWarOrInit;
+        var dict = new Dictionary<AgentType, int>();
+        foreach (var def in BattleData.AgentTypes)
+            dict[def.Type] = BattleEngine.MaxAgentsForType(sw, Game.State, def.Type);
+        return dict;
     }
 
     private EnemyRecon? BuildTheaterRecon(BattleTheaterDef theater)
@@ -573,9 +449,9 @@
         Game.RecruitAgent(type, count);
     }
 
-    private void OnDeploy(string continentId, AgentType type)
+    private void OnDeploy(string continentId, AgentType type, int count)
     {
-        Game.DeployAgents(continentId, type, 1);
+        Game.DeployAgents(continentId, type, count);
     }
 
     private void OnStartBattle(string continentId)
@@ -587,6 +463,13 @@
     {
         Game.WithdrawBattleAgents(continentId);
     }
+
+    private void OnReinforce(string continentId, AgentType type, int count)
+    {
+        Game.ReinforceTheaterAgents(continentId, type, count);
+    }
+
+    private EventCallback<AgentType> OnRecruitFromDeploy => EventCallback.Factory.Create<AgentType>(this, type => Game.RecruitAgent(type, 1));
 
     private void ScrollToRecruit()
     {
